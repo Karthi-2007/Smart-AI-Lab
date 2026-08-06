@@ -13,7 +13,10 @@ const Footer = () => {
                 src="/images/kce/KCE-logo-color.png"
                 alt="KCE Logo"
                 className="h-7 w-auto object-contain"
-                onError={(e) => { e.target.style.display = "none"; }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://kce.ac.in/images/kce/logo/KCE-logo-color.png";
+                }}
               />
             </div>
             <div className="border-l-2 pl-3" style={{ borderColor: "#cc6926" }}>

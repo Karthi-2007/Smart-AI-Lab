@@ -68,6 +68,10 @@ const KCECampusSection = () => {
                 alt={img.label}
                 className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-700"
                 loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://kce.ac.in/images/kce/home/banner/" + img.src.split('/').pop();
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                 <span className="text-white font-semibold text-sm">{img.label}</span>

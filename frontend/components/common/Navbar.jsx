@@ -18,7 +18,10 @@ const Navbar = () => {
             src="/images/kce/KCE-logo-color.png"
             alt="Karpagam College of Engineering"
             className="h-8 w-auto object-contain"
-            onError={(e) => { e.target.style.display = "none"; }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://kce.ac.in/images/kce/logo/KCE-logo-color.png";
+            }}
           />
           <div className="border-l pl-2" style={{ borderColor: "#cc6926" }}>
             <h1 className="text-base font-extrabold leading-none" style={{ color: "#0b2545" }}>

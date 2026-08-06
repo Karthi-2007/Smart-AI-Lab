@@ -72,7 +72,7 @@ const Statistics = () => {
     <section
       className="py-16 sm:py-20 px-6 relative overflow-hidden"
       style={{
-        backgroundImage: "url('/images/kce/about-us1.webp')",
+        backgroundImage: "url('/images/kce/about-us1.webp'), url('https://kce.ac.in/images/kce/home/about-us1.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",
