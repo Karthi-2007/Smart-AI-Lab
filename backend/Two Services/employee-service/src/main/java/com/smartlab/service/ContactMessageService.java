@@ -10,9 +10,11 @@ import java.util.List;
 public class ContactMessageService {
 
     private final ContactMessageRepository repository;
+    private final NotificationService notificationService;
 
-    public ContactMessageService(ContactMessageRepository repository) {
+    public ContactMessageService(ContactMessageRepository repository, NotificationService notificationService) {
         this.repository = repository;
+        this.notificationService = notificationService;
     }
 
     public List<ContactMessage> getAllMessages() {
@@ -30,7 +32,22 @@ public class ContactMessageService {
         if (msg.getStatus() == null) {
             msg.setStatus("UNREAD");
         }
-        return repository.save(msg);
+        ContactMessage saved = repository.save(msg);
+
+        // Automatically dispatch notification to Admin portal
+        try {
+            notificationService.createNotification(
+                null,
+                "ADMIN",
+                "New Contact Inquiry: " + (msg.getSubject() != null ? msg.getSubject() : "General Inquiry"),
+                "From " + (msg.getName() != null ? msg.getName() : "Visitor") + " (" + (msg.getEmail() != null ? msg.getEmail() : "N/A") + "): " + (msg.getMessage() != null ? msg.getMessage() : ""),
+                "CONTACT"
+            );
+        } catch (Exception e) {
+            // Ignore notification failure if any
+        }
+
+        return saved;
     }
 
     public ContactMessage updateStatus(Long id, String status) {
