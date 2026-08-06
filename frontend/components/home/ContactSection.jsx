@@ -184,7 +184,7 @@ const ContactSection = () => {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Premnath"
+                      placeholder="e.g. Student / Visitor Name"
                       className="w-full bg-slate-900 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-500 transition"
                     />
                   </div>
@@ -196,7 +196,7 @@ const ContactSection = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. premnath@gmail.com"
+                      placeholder="e.g. visitor@example.com"
                       className="w-full bg-slate-900 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-500 transition"
                     />
                   </div>
