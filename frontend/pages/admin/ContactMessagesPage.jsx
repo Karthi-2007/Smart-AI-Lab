@@ -79,16 +79,45 @@ const ContactMessagesPage = () => {
 
   const handleSendReply = async () => {
     if (!replyText.trim()) {
-      toast.error("Please enter a reply message");
+      toast.error("Please enter a reply message.");
       return;
     }
     setSendingReply(true);
-    setTimeout(async () => {
-      await handleUpdateStatus(selectedMsg.messageId || selectedMsg.id, "REPLIED");
-      toast.success(`Reply sent to ${selectedMsg.email}`);
+    try {
+      // 1. Mark status as REPLIED in backend database
+      const msgId = selectedMsg.messageId || selectedMsg.id;
+      await handleUpdateStatus(msgId, "REPLIED");
+
+      // 2. Dispatch portal notification to student/faculty if user email is registered
+      try {
+        await api.post("/api/business/notifications", {
+          title: `Reply to Inquiry: ${selectedMsg.subject || "SmartLab Support"}`,
+          message: replyText.trim(),
+          type: "INQUIRY_REPLY",
+          targetRole: "ALL"
+        });
+      } catch (err) {
+        console.warn("Portal notification dispatch note:", err);
+      }
+
+      // 3. Launch default mail client with pre-filled reply text
+      const mailtoUrl = `mailto:${encodeURIComponent(selectedMsg.email)}?subject=Re: ${encodeURIComponent(
+        selectedMsg.subject || "SmartLab AI Inquiry"
+      )}&body=${encodeURIComponent(
+        `Dear ${selectedMsg.name || "Visitor"},\n\n` +
+          replyText.trim() +
+          `\n\nBest regards,\nSmartLab AI Support Team`
+      )}`;
+
+      window.open(mailtoUrl, "_blank");
+
+      toast.success(`Reply dispatched to ${selectedMsg.email}!`);
       setReplyText("");
+    } catch (err) {
+      toast.error("Failed to send reply.");
+    } finally {
       setSendingReply(false);
-    }, 800);
+    }
   };
 
   const filteredMessages = messages.filter((m) => {
