@@ -25,7 +25,7 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section className="bg-slate-950 py-24 px-6">
+    <section className="py-16 sm:py-24 px-6" style={{ background: '#ffffff' }}>
       <div className="max-w-7xl mx-auto">
 
         <SectionTitle
@@ -36,50 +36,50 @@ const Testimonials = () => {
         <div className="grid lg:grid-cols-3 gap-8">
 
           {testimonials.map((user, index) => (
-            <GlassCard
-              key={index}
-              className="hover:border-orange-500 hover:-translate-y-2 transition-all duration-500"
-            >
-              {/* Avatar */}
+             <GlassCard
+               key={index}
+               className="hover:border-orange-500 hover:-translate-y-2 transition-all duration-500"
+             >
+               {/* Avatar */}
 
-              <div className="w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center text-2xl font-bold">
-                {user.name.charAt(0)}
-              </div>
+               <div className="w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+                 {user.name.charAt(0)}
+               </div>
 
-              {/* Stars */}
+               {/* Stars */}
 
-              <div className="flex gap-1 mt-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={18}
-                    fill="#f97316"
-                    color="#f97316"
-                  />
-                ))}
-              </div>
+               <div className="flex gap-1 mt-6">
+                 {[1, 2, 3, 4, 5].map((star) => (
+                   <Star
+                     key={star}
+                     size={18}
+                     fill="#cc6926"
+                     color="#cc6926"
+                   />
+                 ))}
+               </div>
 
-              {/* Review */}
+               {/* Review */}
 
-              <p className="mt-6 text-slate-400 leading-7">
-                "{user.review}"
-              </p>
+               <p className="mt-6 text-slate-600 text-sm leading-relaxed italic">
+                 "{user.review}"
+               </p>
 
-              {/* User */}
+               {/* User */}
 
-              <div className="mt-8">
+               <div className="mt-8 pt-4 border-t border-slate-100">
 
-                <h3 className="font-bold text-lg">
-                  {user.name}
-                </h3>
+                 <h3 className="font-bold text-lg" style={{ color: '#0b2545' }}>
+                   {user.name}
+                 </h3>
 
-                <p className="text-orange-400 text-sm">
-                  {user.role}
-                </p>
+                 <p className="text-[#cc6926] text-xs font-bold uppercase tracking-wider mt-0.5">
+                   {user.role}
+                 </p>
 
-              </div>
+               </div>
 
-            </GlassCard>
+             </GlassCard>
           ))}
 
         </div>

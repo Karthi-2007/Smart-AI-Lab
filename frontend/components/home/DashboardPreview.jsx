@@ -88,7 +88,7 @@ const DashboardPreview = () => {
   ];
 
   return (
-    <section className="bg-slate-900/80 py-20 sm:py-28 px-6 relative">
+    <section className="py-16 sm:py-24 px-6 relative" style={{ background: '#f5f7fa' }}>
       <div className="max-w-7xl mx-auto">
         <SectionTitle
           title="Role-Based Intelligent Dashboards"
@@ -105,19 +105,20 @@ const DashboardPreview = () => {
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className={`p-4 rounded-2xl border ${dashboard.color} shrink-0`}>
+                    <div className={`p-4 rounded-2xl border ${dashboard.color.replace('text-blue-400', 'text-blue-600').replace('text-emerald-400', 'text-emerald-600').replace('text-orange-400', 'text-orange-600')} shrink-0`}>
                       <Icon className="w-8 h-8" />
                     </div>
                     <Link
                       to={dashboard.rolePath}
-                      className="text-xs font-semibold text-orange-400 hover:text-orange-300 flex items-center gap-1 transition"
+                      className="text-xs font-bold flex items-center gap-1 transition"
+                      style={{ color: '#cc6926' }}
                     >
                       <span>Access Portal</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
 
-                  <h3 className="text-2xl font-extrabold text-white mb-6">
+                  <h3 className="text-2xl font-extrabold mb-6" style={{ color: '#0b2545' }}>
                     {dashboard.title}
                   </h3>
 
@@ -125,29 +126,29 @@ const DashboardPreview = () => {
                     {dashboard.items.map((item, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 bg-slate-800/60 border border-slate-700/50 rounded-xl p-3.5 text-xs sm:text-sm text-slate-200"
+                        className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-xs sm:text-sm text-slate-700 font-medium shadow-sm"
                       >
-                        <CheckCircle size={16} className="text-orange-400 shrink-0" />
+                        <CheckCircle size={16} className="text-orange-500 shrink-0" />
                         <span>{item}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-8 bg-slate-800/80 border border-slate-700/60 rounded-2xl p-5 space-y-2 text-xs">
-                  <div className="flex justify-between items-center text-slate-300">
+                <div className="mt-8 bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-slate-600 font-semibold">
                     <span>Monitored Equipment:</span>
-                    <span className="font-bold text-orange-400">{metrics.equipments}</span>
+                    <span className="font-bold text-orange-600">{metrics.equipments}</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-300">
+                  <div className="flex justify-between items-center text-slate-600 font-semibold">
                     <span>Active Reservations:</span>
-                    <span className="font-bold text-emerald-400">{metrics.activeBookings}</span>
+                    <span className="font-bold text-emerald-600">{metrics.activeBookings}</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-300">
+                  <div className="flex justify-between items-center text-slate-600 font-semibold">
                     <span>Open Fault Tickets:</span>
-                    <span className="font-bold text-rose-400">{metrics.faultReports}</span>
+                    <span className="font-bold text-rose-600">{metrics.faultReports}</span>
                   </div>
                 </div>
               </GlassCard>

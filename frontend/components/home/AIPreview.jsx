@@ -64,7 +64,7 @@ const AIPreview = () => {
   }, []);
 
   return (
-    <section className="bg-slate-955 py-20 sm:py-28 px-6 relative overflow-hidden">
+    <section className="py-16 sm:py-24 px-6 relative overflow-hidden" style={{ background: '#ffffff' }}>
       <div className="max-w-7xl mx-auto">
         <SectionTitle
           title="AI Predictive Maintenance Engine"
@@ -79,40 +79,40 @@ const AIPreview = () => {
                 <BrainCircuit size={34} />
               </div>
               <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+                <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: '#0b2545' }}>
                   Real-Time AI Telemetry
                 </h2>
-                <p className="text-slate-400 text-sm mt-1">
+                <p className="text-slate-500 text-sm mt-1">
                   Automated anomaly detection across all laboratory hardware.
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                <ShieldCheck className="text-green-400 shrink-0" size={22} />
-                <p className="text-sm text-slate-200">Predicts equipment breakdowns up to 14 days before failure.</p>
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <ShieldCheck className="text-green-600 shrink-0" size={22} />
+                <p className="text-sm text-slate-700 font-medium">Predicts equipment breakdowns up to 14 days before failure.</p>
               </div>
 
-              <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                <Activity className="text-orange-400 shrink-0" size={22} />
-                <p className="text-sm text-slate-200">Continuous usage tracking & duty cycle calculation.</p>
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <Activity className="text-orange-500 shrink-0" size={22} />
+                <p className="text-sm text-slate-700 font-medium">Continuous usage tracking & duty cycle calculation.</p>
               </div>
 
-              <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                <TrendingUp className="text-blue-400 shrink-0" size={22} />
-                <p className="text-sm text-slate-200">Maximizes lab ROI and extends hardware operational lifespan.</p>
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <TrendingUp className="text-blue-600 shrink-0" size={22} />
+                <p className="text-sm text-slate-700 font-medium">Maximizes lab ROI and extends hardware operational lifespan.</p>
               </div>
 
-              <div className="flex items-center gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                <Wrench className="text-amber-400 shrink-0" size={22} />
-                <p className="text-sm text-slate-200">Auto-schedules maintenance tasks for lab technicians.</p>
+              <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <Wrench className="text-amber-600 shrink-0" size={22} />
+                <p className="text-sm text-slate-700 font-medium">Auto-schedules maintenance tasks for lab technicians.</p>
               </div>
             </div>
 
             <Link
               to="/admin/login"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-6 py-3.5 rounded-2xl transition shadow-lg text-sm"
+              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-bold px-6 py-3.5 rounded-2xl transition shadow-lg text-sm"
             >
               <Sparkles className="w-4 h-4" />
               <span>Explore Admin AI Analytics</span>
@@ -120,23 +120,23 @@ const AIPreview = () => {
           </div>
 
           {/* RIGHT */}
-          <GlassCard className="p-6 sm:p-8 border-slate-800">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Live Hardware Health Index</h3>
-              <span className="text-xs font-mono bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full">
+          <GlassCard className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100">
+              <h3 className="text-xl font-bold" style={{ color: '#0b2545' }}>Live Hardware Health Index</h3>
+              <span className="text-xs font-mono bg-green-500/10 text-green-600 border border-green-500/20 px-3 py-1 rounded-full">
                 Active Telemetry
               </span>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {equipmentHealthList.map((item, index) => (
-                <div key={index} className="bg-slate-900/70 border border-slate-800 p-4 rounded-2xl">
+                <div key={index} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-white text-sm">{item.name}</h4>
-                    <span className={`text-xs font-bold ${item.color}`}>{item.status}</span>
+                    <h4 className="font-bold text-slate-800 text-sm">{item.name}</h4>
+                    <span className={`text-xs font-bold ${item.color.replace('text-green-400', 'text-green-600').replace('text-amber-400', 'text-amber-600').replace('text-red-400', 'text-red-600')}`}>{item.status}</span>
                   </div>
 
-                  <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                     <div
                       style={{ width: `${item.health}%` }}
                       className={`h-full rounded-full transition-all duration-1000 ${
@@ -145,7 +145,7 @@ const AIPreview = () => {
                     />
                   </div>
 
-                  <div className="flex justify-between items-center mt-2 text-[11px] text-slate-400 font-mono">
+                  <div className="flex justify-between items-center mt-2 text-[11px] text-slate-500 font-mono">
                     <span>Health Score</span>
                     <span>{item.health} / 100</span>
                   </div>
@@ -153,12 +153,12 @@ const AIPreview = () => {
               ))}
             </div>
 
-            <div className="mt-6 bg-orange-500/10 rounded-2xl p-5 border border-orange-500/30">
-              <h4 className="font-bold text-orange-400 text-sm flex items-center gap-2">
+            <div className="mt-6 bg-orange-500/5 rounded-2xl p-5 border border-orange-500/20">
+              <h4 className="font-bold text-orange-600 text-sm flex items-center gap-2">
                 <BrainCircuit className="w-4 h-4" />
                 Prescriptive AI Alert
               </h4>
-              <p className="mt-2 text-slate-300 text-xs leading-relaxed">{aiRecommendation}</p>
+              <p className="mt-2 text-slate-700 text-xs leading-relaxed font-medium">{aiRecommendation}</p>
             </div>
           </GlassCard>
         </div>

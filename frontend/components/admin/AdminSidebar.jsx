@@ -133,13 +133,16 @@ const AdminSidebar = ({ onClose }) => {
   };
 
   return (
-    <aside className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col h-full">
+    <aside className="w-72 bg-[#0b2545] border-r border-[#163760] flex flex-col h-full text-slate-100">
       {/* Logo */}
-      <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800">
-        <h1 className="text-2xl font-bold text-orange-500">SmartLab AI</h1>
+      <div className="h-16 flex items-center justify-between px-6 border-b border-[#163760]">
+        <h1 className="text-lg font-black text-white flex items-center gap-2">
+          <span className="w-2 h-5 bg-[#cc6926] rounded-full" />
+          SmartLab <span className="text-[#cc6926]">AI</span>
+        </h1>
         {onClose && (
-          <button onClick={onClose} className="md:hidden text-slate-400 hover:text-white transition">
-            <X size={22} />
+          <button onClick={onClose} className="md:hidden text-slate-300 hover:text-white transition">
+            <X size={20} />
           </button>
         )}
       </div>
@@ -147,12 +150,12 @@ const AdminSidebar = ({ onClose }) => {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-4 py-5">
         {menuSections.map((section) => (
-          <div key={section.title} className="mb-8">
-            <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-3 px-2">
+          <div key={section.title} className="mb-6">
+            <h3 className="text-[10px] uppercase tracking-widest text-[#cc6926] font-extrabold mb-3 px-2">
               {section.title}
             </h3>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               {section.items.map((item) => {
                 const Icon = item.icon;
 
@@ -161,14 +164,14 @@ const AdminSidebar = ({ onClose }) => {
                     key={item.name}
                     to={item.path}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+                      `flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                         isActive
-                          ? "bg-orange-500 text-white"
-                          : "text-slate-300 hover:bg-slate-800"
+                          ? "bg-[#cc6926] text-white shadow-md shadow-black/10"
+                          : "text-slate-300 hover:bg-[#163760] hover:text-white"
                       }`
                     }
                   >
-                    <Icon size={20} />
+                    <Icon size={16} />
                     <span>{item.name}</span>
                   </NavLink>
                 );
@@ -179,12 +182,12 @@ const AdminSidebar = ({ onClose }) => {
       </nav>
 
       {/* Logout */}
-      <div className="border-t border-slate-800 p-5">
+      <div className="border-t border-[#163760] p-4 bg-[#081e3a]/40">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 text-red-400 hover:text-red-300 transition"
+          className="flex items-center gap-3 text-red-400 hover:text-red-300 text-xs font-bold transition w-full"
         >
-          <LogOut size={20} />
+          <LogOut size={16} />
           Logout
         </button>
       </div>

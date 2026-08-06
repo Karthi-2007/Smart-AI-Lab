@@ -156,10 +156,8 @@ const About = () => {
 
                   </h3>
 
-                  <p className="mt-3 text-slate-400 leading-7">
-
+                  <p className="mt-3 text-slate-600 text-sm leading-relaxed">
                     {item.description}
-
                   </p>
 
                 </GlassCard>

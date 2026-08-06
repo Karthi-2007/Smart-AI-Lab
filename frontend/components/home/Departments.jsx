@@ -85,7 +85,7 @@ const Departments = () => {
                     {dept.name}
                   </h3>
 
-                  <p className="mt-2 text-slate-400 text-xs sm:text-sm leading-relaxed">
+                  <p className="mt-2 text-slate-600 text-xs sm:text-sm leading-relaxed">
                     {dept.lab}
                   </p>
                 </div>

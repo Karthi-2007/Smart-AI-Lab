@@ -7,7 +7,7 @@ const FacultyLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen flex bg-slate-950 text-white overflow-hidden">
+    <div className="h-screen flex bg-[#f5f7fa] text-[#0b2545] overflow-hidden">
 
       {/* Mobile Overlay */}
       {sidebarOpen && (

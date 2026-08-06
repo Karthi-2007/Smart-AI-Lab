@@ -51,6 +51,7 @@ const Workflow = () => {
         <SectionTitle
           title="How SmartLab AI Works"
           subtitle="A simple and intelligent workflow that automates laboratory equipment management."
+          dark={true}
         />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -68,25 +69,25 @@ const Workflow = () => {
 
                 {/* Step Number */}
 
-                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center font-bold text-lg">
+                <div className="absolute -top-4 -left-4 w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center font-bold text-lg text-white">
 
                   {index + 1}
 
                 </div>
 
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: '#cc6926' }}>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white" style={{ background: '#cc6926' }}>
 
                   <Icon size={30} />
 
                 </div>
 
-                <h3 className="mt-6 text-2xl font-bold">
+                <h3 className="mt-6 text-xl sm:text-2xl font-bold text-slate-900">
 
                   {step.title}
 
                 </h3>
 
-                <p className="mt-4 text-slate-400 leading-7">
+                <p className="mt-4 text-slate-600 text-sm leading-relaxed">
 
                   {step.desc}
 

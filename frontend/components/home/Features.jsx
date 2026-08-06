@@ -69,7 +69,7 @@ const Features = () => {
                   {feature.title}
                 </h3>
 
-                <p className="mt-4 text-slate-400 leading-7">
+                <p className="mt-4 text-slate-600 text-sm leading-relaxed">
                   {feature.desc}
                 </p>
               </GlassCard>

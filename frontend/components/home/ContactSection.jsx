@@ -68,6 +68,7 @@ const ContactSection = () => {
           subtitle="GET IN TOUCH"
           title="We're Here to Help"
           description="Have questions about SmartLab AI infrastructure, equipment reservation, or research access at Karpagam College of Engineering?"
+          dark={true}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-12">

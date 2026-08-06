@@ -83,6 +83,7 @@ const Statistics = () => {
         <SectionTitle
           title="SmartLab in Numbers"
           subtitle="Real-time telemetry and centralized laboratory management metrics powered by SmartLab AI."
+          dark={true}
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
