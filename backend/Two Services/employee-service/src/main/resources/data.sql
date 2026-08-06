@@ -66,25 +66,27 @@ INSERT IGNORE INTO STUDENTS (STUDENT_ID, NAME, EMAIL, DEPARTMENT, YEAR, STATUS, 
 (3, 'Karthikeyan S', 'student@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', '9360536215'),
 
 -- EEE Students (5 students)
-(1001, 'Aditya EEE 1', 'student.eee1@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
-(1002, 'Bhavana EEE 2', 'student.eee2@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
-(1003, 'Chaitanya EEE 3', 'student.eee3@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
-(1004, 'Divya EEE 4', 'student.eee4@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
-(1005, 'Eshwar EEE 5', 'student.eee5@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
+(1001, 'Aditya EEE 1', 'student.eee1@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
+(1002, 'Bhavana EEE 2', 'student.eee2@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
+(1003, 'Chaitanya EEE 3', 'student.eee3@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
+(1004, 'Divya EEE 4', 'student.eee4@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
+(1005, 'Eshwar EEE 5', 'student.eee5@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 3, 'Active', NULL),
 
 -- MECH Students (5 students)
-(2001, 'Madan MECH 1', 'student.mech1@smartlab.com', 'Mechanical Engineering', 3, 'Active', NULL),
-(2002, 'Nitin MECH 2', 'student.mech2@smartlab.com', 'Mechanical Engineering', 3, 'Active', NULL),
-(2003, 'Omkar MECH 3', 'student.mech3@smartlab.com', 'Mechanical Engineering', 3, 'Active', NULL),
-(2004, 'Pranav MECH 4', 'student.mech4@smartlab.com', 'Mechanical Engineering', 3, 'Active', NULL),
-(2005, 'Rahul MECH 5', 'student.mech5@smartlab.com', 'Mechanical Engineering', 3, 'Active', NULL),
+(2001, 'Madan MECH 1', 'student.mech1@kce.ac.in', 'Mechanical Engineering', 3, 'Active', NULL),
+(2002, 'Nitin MECH 2', 'student.mech2@kce.ac.in', 'Mechanical Engineering', 3, 'Active', NULL),
+(2003, 'Omkar MECH 3', 'student.mech3@kce.ac.in', 'Mechanical Engineering', 3, 'Active', NULL),
+(2004, 'Pranav MECH 4', 'student.mech4@kce.ac.in', 'Mechanical Engineering', 3, 'Active', NULL),
+(2005, 'Rahul MECH 5', 'student.mech5@kce.ac.in', 'Mechanical Engineering', 3, 'Active', NULL),
 
--- CSE Students (5 students)
-(3001, 'Siddharth CSE 1', 'student.cse1@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
-(3002, 'Tarun CSE 2', 'student.cse2@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
-(3003, 'Uday CSE 3', 'student.cse3@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
-(3004, 'Varun CSE 4', 'student.cse4@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
-(3005, 'Yash CSE 5', 'student.cse5@smartlab.com', 'Computer Science & Technology / ECE', 3, 'Active', NULL);
+-- CSE Students (with KCE official emails as requested)
+(3001, 'Student 226', '717824f226@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
+(3002, 'Student 220', '717824f220@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
+(3003, 'Student 242', '717824f242@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
+(3004, 'Karthikeyan RKS', 'karthikeyanrks2007@gmail.com', 'Computer Science & Technology / ECE', 3, 'Active', '9360536215'),
+(3005, 'Student 250', '717824f250@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
+(3006, 'Student 256', '717824f256@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL),
+(3007, 'Student 251', '717824f251@kce.ac.in', 'Computer Science & Technology / ECE', 3, 'Active', NULL);
 
 -- 5. FACULTY & LAB ASSISTANTS (Saved under FACULTY table with Designation)
 INSERT IGNORE INTO FACULTY (FACULTY_ID, NAME, EMAIL, DEPARTMENT, DESIGNATION, PHONE) VALUES
@@ -92,13 +94,13 @@ INSERT IGNORE INTO FACULTY (FACULTY_ID, NAME, EMAIL, DEPARTMENT, DESIGNATION, PH
 (2, 'Dr. Anitha Raman', 'faculty@smartlab.com', 'Computer Science & Technology / ECE', 'Associate Professor', NULL),
 
 -- EEE Faculty & Lab Assistant
-(110, 'Dr. Sunita Williams', 'faculty.eee@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 'Associate Professor & HOD', NULL),
-(111, 'EEE Assistant Ram', 'assistant.eee@smartlab.com', 'Electrical & Electronics Engineering (EEE)', 'Lab Assistant', NULL),
+(110, 'Dr. Sunita Williams', 'faculty.eee@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 'Associate Professor & HOD', NULL),
+(111, 'EEE Assistant Ram', 'assistant.eee@kce.ac.in', 'Electrical & Electronics Engineering (EEE)', 'Lab Assistant', NULL),
 
 -- MECH Faculty & Lab Assistant
-(120, 'Dr. Vikram Sarabhai', 'faculty.mech@smartlab.com', 'Mechanical Engineering', 'Professor & HOD', NULL),
-(121, 'MECH Assistant Krish', 'assistant.mech@smartlab.com', 'Mechanical Engineering', 'Lab Assistant', NULL),
+(120, 'Dr. Vikram Sarabhai', 'faculty.mech@kce.ac.in', 'Mechanical Engineering', 'Professor & HOD', NULL),
+(121, 'MECH Assistant Krish', 'assistant.mech@kce.ac.in', 'Mechanical Engineering', 'Lab Assistant', NULL),
 
 -- CSE Faculty & Lab Assistant
-(130, 'Dr. S. Ramanujan', 'faculty.cse@smartlab.com', 'Computer Science & Technology / ECE', 'Professor & HOD', NULL),
-(131, 'CSE Assistant Shyam', 'assistant.cse@smartlab.com', 'Computer Science & Technology / ECE', 'Lab Assistant', NULL);
+(130, 'Dr. S. Ramanujan', 'faculty.cse@kce.ac.in', 'Computer Science & Technology / ECE', 'Professor & HOD', NULL),
+(131, 'CSE Assistant Shyam', 'assistant.cse@kce.ac.in', 'Computer Science & Technology / ECE', 'Lab Assistant', NULL);
