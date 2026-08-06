@@ -61,7 +61,7 @@ const Departments = () => {
   }, []);
 
   return (
-    <section id="departments" className="bg-slate-950 py-20 sm:py-28 px-6 relative">
+    <section id="departments" className="bg-slate-950 py-16 px-6 relative">
       <div className="max-w-7xl mx-auto">
         <SectionTitle
           title="Explore Our Laboratories"

@@ -69,7 +69,16 @@ const Statistics = () => {
   ];
 
   return (
-    <section className="py-24 sm:py-32 px-6 bg-slate-955 relative overflow-hidden">
+    <section
+      className="py-16 sm:py-20 px-6 relative overflow-hidden"
+      style={{
+        backgroundImage: "url('https://kce.ac.in/images/kce/home/about-us1.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <div className="absolute inset-0 bg-slate-950/88" />
       <div className="max-w-7xl mx-auto relative z-10">
         <SectionTitle
           title="SmartLab in Numbers"

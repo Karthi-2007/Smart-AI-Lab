@@ -45,7 +45,7 @@ const workflow = [
 
 const Workflow = () => {
   return (
-    <section className="bg-slate-900 py-24 px-6">
+    <section className="bg-slate-900 py-16 px-6">
       <div className="max-w-7xl mx-auto">
 
         <SectionTitle

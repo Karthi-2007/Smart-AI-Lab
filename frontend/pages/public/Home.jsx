@@ -5,24 +5,34 @@ import DashboardPreview from "../../components/home/DashboardPreview";
 import Departments from "../../components/home/Departments";
 import Features from "../../components/home/Features";
 import Hero from "../../components/home/Hero";
+import KCECampusSection from "../../components/home/KCECampusSection";
 import Statistics from "../../components/home/Statistics";
 import Testimonials from "../../components/home/Testimonials";
 import Workflow from "../../components/home/Workflow";
+
 const Home = () => {
   return (
     <>
-    <Hero/>
-    <Statistics/>
-    <Features/>
-    <About/>
-    <Departments/>
-    <Workflow/>
-    <AIPreview/>
-    <DashboardPreview/>
-    <Testimonials/>
-    <ContactSection/>
-    </>
+      <Hero />
 
+      {/* Wave divider */}
+      <div className="-mt-1 overflow-hidden bg-slate-950">
+        <svg viewBox="0 0 1440 60" className="w-full block" preserveAspectRatio="none" style={{ height: "60px", display: "block" }}>
+          <path d="M0,0 C360,60 1080,0 1440,60 L1440,0 L0,0 Z" fill="#0f172a" />
+        </svg>
+      </div>
+
+      <Statistics />
+      <KCECampusSection />
+      <Features />
+      <About />
+      <Departments />
+      <Workflow />
+      <AIPreview />
+      <DashboardPreview />
+      <Testimonials />
+      <ContactSection />
+    </>
   );
 };
 
