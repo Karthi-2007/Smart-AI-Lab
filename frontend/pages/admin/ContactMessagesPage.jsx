@@ -437,9 +437,14 @@ const ContactMessagesPage = () => {
 
             {/* Quick Admin Reply Form */}
             <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 space-y-3">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-orange-400" /> Reply to Inquiry
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-orange-400" /> Reply to Inquiry
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
+                  From: <strong className="text-orange-400">smartlab.ai.kce@gmail.com</strong>
+                </span>
+              </div>
 
               <textarea
                 value={replyText}
