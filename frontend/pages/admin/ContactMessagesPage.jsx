@@ -442,7 +442,7 @@ const ContactMessagesPage = () => {
                   <MessageSquare className="w-4 h-4 text-orange-400" /> Reply to Inquiry
                 </label>
                 <span className="text-[10px] text-slate-400 font-mono bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
-                  From: <strong className="text-orange-400">smartlab.ai.kce@gmail.com</strong>
+                  From: <strong className="text-orange-400">smartlab.college.auth@gmail.com</strong>
                 </span>
               </div>
 

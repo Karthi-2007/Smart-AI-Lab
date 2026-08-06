@@ -98,8 +98,8 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-white">Email Us</h4>
-                    <a href="mailto:smartlab@kce.ac.in" className="text-orange-400 hover:underline">
-                      smartlab@kce.ac.in
+                    <a href="mailto:smartlab.college.auth@gmail.com" className="text-orange-400 hover:underline">
+                      smartlab.college.auth@gmail.com
                     </a>
                   </div>
                 </div>

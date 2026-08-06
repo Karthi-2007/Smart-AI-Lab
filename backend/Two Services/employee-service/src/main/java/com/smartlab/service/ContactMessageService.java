@@ -68,7 +68,7 @@ public class ContactMessageService {
             try {
                 if (mailSender != null) {
                     SimpleMailMessage email = new SimpleMailMessage();
-                    email.setFrom("smartlab.ai.kce@gmail.com");
+                    email.setFrom("smartlab.college.auth@gmail.com");
                     email.setTo(msg.getEmail());
                     email.setSubject("Re: " + (msg.getSubject() != null ? msg.getSubject() : "SmartLab AI Inquiry"));
                     email.setText("Dear " + (msg.getName() != null ? msg.getName() : "Visitor") + ",\n\n" +
