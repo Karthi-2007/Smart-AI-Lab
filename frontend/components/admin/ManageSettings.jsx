@@ -3,7 +3,6 @@ import SystemSettings from "../../components/admin/settings/SystemSettings";
 import NotificationSettings from "../../components/admin/settings/NotificationSettings";
 import SecuritySettings from "../../components/admin/settings/SecuritySettings";
 import BackupSettings from "../../components/admin/settings/BackupSettings";
-import ContactMessages from "../../components/admin/settings/ContactMessages";
 
 const ManageSettings = () => {
   return (
@@ -11,11 +10,9 @@ const ManageSettings = () => {
       <div>
         <h1 className="text-3xl font-bold text-white">System Settings & Configuration</h1>
         <p className="text-slate-400 mt-2 text-sm">
-          Manage administrator profile, system preferences, security, backups, and public contact messages.
+          Manage administrator profile, system preferences, security, and system backups.
         </p>
       </div>
-
-      <ContactMessages />
 
       <ProfileSettings />
 
