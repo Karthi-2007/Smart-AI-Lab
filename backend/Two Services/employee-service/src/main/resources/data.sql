@@ -1,4 +1,4 @@
--- SmartLab AI - Aligned Sample Seed Data SQL Script for MySQL
+-- SmartLab AI - Aligned Seed Data SQL Script for MySQL
 USE smartlab;
 
 -- 1. DEPARTMENTS
@@ -52,14 +52,5 @@ INSERT IGNORE INTO FACULTY (FACULTY_ID, NAME, EMAIL, DEPARTMENT, DESIGNATION) VA
 (10, 'Dr. Sunita Williams', 'sunita.williams@university.edu', 'Electrical & Electronics Engineering', 'Associate Professor'),
 (11, 'Dr. Vikram Sarabhai', 'vikram.sarabhai@university.edu', 'Mechanical Engineering', 'Professor');
 
--- 6. FAULT REPORTS
-INSERT IGNORE INTO FAULT_REPORTS (FAULT_ID, EQUIPMENT_ID, REPORTED_BY, DESCRIPTION, STATUS, REPORTED_AT) VALUES
-(1, 2, 4, 'GPU overheating issue', 'Open', '2026-08-01 12:00:00'),
-(2, 4, 6, 'Logic analyzer not powering on', 'In Progress', '2026-08-02 10:15:00'),
-(3, 8, 5, 'Microscope lens cracked', 'Resolved', '2026-08-03 09:00:00');
-
--- 7. MAINTENANCE
-INSERT IGNORE INTO MAINTENANCE (MAINTENANCE_ID, EQUIPMENT_ID, SCHEDULED_AT, STATUS, NOTES) VALUES
-(1, 2, '2026-08-05 09:00:00', 'Scheduled', 'Replace cooling system'),
-(2, 4, '2026-08-06 14:00:00', 'Scheduled', 'Power supply diagnostics'),
-(3, 8, '2026-08-07 11:00:00', 'Completed', 'Lens replaced successfully');
+-- Note: MAINTENANCE and CONTACT_MESSAGES tables have ZERO auto-generated seed records.
+-- Records are populated 100% dynamically when Faculty schedules maintenance or Visitors submit contact forms.
