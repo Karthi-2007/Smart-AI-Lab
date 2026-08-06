@@ -49,20 +49,39 @@ public class BookingService {
     }
 
     public Booking createBooking(Booking booking) {
-        if (booking.getStudent() != null && booking.getStudent().getStudentId() != null) {
+        if (booking.getStudent() != null) {
+            String studentEmail = booking.getStudent().getEmail();
+            String incomingName = booking.getStudent().getName();
             Long sId = booking.getStudent().getStudentId();
-            Student student = studentRepository.findById(sId).orElse(null);
-            
-            // If new student is not in business DB yet, auto-create student record
+
+            Student student = null;
+
+            // 1. Try finding student by email first (exact identity match)
+            if (studentEmail != null && !studentEmail.trim().isEmpty()) {
+                student = studentRepository.findByEmailIgnoreCase(studentEmail.trim());
+            }
+
+            // 2. Try finding by ID if email lookup returned null
+            if (student == null && sId != null) {
+                student = studentRepository.findById(sId).orElse(null);
+            }
+
+            // 3. If student does not exist, auto-create student record in business DB
             if (student == null) {
                 Student newStudent = new Student();
-                newStudent.setStudentId(sId);
-                newStudent.setName(booking.getStudent().getName() != null ? booking.getStudent().getName() : "Newly Registered Student");
-                newStudent.setEmail(booking.getStudent().getEmail() != null ? booking.getStudent().getEmail() : "student@smartlab.com");
+                if (sId != null) newStudent.setStudentId(sId);
+                newStudent.setName(incomingName != null && !incomingName.trim().isEmpty() ? incomingName.trim() : "Student");
+                newStudent.setEmail(studentEmail != null && !studentEmail.trim().isEmpty() ? studentEmail.trim() : "student@smartlab.com");
                 newStudent.setDepartment(booking.getStudent().getDepartment() != null ? booking.getStudent().getDepartment() : "Computer Science & Engineering");
                 newStudent.setYear(3);
                 newStudent.setStatus("Active");
                 student = studentRepository.save(newStudent);
+            } else {
+                // 4. If student exists but the incoming name is updated (e.g., Premnath instead of previous default), update student name
+                if (incomingName != null && !incomingName.trim().isEmpty() && !incomingName.equalsIgnoreCase(student.getName())) {
+                    student.setName(incomingName.trim());
+                    student = studentRepository.save(student);
+                }
             }
             booking.setStudent(student);
         }
