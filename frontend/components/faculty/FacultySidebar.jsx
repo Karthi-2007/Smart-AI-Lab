@@ -10,6 +10,7 @@ import {
   User,
   Settings,
   LogOut,
+  QrCode,
   X,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,6 +18,7 @@ import { useAuth } from "../../hooks/useAuth";
 const menuItems = [
   { name: "Dashboard", path: "/faculty/dashboard", icon: LayoutDashboard },
   { name: "Booking Requests", path: "/faculty/bookings", icon: CalendarCheck },
+  { name: "QR Pass Monitor", path: "/faculty/qr-monitor", icon: QrCode },
   { name: "Laboratories", path: "/faculty/labs", icon: FlaskConical },
   { name: "Equipment", path: "/faculty/equipment", icon: Monitor },
   { name: "Maintenance", path: "/faculty/maintenance", icon: Wrench },

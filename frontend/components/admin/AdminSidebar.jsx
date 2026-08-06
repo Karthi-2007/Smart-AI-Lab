@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Mail,
+  QrCode,
   X,
 } from "lucide-react";
 
@@ -75,6 +76,11 @@ const menuSections = [
         name: "Bookings",
         path: "/admin/bookings",
         icon: ClipboardList,
+      },
+      {
+        name: "QR Pass Monitor",
+        path: "/admin/qr-monitor",
+        icon: QrCode,
       },
       {
         name: "Maintenance",

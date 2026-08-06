@@ -24,6 +24,8 @@ import AIAnalytics from "../pages/admin/AIAnalytics";
 import ManageSettings from "../pages/admin/Settings";
 import ManageFaults from "../components/admin/ManageFaults";
 import AdminNotifications from "../pages/admin/Notifications";
+import AdminQRMonitorPage from "../pages/admin/QRMonitorPage";
+import FacultyQRMonitorPage from "../pages/faculty/QRMonitorPage";
 
 import StudentDashboard from "../pages/student/StudentDashboard";
 import Equipment from "../pages/student/Equipment";
@@ -77,6 +79,7 @@ function App() {
               <Route path="/admin/faculty" element={<ManageFaculty />} />
               <Route path="/admin/departments" element={<ManageDepartments />} />
               <Route path="/admin/bookings" element={<ManageBookings />} />
+              <Route path="/admin/qr-monitor" element={<AdminQRMonitorPage />} />
               <Route path="/admin/maintenance" element={<ManageMaintenance />} />
               <Route path="/admin/reports" element={<ManageReports />} />
               <Route path="/admin/analytics" element={<AIAnalytics />} />
@@ -108,6 +111,7 @@ function App() {
               <Route index element={<FacultyDashboard />} />
               <Route path="/faculty/dashboard" element={<FacultyDashboard />} />
               <Route path="/faculty/bookings" element={<BookingApproval />} />
+              <Route path="/faculty/qr-monitor" element={<FacultyQRMonitorPage />} />
               <Route path="/faculty/labs" element={<FacultyManageLaboratories />} />
               <Route path="/faculty/equipment" element={<FacultyManageEquipment />} />
               <Route path="/faculty/maintenance" element={<MaintenanceRequests />} />
