@@ -10,7 +10,7 @@ const Hero = () => {
       id="home"
       className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       style={{
-        backgroundImage: "url('/images/kce/b1.jpg'), url('https://kce.ac.in/images/kce/home/banner/b1.jpg')",
+        backgroundImage: "url('/images/kce/b1.jpg'), url('https://www.kce.ac.in/images/kce/home/banner/b1.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "fixed",

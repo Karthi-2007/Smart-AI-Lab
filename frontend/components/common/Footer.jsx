@@ -15,7 +15,7 @@ const Footer = () => {
                 className="h-7 w-auto object-contain"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://kce.ac.in/images/kce/logo/KCE-logo-color.png";
+                  e.target.src = "https://www.kce.ac.in/images/kce/logo/KCE-logo-color.png";
                 }}
               />
             </div>

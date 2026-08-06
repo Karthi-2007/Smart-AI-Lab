@@ -70,7 +70,7 @@ const KCECampusSection = () => {
                 loading="lazy"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://kce.ac.in/images/kce/home/banner/" + img.src.split('/').pop();
+                  e.target.src = "https://www.kce.ac.in/images/kce/home/banner/" + img.src.split('/').pop();
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
