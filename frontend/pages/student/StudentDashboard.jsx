@@ -61,57 +61,57 @@ const StudentDashboard = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-screen">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#0b2545]">Welcome back, {user?.name || 'Student'}!</h1>
-        <p className="text-slate-500 mt-2">Here's an overview of your lab activities.</p>
+        <h1 className="text-2xl font-bold text-white">Welcome back, {user?.name || 'Student'}!</h1>
+        <p className="text-slate-400 mt-2">Here's an overview of your lab activities.</p>
       </div>
 
       <DashboardStats dashboardData={dashboardData} loading={loading} />
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-[#0b2545]">Recent Activity</h2>
+      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
         </div>
         
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-12 text-center flex flex-col items-center justify-center space-y-4">
                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-               <p className="text-slate-500">Loading recent activities...</p>
+               <p className="text-slate-400">Loading recent activities...</p>
             </div>
           ) : recentBookings.length === 0 ? (
             <div className="p-16 text-center flex flex-col items-center justify-center">
-              <div className="bg-slate-100 p-4 rounded-full mb-4">
-                <Calendar className="w-8 h-8 text-slate-400" />
+              <div className="bg-slate-800/50 p-4 rounded-full mb-4">
+                <Calendar className="w-8 h-8 text-slate-500" />
               </div>
-              <h3 className="text-lg font-bold text-[#0b2545] mb-2">No Recent Activity</h3>
-              <p className="text-slate-500 max-w-sm">You haven't made any bookings yet. Once you book equipment or a lab, it will appear here.</p>
+              <h3 className="text-lg font-medium text-white mb-2">No Recent Activity</h3>
+              <p className="text-slate-400 max-w-sm">You haven't made any bookings yet. Once you book equipment or a lab, it will appear here.</p>
             </div>
           ) : (
             <table className="w-full text-left border-collapse min-w-max">
               <thead>
-                <tr className="bg-slate-50">
-                  <th className="p-4 text-slate-500 text-sm font-semibold uppercase tracking-wider">Equipment/Lab</th>
-                  <th className="p-4 text-slate-500 text-sm font-semibold uppercase tracking-wider">Date</th>
-                  <th className="p-4 text-slate-500 text-sm font-semibold uppercase tracking-wider">Time Slot</th>
-                  <th className="p-4 text-slate-500 text-sm font-semibold uppercase tracking-wider">Status</th>
+                <tr className="bg-slate-800/50">
+                  <th className="p-4 text-slate-400 text-sm font-medium uppercase tracking-wider">Equipment/Lab</th>
+                  <th className="p-4 text-slate-400 text-sm font-medium uppercase tracking-wider">Date</th>
+                  <th className="p-4 text-slate-400 text-sm font-medium uppercase tracking-wider">Time Slot</th>
+                  <th className="p-4 text-slate-400 text-sm font-medium uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-800/50">
                 {recentBookings.map((booking, idx) => (
-                  <tr key={booking._id || booking.id || idx} className="hover:bg-slate-50 transition-colors">
+                  <tr key={booking._id || booking.id || idx} className="hover:bg-slate-800/30 transition-colors">
                     <td className="p-4">
-                      <div className="text-[#0b2545] font-semibold">
+                      <div className="text-white font-semibold">
                         {booking.equipment?.name || booking.labName || 'N/A'}
                       </div>
                     </td>
-                    <td className="p-4 text-slate-600">
+                    <td className="p-4 text-slate-300">
                       {booking.date ? new Date(booking.date).toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                       }) : 'N/A'}
                     </td>
-                    <td className="p-4 text-slate-600">
+                    <td className="p-4 text-slate-300">
                       {booking.timeSlot || `${booking.startTime || ''} - ${booking.endTime || ''}`.replace(/^- | -$/g, '') || 'N/A'}
                     </td>
                     <td className="p-4">
