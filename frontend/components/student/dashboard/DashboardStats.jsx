@@ -36,10 +36,10 @@ const DashboardStats = ({ dashboardData, loading = false }) => {
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
-          <div key={idx} className="bg-slate-900 border border-slate-800 rounded-lg p-6 flex items-center justify-between hover:border-slate-700 transition-colors">
+          <div key={idx} className="bg-white border border-slate-200 rounded-lg p-6 flex items-center justify-between hover:border-slate-300 transition-colors shadow-sm">
             <div>
-              <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
-              <h3 className="text-2xl font-bold text-white mt-2">{stat.value}</h3>
+              <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
+              <h3 className="text-2xl font-bold text-[#0b2545] mt-2">{stat.value}</h3>
             </div>
             <div className={`p-3 rounded-full ${stat.bgColor} ${stat.color}`}>
               <Icon size={24} />

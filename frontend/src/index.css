@@ -158,3 +158,71 @@ input:focus, textarea:focus, select:focus { outline: none; }
   background: linear-gradient(90deg, #cc6926, #e07a32);
   margin: 0.75rem auto 0;
 }
+
+/* ============================================================
+   KCE Dashboard Light Theme Overrides & CSS Fixes
+   ============================================================ */
+main .bg-slate-900,
+main .bg-slate-800,
+main .bg-slate-950,
+main .bg-[#1e293b],
+main .bg-[#0f172a] {
+  background-color: #ffffff !important;
+  color: #0b2545 !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Fix title text contrast inside pages */
+main h1.text-white,
+main h2.text-white,
+main h3.text-white,
+main h1.text-slate-100,
+main h2.text-slate-100,
+main h3.text-slate-100,
+main h1.text-slate-200,
+main h2.text-slate-200,
+main h3.text-slate-200,
+main label.text-white,
+main label.text-slate-200 {
+  color: #0b2545 !important;
+}
+
+/* Fix description and label texts */
+main p.text-slate-400,
+main p.text-slate-300,
+main span.text-slate-400,
+main span.text-slate-300 {
+  color: #64748b !important;
+}
+
+/* Fix borders inside dashboard list pages */
+main .border-slate-800,
+main .border-slate-700,
+main .border-slate-900 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Fix table headers and hover rows */
+main tr.bg-slate-800\/50,
+main tr.bg-slate-800\/30,
+main div.bg-slate-800\/50,
+main div.bg-slate-800\/30 {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+}
+
+main tr.hover\:bg-slate-800\/30:hover {
+  background-color: #f1f5f9 !important;
+}
+
+main td.text-white,
+main td.text-slate-300 {
+  color: #0b2545 !important;
+}
+
+/* Ensure modal overlays don't cover scans */
+.modal-overlay {
+  background-color: rgba(11, 37, 69, 0.8) !important;
+  backdrop-filter: blur(4px) !important;
+}
