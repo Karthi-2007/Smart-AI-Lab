@@ -33,7 +33,23 @@ public class BookingService {
     }
 
     public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
+        List<Booking> bookings = bookingRepository.findAll();
+        // Dynamic name safety check for existing bookings
+        for (Booking b : bookings) {
+            if (b.getStudent() != null && b.getStudent().getEmail() != null) {
+                String email = b.getStudent().getEmail().trim().toLowerCase();
+                String currentName = b.getStudent().getName();
+                
+                // If student name in DB is still hardcoded legacy "Karthikeyan S", fix it from email
+                if (currentName != null && currentName.equalsIgnoreCase("Karthikeyan S") && !email.contains("karthikeyan") && !email.contains("student@smartlab")) {
+                    String prefix = email.contains("@") ? email.substring(0, email.indexOf("@")) : email;
+                    String newName = Character.toUpperCase(prefix.charAt(0)) + prefix.substring(1);
+                    b.getStudent().setName(newName);
+                    studentRepository.save(b.getStudent());
+                }
+            }
+        }
+        return bookings;
     }
 
     public Booking getBookingById(Long id) {
@@ -77,7 +93,7 @@ public class BookingService {
                 newStudent.setStatus("Active");
                 student = studentRepository.save(newStudent);
             } else {
-                // 4. If student exists but the incoming name is updated (e.g., Premnath instead of previous default), update student name
+                // 4. If student exists but incoming name is updated (e.g. Premnath), update student record
                 if (incomingName != null && !incomingName.trim().isEmpty() && !incomingName.equalsIgnoreCase(student.getName())) {
                     student.setName(incomingName.trim());
                     student = studentRepository.save(student);
