@@ -226,8 +226,12 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
                   const passCode = `SMARTLAB-BOOKING-${bId}`;
                   const sName =
                     typeof booking.student === "object"
-                      ? booking.student?.name || "Karthikeyan RKS"
-                      : booking.studentName || "Karthikeyan RKS";
+                      ? booking.student?.name || booking.studentName || "Student"
+                      : booking.studentName || "Student";
+                  const sRegNo =
+                    typeof booking.student === "object"
+                      ? booking.student?.regNo || booking.studentRegNo || "REG-N/A"
+                      : booking.studentRegNo || "REG-N/A";
                   const eName =
                     typeof booking.equipment === "object"
                       ? booking.equipment?.name || "Equipment"
@@ -239,7 +243,7 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
                       <td className="px-6 py-4">
                         <div className="font-semibold text-white">{sName}</div>
                         <div className="text-[11px] text-slate-500 font-mono">
-                          {booking.student?.regNo || "717824F207"}
+                          {sRegNo}
                         </div>
                       </td>
                       <td className="px-6 py-4 font-medium text-slate-200">{eName}</td>
@@ -298,8 +302,8 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
               <p className="text-slate-300">
                 <span className="text-slate-500 font-medium">Student:</span>{" "}
                 {typeof selectedPass.student === "object"
-                  ? selectedPass.student?.name || "Karthikeyan RKS"
-                  : selectedPass.studentName || "Karthikeyan RKS"}
+                  ? selectedPass.student?.name || selectedPass.studentName || "Student"
+                  : selectedPass.studentName || "Student"}
               </p>
               <p className="text-slate-300">
                 <span className="text-slate-500 font-medium">Equipment:</span>{" "}

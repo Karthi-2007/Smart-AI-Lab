@@ -164,16 +164,10 @@ export default function BookingApprovals() {
                         </div>
                         <div>
                           <div className="font-semibold text-white">
-                            {(() => {
-                              const sName = (booking.studentName || booking.student?.name || '').trim();
-                              if (sName && !sName.toLowerCase().includes('student') && !sName.match(/^\d+/)) {
-                                return sName;
-                              }
-                              return 'Karthikeyan RKS';
-                            })()}
+                            {booking.student?.name || booking.studentName || 'Student'}
                           </div>
                           <div className="text-[11px] text-slate-400 font-mono">
-                            {booking.student?.regNo || (booking.student?.name?.match(/^\d+/) ? booking.student.name : '717824F207')}
+                            {booking.student?.regNo || booking.studentRegNo || 'REG-N/A'}
                           </div>
                         </div>
                       </div>

@@ -126,9 +126,12 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
           <tbody className="divide-y divide-slate-800">
             {filteredBookings.map((booking, idx) => {
               const bId = booking.bookingId || booking.id || booking._id || idx;
-              const rawStudent = booking.studentName || booking.student?.name || (typeof booking.student === 'string' ? booking.student : '');
-              const studentName = rawStudent && !rawStudent.toLowerCase().includes('student') && !rawStudent.match(/^\d+/) ? rawStudent : 'Karthikeyan RKS';
-              const studentRegNo = booking.student?.regNo || (rawStudent.match(/^\d+/) ? rawStudent : '717824F207');
+              const studentName = typeof booking.student === 'object' 
+                ? (booking.student?.name || booking.studentName || 'Student') 
+                : (booking.studentName || (typeof booking.student === 'string' ? booking.student : 'Student'));
+              const studentRegNo = typeof booking.student === 'object' 
+                ? (booking.student?.regNo || 'REG-N/A') 
+                : (booking.studentRegNo || 'REG-N/A');
               const equipName = booking.equipment?.name || (typeof booking.equipment === 'string' ? booking.equipment : 'N/A');
               const labName = typeof booking.equipment?.laboratory === 'object' ? booking.equipment?.laboratory?.name : (booking.equipment?.labName || booking.lab || 'Main Lab');
               const bDate = booking.date || (booking.bookedAt ? new Date(booking.bookedAt).toLocaleDateString() : 'N/A');
@@ -188,7 +191,7 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Student:</span>
-                <span className="font-semibold text-white">{detailBooking.student?.name || detailBooking.student || 'N/A'}</span>
+                <span className="font-semibold text-white">{detailBooking.student?.name || detailBooking.studentName || (typeof detailBooking.student === 'string' ? detailBooking.student : 'Student')}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Equipment:</span>
