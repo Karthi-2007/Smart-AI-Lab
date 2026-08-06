@@ -84,37 +84,22 @@ const ContactMessagesPage = () => {
     }
     setSendingReply(true);
     try {
-      // 1. Mark status as REPLIED in backend database
       const msgId = selectedMsg.messageId || selectedMsg.id;
-      await handleUpdateStatus(msgId, "REPLIED");
+      
+      // Call Spring Boot backend to automatically send email directly to visitor
+      const res = await api.post(`/api/business/contact-messages/${msgId}/reply`, {
+        replyMessage: replyText.trim()
+      });
 
-      // 2. Dispatch portal notification to student/faculty if user email is registered
-      try {
-        await api.post("/api/business/notifications", {
-          title: `Reply to Inquiry: ${selectedMsg.subject || "SmartLab Support"}`,
-          message: replyText.trim(),
-          type: "INQUIRY_REPLY",
-          targetRole: "ALL"
-        });
-      } catch (err) {
-        console.warn("Portal notification dispatch note:", err);
-      }
+      setMessages((prev) =>
+        prev.map((m) => ((m.messageId || m.id) === msgId ? { ...m, status: "REPLIED" } : m))
+      );
+      setSelectedMsg((prev) => (prev ? { ...prev, status: "REPLIED" } : null));
 
-      // 3. Launch default mail client with pre-filled reply text
-      const mailtoUrl = `mailto:${encodeURIComponent(selectedMsg.email)}?subject=Re: ${encodeURIComponent(
-        selectedMsg.subject || "SmartLab AI Inquiry"
-      )}&body=${encodeURIComponent(
-        `Dear ${selectedMsg.name || "Visitor"},\n\n` +
-          replyText.trim() +
-          `\n\nBest regards,\nSmartLab AI Support Team`
-      )}`;
-
-      window.open(mailtoUrl, "_blank");
-
-      toast.success(`Reply dispatched to ${selectedMsg.email}!`);
+      toast.success(`Direct email reply sent to ${selectedMsg.email}!`);
       setReplyText("");
     } catch (err) {
-      toast.error("Failed to send reply.");
+      toast.error("Failed to send automatic email reply.");
     } finally {
       setSendingReply(false);
     }

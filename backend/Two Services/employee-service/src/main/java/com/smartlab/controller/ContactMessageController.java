@@ -38,6 +38,19 @@ public class ContactMessageController {
         return ResponseEntity.ok(saved);
     }
 
+    @PostMapping("/{id}/reply")
+    public ResponseEntity<ContactMessage> sendReply(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String replyMessage = body.get("replyMessage");
+        if (replyMessage == null || replyMessage.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        ContactMessage updated = messageService.sendReply(id, replyMessage);
+        if (updated == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updated);
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<ContactMessage> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
