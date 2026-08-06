@@ -8,12 +8,14 @@ const Footer = () => {
         {/* Brand */}
         <div className="md:col-span-6 space-y-4">
           <div className="flex items-center gap-3">
-            <img
-              src="https://kce.ac.in/images/kce/logo/KCE-logo-color.png"
-              alt="KCE Logo"
-              className="h-10 w-auto object-contain brightness-0 invert"
-              onError={(e) => { e.target.style.display = "none"; }}
-            />
+            <div className="bg-white px-2.5 py-1.5 rounded-xl inline-block shadow-md">
+              <img
+                src="https://kce.ac.in/images/kce/logo/KCE-logo-color.png"
+                alt="KCE Logo"
+                className="h-7 w-auto object-contain"
+                onError={(e) => { e.target.style.display = "none"; }}
+              />
+            </div>
             <div className="border-l-2 pl-3" style={{ borderColor: "#cc6926" }}>
               <h2 className="text-xl font-extrabold text-white">
                 SmartLab <span style={{ color: "#cc6926" }}>AI</span>
