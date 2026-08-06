@@ -8,10 +8,11 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: true, // Listens on 0.0.0.0 (allows access via LAN Wi-Fi IP)
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:9090",
+        target: "http://localhost:8082",
         changeOrigin: true,
       },
     },
