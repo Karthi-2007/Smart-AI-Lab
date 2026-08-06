@@ -1,0 +1,486 @@
+{
+  "info": {
+    "_postman_id": "smartlab-ai-api-collection-v21",
+    "name": "SmartLab AI API Collection",
+    "description": "Complete Postman Collection for testing SmartLab AI microservices (Auth Service & Employee Service)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "authUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "businessUrl",
+      "value": "http://localhost:8082",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Register New Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aarav Mehta\",\n  \"email\": \"aarav.mehta@university.edu\",\n  \"regNo\": \"RA2111003010491\",\n  \"dob\": \"2003-05-14\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/student/register",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "student", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register New Faculty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. S. Ramanujan\",\n  \"email\": \"s.ramanujan@university.edu\",\n  \"facultyId\": \"FAC-CSE-001\",\n  \"dob\": \"1985-12-22\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/faculty/register",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "faculty", "register"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP & Create Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav.mehta@university.edu\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"SmartLabPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/verify-otp",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav.mehta@university.edu\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/resend-otp",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "resend-otp"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav.mehta@university.edu\",\n  \"password\": \"SmartLabPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/login",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav.mehta@university.edu\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/forgot-password/request-otp",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "forgot-password", "request-otp"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav.mehta@university.edu\",\n  \"newPassword\": \"NewSmartLabPass456!\"\n}"
+            },
+            "url": {
+              "raw": "{{authUrl}}/api/auth/forgot-password/reset",
+              "host": ["{{authUrl}}"],
+              "path": ["api", "auth", "forgot-password", "reset"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student",
+      "item": [
+        {
+          "name": "Fetch All Equipments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/equipments",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "equipments"]
+            }
+          }
+        },
+        {
+          "name": "Create Equipment Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student\": {\n    \"studentId\": 1\n  },\n  \"equipment\": {\n    \"equipmentId\": 1\n  },\n  \"status\": \"Pending\",\n  \"bookedAt\": \"2026-08-05T10:00:00.000+00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{businessUrl}}/api/business/bookings",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/bookings/student/1",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "bookings", "student", "1"]
+            }
+          }
+        },
+        {
+          "name": "Report Fault",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipment\": {\n    \"equipmentId\": 4\n  },\n  \"reportedBy\": {\n    \"studentId\": 1\n  },\n  \"description\": \"Logic analyzer probe intermittent connection error\",\n  \"status\": \"Open\"\n}"
+            },
+            "url": {
+              "raw": "{{businessUrl}}/api/business/faults",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "faults"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Faculty",
+      "item": [
+        {
+          "name": "Fetch All Laboratories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/laboratories",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "laboratories"]
+            }
+          }
+        },
+        {
+          "name": "Approve Booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/bookings/1/approve",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "bookings", "1", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Reject Booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/bookings/1/reject",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "bookings", "1", "reject"]
+            }
+          }
+        },
+        {
+          "name": "Schedule Maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipment\": {\n    \"equipmentId\": 4\n  },\n  \"scheduledAt\": \"2026-08-10T09:00:00.000+00:00\",\n  \"status\": \"Scheduled\",\n  \"notes\": \"Logic analyzer power supply overhaul\"\n}"
+            },
+            "url": {
+              "raw": "{{businessUrl}}/api/business/maintenance",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "maintenance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Fetch All Students",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/students",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "students"]
+            }
+          }
+        },
+        {
+          "name": "Fetch All Faculty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/faculty",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "faculty"]
+            }
+          }
+        },
+        {
+          "name": "Fetch All Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/departments",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "departments"]
+            }
+          }
+        },
+        {
+          "name": "Update Fault Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}"
+            },
+            "url": {
+              "raw": "{{businessUrl}}/api/business/faults/1/status",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "faults", "1", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Fetch System Summary Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/reports/summary",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "reports", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Fetch Equipment Usage Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/reports/equipment-usage",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "reports", "equipment-usage"]
+            }
+          }
+        },
+        {
+          "name": "Fetch AI Analytics Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{businessUrl}}/api/business/reports/analytics",
+              "host": ["{{businessUrl}}"],
+              "path": ["api", "business", "reports", "analytics"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
