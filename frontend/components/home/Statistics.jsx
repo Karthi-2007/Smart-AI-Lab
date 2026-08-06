@@ -102,11 +102,11 @@ const Statistics = () => {
                   {item.value}
                 </h2>
 
-                <h3 className="mt-3 text-lg font-bold text-white">
+                <h3 className="mt-3 text-lg font-bold" style={{ color: '#0b2545' }}>
                   {item.title}
                 </h3>
 
-                <p className="mt-2 text-slate-400 text-xs sm:text-sm leading-relaxed">
+                <p className="mt-2 text-slate-600 text-xs sm:text-sm leading-relaxed">
                   {item.description}
                 </p>
               </GlassCard>
