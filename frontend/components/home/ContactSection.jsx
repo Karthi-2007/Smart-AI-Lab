@@ -39,15 +39,15 @@ const ContactSection = () => {
         createdAt: new Date().toISOString()
       };
 
-      // 1. Store in localStorage for contact records history
-      try {
-        const stored = localStorage.getItem("smartlab_contact_messages");
-        const list = stored ? JSON.parse(stored) : [];
-        list.unshift(contactPayload);
-        localStorage.setItem("smartlab_contact_messages", JSON.stringify(list));
-      } catch (err) {
-        console.warn("Could not save to localStorage", err);
-      }
+      // Send directly to backend business database
+      await api.post('/api/business/contact-messages', {
+        name: name.trim(),
+        email: email.trim(),
+        subject: subject.trim() || "General Inquiry",
+        message: message.trim(),
+        category: "General Inquiry",
+        status: "UNREAD"
+      }).catch((err) => console.warn("Backend contact save note:", err));
 
       // 2. Dispatch system notification to Admin backend
       await api.post("/api/business/notifications", {

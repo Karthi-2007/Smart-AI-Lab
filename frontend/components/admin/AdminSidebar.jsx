@@ -111,7 +111,7 @@ const menuSections = [
     items: [
       {
         name: "Contact Messages",
-        path: "/admin/settings",
+        path: "/admin/contact-messages",
         icon: Mail,
       },
       {

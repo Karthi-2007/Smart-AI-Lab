@@ -24,6 +24,7 @@ import AIAnalytics from "../pages/admin/AIAnalytics";
 import ManageSettings from "../pages/admin/Settings";
 import ManageFaults from "../components/admin/ManageFaults";
 import AdminNotifications from "../pages/admin/Notifications";
+import ContactMessagesPage from "../pages/admin/ContactMessagesPage";
 import AdminQRMonitorPage from "../pages/admin/QRMonitorPage";
 import FacultyQRMonitorPage from "../pages/faculty/QRMonitorPage";
 
@@ -85,6 +86,7 @@ function App() {
               <Route path="/admin/analytics" element={<AIAnalytics />} />
               <Route path="/admin/faults" element={<ManageFaults />} />
               <Route path="/admin/settings" element={<ManageSettings />} />
+              <Route path="/admin/contact-messages" element={<ContactMessagesPage />} />
               <Route path="/admin/notifications" element={<AdminNotifications />} />
             </Route>
           </Route>
