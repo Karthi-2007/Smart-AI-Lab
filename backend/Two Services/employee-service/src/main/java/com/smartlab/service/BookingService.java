@@ -174,6 +174,50 @@ public class BookingService {
         return null;
     }
 
+    public Booking issueBooking(Long id) {
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null) {
+            booking.setStatus("Issued");
+            if (booking.getEquipment() != null) {
+                Equipment eq = booking.getEquipment();
+                eq.setStatus("In Use");
+                equipmentRepository.save(eq);
+            }
+            Booking saved = bookingRepository.save(booking);
+            try {
+                String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
+                Long studentId = saved.getStudent() != null ? saved.getStudent().getStudentId() : null;
+                if (studentId != null) {
+                    notificationService.createNotification(studentId, "STUDENT", "Equipment Issued", "The equipment " + eqName + " has been issued to you by the lab assistant.", "Booking");
+                }
+            } catch (Exception e) {}
+            return saved;
+        }
+        return null;
+    }
+
+    public Booking completeBooking(Long id) {
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null) {
+            booking.setStatus("Completed");
+            if (booking.getEquipment() != null) {
+                Equipment eq = booking.getEquipment();
+                eq.setStatus("Available");
+                equipmentRepository.save(eq);
+            }
+            Booking saved = bookingRepository.save(booking);
+            try {
+                String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
+                Long studentId = saved.getStudent() != null ? saved.getStudent().getStudentId() : null;
+                if (studentId != null) {
+                    notificationService.createNotification(studentId, "STUDENT", "Equipment Collected", "The equipment " + eqName + " has been returned successfully.", "Booking");
+                }
+            } catch (Exception e) {}
+            return saved;
+        }
+        return null;
+    }
+
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
     }

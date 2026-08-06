@@ -70,29 +70,35 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Created seed user: student@smartlab.com / student123");
         }
 
-        // Seed Default Sample Student Candidates
-        seedStudent("Aarav Mehta", "aarav.mehta@university.edu", "RA2111003010491", LocalDate.of(2003, 5, 14));
-        seedStudent("Ananya Sharma", "ananya.sharma@university.edu", "RA2111003010492", LocalDate.of(2002, 11, 20));
-        seedStudent("Rohan Kapoor", "rohan.kapoor@university.edu", "RA2111003010493", LocalDate.of(2003, 1, 10));
-        seedStudent("Priya Patel", "priya.patel@university.edu", "RA2111003010494", LocalDate.of(2003, 8, 25));
-        seedStudent("Vikram Singh", "vikram.singh@university.edu", "RA2111003010495", LocalDate.of(2002, 4, 3));
+        // --- SEED EXPANDED EEE DEPARTMENT ---
+        seedActiveFaculty("Dr. Sunita Williams", "faculty.eee@smartlab.com", "FAC-EEE-110", LocalDate.of(1980, 5, 12));
+        seedActiveFaculty("EEE Assistant Ram", "assistant.eee@smartlab.com", "AST-EEE-111", LocalDate.of(1992, 1, 20));
+        seedActiveStudent("Aditya EEE 1", "student.eee1@smartlab.com", "7178EEE001", LocalDate.of(2004, 3, 10));
+        seedActiveStudent("Bhavana EEE 2", "student.eee2@smartlab.com", "7178EEE002", LocalDate.of(2003, 11, 15));
+        seedActiveStudent("Chaitanya EEE 3", "student.eee3@smartlab.com", "7178EEE003", LocalDate.of(2004, 4, 18));
+        seedActiveStudent("Divya EEE 4", "student.eee4@smartlab.com", "7178EEE004", LocalDate.of(2003, 8, 25));
+        seedActiveStudent("Eshwar EEE 5", "student.eee5@smartlab.com", "7178EEE005", LocalDate.of(2004, 1, 12));
 
-        // Seed User Requested KCE & Gmail Student Registration Candidates
-        seedStudent("Student 226", "717824f226@kce.ac.in", "717824F226", LocalDate.of(2004, 1, 15));
-        seedStudent("Student 220", "717824f220@kce.ac.in", "717824F220", LocalDate.of(2004, 2, 20));
-        seedStudent("Student 242", "717824f242@kce.ac.in", "717824F242", LocalDate.of(2004, 3, 25));
-        seedStudent("Karthikeyan RKS", "karthikeyanrks2007@gmail.com", "717824F207", LocalDate.of(2007, 5, 10));
-        seedStudent("Student 250", "717824f250@kce.ac.in", "717824F250", LocalDate.of(2004, 5, 12));
-        seedStudent("Student 256", "717824f256@kce.ac.in", "717824F256", LocalDate.of(2004, 6, 18));
-        seedStudent("Student 251", "717824f251@kce.ac.in", "717824F251", LocalDate.of(2004, 7, 22));
+        // --- SEED EXPANDED MECH DEPARTMENT ---
+        seedActiveFaculty("Dr. Vikram Sarabhai", "faculty.mech@smartlab.com", "FAC-MECH-120", LocalDate.of(1978, 8, 25));
+        seedActiveFaculty("MECH Assistant Krish", "assistant.mech@smartlab.com", "AST-MECH-121", LocalDate.of(1993, 2, 22));
+        seedActiveStudent("Madan MECH 1", "student.mech1@smartlab.com", "7178MECH001", LocalDate.of(2004, 5, 5));
+        seedActiveStudent("Nitin MECH 2", "student.mech2@smartlab.com", "7178MECH002", LocalDate.of(2003, 9, 12));
+        seedActiveStudent("Omkar MECH 3", "student.mech3@smartlab.com", "7178MECH003", LocalDate.of(2004, 6, 20));
+        seedActiveStudent("Pranav MECH 4", "student.mech4@smartlab.com", "7178MECH004", LocalDate.of(2003, 12, 14));
+        seedActiveStudent("Rahul MECH 5", "student.mech5@smartlab.com", "7178MECH005", LocalDate.of(2004, 2, 28));
 
-        // Seed Faculty Candidates
-        seedFaculty("Dr. S. Ramanujan", "s.ramanujan@university.edu", "FAC-CSE-001", LocalDate.of(1985, 12, 22));
-        seedFaculty("Dr. Sunita Williams", "sunita.williams@university.edu", "FAC-EEE-002", LocalDate.of(1988, 6, 15));
-        seedFaculty("Dr. Vikram Sarabhai", "vikram.sarabhai@university.edu", "FAC-MECH-003", LocalDate.of(1980, 8, 12));
+        // --- SEED EXPANDED CSE / ECE DEPARTMENT ---
+        seedActiveFaculty("Dr. S. Ramanujan", "faculty.cse@smartlab.com", "FAC-CSE-130", LocalDate.of(1982, 12, 22));
+        seedActiveFaculty("CSE Assistant Shyam", "assistant.cse@smartlab.com", "AST-CSE-131", LocalDate.of(1991, 7, 14));
+        seedActiveStudent("Siddharth CSE 1", "student.cse1@smartlab.com", "7178CSE001", LocalDate.of(2004, 7, 8));
+        seedActiveStudent("Tarun CSE 2", "student.cse2@smartlab.com", "7178CSE002", LocalDate.of(2003, 10, 19));
+        seedActiveStudent("Uday CSE 3", "student.cse3@smartlab.com", "7178CSE003", LocalDate.of(2004, 1, 30));
+        seedActiveStudent("Varun CSE 4", "student.cse4@smartlab.com", "7178CSE004", LocalDate.of(2003, 5, 24));
+        seedActiveStudent("Yash CSE 5", "student.cse5@smartlab.com", "7178CSE005", LocalDate.of(2004, 9, 11));
     }
 
-    private void seedStudent(String name, String email, String regNo, LocalDate dob) {
+    private void seedActiveStudent(String name, String email, String regNo, LocalDate dob) {
         if (!userRepository.existsByEmail(email)) {
             AppUser u = new AppUser();
             u.setName(name);
@@ -100,13 +106,14 @@ public class DataInitializer implements CommandLineRunner {
             u.setRegNo(regNo);
             u.setDob(dob);
             u.setRole(Role.STUDENT);
-            u.setStatus("UNACTIVATED");
+            u.setPassword(passwordEncoder.encode("student123"));
+            u.setStatus("ACTIVE"); // Seeded as ACTIVE so they don't require manual activation
             userRepository.save(u);
-            log.info("Seeded registration candidate: {} ({})", email, regNo);
+            log.info("Seeded active student: {}", email);
         }
     }
 
-    private void seedFaculty(String name, String email, String facultyId, LocalDate dob) {
+    private void seedActiveFaculty(String name, String email, String facultyId, LocalDate dob) {
         if (!userRepository.existsByEmail(email)) {
             AppUser u = new AppUser();
             u.setName(name);
@@ -114,9 +121,10 @@ public class DataInitializer implements CommandLineRunner {
             u.setFacultyId(facultyId);
             u.setDob(dob);
             u.setRole(Role.FACULTY);
-            u.setStatus("UNACTIVATED");
+            u.setPassword(passwordEncoder.encode("password123"));
+            u.setStatus("ACTIVE"); // Seeded as ACTIVE so they don't require manual activation
             userRepository.save(u);
-            log.info("Seeded faculty candidate: {} ({})", email, facultyId);
+            log.info("Seeded active faculty/assistant: {}", email);
         }
     }
 }

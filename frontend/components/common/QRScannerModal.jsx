@@ -100,16 +100,16 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
     verifyBookingCode(manualCode.trim());
   };
 
-  const handleApproveCheckIn = async () => {
+  const handleIssueEquipment = async () => {
     if (!bookingData) return;
     const bId = bookingData.bookingId || bookingData.id;
     try {
-      await api.put(`/api/business/bookings/${bId}/approve`);
-      toast.success("Student Check-In Authorized!");
-      setBookingData(prev => ({ ...prev, status: "Approved" }));
+      await api.put(`/api/business/bookings/${bId}/issue`);
+      toast.success("Equipment Handed Over & Status Set to 'Issued'!");
+      setBookingData(prev => ({ ...prev, status: "Issued" }));
       if (onVerificationSuccess) onVerificationSuccess();
     } catch (err) {
-      toast.error("Failed to update status");
+      toast.error("Failed to update status to Issued");
     }
   };
 
@@ -117,10 +117,8 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
     if (!bookingData) return;
     const bId = bookingData.bookingId || bookingData.id;
     try {
-      await api.put(`/api/business/bookings/${bId}/complete`).catch(async () => {
-        await api.put(`/api/business/bookings/${bId}/approve`);
-      });
-      toast.success("Equipment Returned & Session Completed!");
+      await api.put(`/api/business/bookings/${bId}/complete`);
+      toast.success("Equipment Collected & Session Set to 'Completed'!");
       setBookingData(prev => ({ ...prev, status: "Completed" }));
       if (onVerificationSuccess) onVerificationSuccess();
     } catch (err) {
@@ -215,9 +213,10 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
 
               <div className="flex justify-between items-center py-1">
                 <span className="text-slate-400">Current Status:</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  bookingData.status === 'Approved' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                  bookingData.status === 'Completed' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  bookingData.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                  bookingData.status === 'Issued' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                  bookingData.status === 'Completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
                   'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                 }`}>
                   {bookingData.status || 'Pending'}
@@ -228,28 +227,40 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               {bookingData.status?.toLowerCase() === 'pending' && (
-                <button
-                  onClick={handleApproveCheckIn}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-2xl transition text-xs flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Authorize Check-In</span>
-                </button>
+                <div className="flex-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs p-3.5 rounded-xl font-medium text-center">
+                  ⚠️ Request is pending Faculty approval. Equipment cannot be issued yet.
+                </div>
               )}
 
               {bookingData.status?.toLowerCase() === 'approved' && (
                 <button
-                  onClick={handleCompleteCheckOut}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-2xl transition text-xs flex items-center justify-center gap-2 shadow-lg"
+                  onClick={handleIssueEquipment}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-lg"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Complete & Check-Out</span>
+                  <span>Issue Equipment</span>
                 </button>
+              )}
+
+              {bookingData.status?.toLowerCase() === 'issued' && (
+                <button
+                  onClick={handleCompleteCheckOut}
+                  className="flex-1 bg-[#cc6926] hover:bg-[#a8531a] text-white font-bold py-3 rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Collect Equipment (Return)</span>
+                </button>
+              )}
+
+              {bookingData.status?.toLowerCase() === 'completed' && (
+                <div className="flex-1 bg-green-500/10 border border-green-500/20 text-green-400 text-xs p-3.5 rounded-xl font-medium text-center">
+                  ✅ Equipment successfully returned and session completed.
+                </div>
               )}
 
               <button
                 onClick={handleResetScan}
-                className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-2xl transition text-xs flex items-center justify-center gap-2"
+                className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition text-xs flex items-center justify-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Scan Another</span>
