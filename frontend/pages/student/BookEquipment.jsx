@@ -70,9 +70,11 @@ const BookEquipment = () => {
 
     try {
       setSubmitting(true);
-      const currentStudentId = Number(user?.id || user?.userId || 1);
-      const studentName = user?.name || "Karthikeyan RKS";
-      const studentRegNo = user?.regNo || "717824F207";
+      const currentStudentId = Number(user?.id || user?.userId || user?.studentId || 1);
+      const studentName = user?.name || "Student";
+      const studentEmail = user?.email || "student@kce.ac.in";
+      const studentDept = user?.department || "Computer Science & Engineering";
+      const studentRegNo = user?.regNo || "";
 
       await studentService.createBooking({
         studentId: currentStudentId,
@@ -80,6 +82,8 @@ const BookEquipment = () => {
         student: { 
           studentId: currentStudentId,
           name: studentName,
+          email: studentEmail,
+          department: studentDept,
           regNo: studentRegNo
         },
         studentName: studentName,

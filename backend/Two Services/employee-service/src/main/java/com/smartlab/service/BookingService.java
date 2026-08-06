@@ -6,12 +6,11 @@ import com.smartlab.entity.Student;
 import com.smartlab.repository.BookingRepository;
 import com.smartlab.repository.EquipmentRepository;
 import com.smartlab.repository.StudentRepository;
+import com.smartlab.repository.FacultyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-
-import com.smartlab.repository.FacultyRepository;
 
 @Service
 public class BookingService {
@@ -51,12 +50,23 @@ public class BookingService {
 
     public Booking createBooking(Booking booking) {
         if (booking.getStudent() != null && booking.getStudent().getStudentId() != null) {
-            Student student = studentRepository.findById(booking.getStudent().getStudentId())
-                    .orElse(null);
-            if (student != null) {
-                booking.setStudent(student);
+            Long sId = booking.getStudent().getStudentId();
+            Student student = studentRepository.findById(sId).orElse(null);
+            
+            // If new student is not in business DB yet, auto-create student record
+            if (student == null) {
+                Student newStudent = new Student();
+                newStudent.setStudentId(sId);
+                newStudent.setName(booking.getStudent().getName() != null ? booking.getStudent().getName() : "Newly Registered Student");
+                newStudent.setEmail(booking.getStudent().getEmail() != null ? booking.getStudent().getEmail() : "student@smartlab.com");
+                newStudent.setDepartment(booking.getStudent().getDepartment() != null ? booking.getStudent().getDepartment() : "Computer Science & Engineering");
+                newStudent.setYear(3);
+                newStudent.setStatus("Active");
+                student = studentRepository.save(newStudent);
             }
+            booking.setStudent(student);
         }
+
         if (booking.getEquipment() != null && booking.getEquipment().getEquipmentId() != null) {
             Equipment equipment = equipmentRepository.findById(booking.getEquipment().getEquipmentId())
                     .orElse(null);
@@ -71,7 +81,9 @@ public class BookingService {
         if (booking.getBookedAt() == null) {
             booking.setBookedAt(new Date());
         }
+
         Booking saved = bookingRepository.save(booking);
+
         try {
             String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
             String studentName = saved.getStudent() != null ? saved.getStudent().getName() : "Student";
@@ -80,15 +92,16 @@ public class BookingService {
             if (studentId != null) {
                 notificationService.createNotification(studentId, "STUDENT", "Booking Submitted", "Your request for " + eqName + " has been submitted for approval.", "Booking");
             }
-            // Send to all faculty members
+            // Send live alert to all faculty members
             facultyRepository.findAll().forEach(f -> {
                 if (f.getFacultyId() != null) {
                     notificationService.createNotification(f.getFacultyId(), "FACULTY", "New Booking Request", studentName + " requested " + eqName + ".", "Booking");
                 }
             });
         } catch (Exception e) {
-            // ignore notification failures
+            // ignore notification log errors
         }
+
         return saved;
     }
 
