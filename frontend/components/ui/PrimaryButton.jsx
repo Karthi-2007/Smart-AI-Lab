@@ -7,7 +7,10 @@ const PrimaryButton = ({
   return (
     <button
       type={type}
-      className={`px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 transition-all duration-300 font-semibold text-white shadow-lg shadow-orange-500/30 ${className}`}
+      className={`px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all duration-300 active:scale-95 ${className}`}
+      style={{ background: '#cc6926' }}
+      onMouseEnter={e => e.currentTarget.style.background = '#a8531a'}
+      onMouseLeave={e => e.currentTarget.style.background = '#cc6926'}
       {...props}
     >
       {children}

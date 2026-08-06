@@ -45,7 +45,7 @@ const workflow = [
 
 const Workflow = () => {
   return (
-    <section className="bg-slate-900 py-16 px-6">
+    <section className="py-16 px-6" style={{ background: '#0b2545' }}>
       <div className="max-w-7xl mx-auto">
 
         <SectionTitle
@@ -74,7 +74,7 @@ const Workflow = () => {
 
                 </div>
 
-                <div className="w-16 h-16 rounded-2xl bg-orange-500 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: '#cc6926' }}>
 
                   <Icon size={30} />
 

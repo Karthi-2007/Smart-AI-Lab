@@ -61,7 +61,7 @@ const Departments = () => {
   }, []);
 
   return (
-    <section id="departments" className="bg-slate-950 py-16 px-6 relative">
+    <section id="departments" className="py-16 px-6 relative" style={{ background: '#f5f7fa' }}>
       <div className="max-w-7xl mx-auto">
         <SectionTitle
           title="Explore Our Laboratories"
@@ -77,11 +77,11 @@ const Departments = () => {
                 className="group hover:border-orange-500/60 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between p-6 sm:p-7"
               >
                 <div>
-                  <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform">
+                  <div className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform" style={{ background: 'rgba(204,105,38,0.1)', border: '1px solid rgba(204,105,38,0.3)', color: '#cc6926' }}>
                     <Icon className="w-7 h-7" />
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-orange-400 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-bold transition-colors" style={{ color: '#0b2545' }}>
                     {dept.name}
                   </h3>
 

@@ -51,7 +51,7 @@ const features = [
 
 const About = () => {
   return (
-    <section id="about" className="bg-slate-950 py-16 px-6">
+    <section id="about" className="py-16 px-6" style={{ background: '#ffffff' }}>
       <div className="max-w-7xl mx-auto">
 
         <SectionTitle
@@ -65,16 +65,16 @@ const About = () => {
 
           <div>
 
-            <h2 className="text-4xl font-bold leading-tight">
+            <h2 className="text-4xl font-bold leading-tight" style={{ color: '#0b2545' }}>
 
               Revolutionizing Laboratory
-              <span className="text-orange-500">
+              <span style={{ color: '#cc6926' }}>
                 {" "}Equipment Management
               </span>
 
             </h2>
 
-            <p className="mt-8 text-slate-400 leading-8 text-lg">
+            <p className="mt-8 text-slate-600 leading-8 text-lg">
 
               SmartLab AI is an intelligent laboratory management platform
               developed to simplify equipment booking, monitor laboratory
@@ -82,7 +82,7 @@ const About = () => {
 
             </p>
 
-            <p className="mt-6 text-slate-400 leading-8 text-lg">
+            <p className="mt-6 text-slate-600 leading-8 text-lg">
 
               Students can reserve equipment online, faculty can monitor
               laboratory utilization, and administrators can manage assets
@@ -93,9 +93,9 @@ const About = () => {
 
             <div className="grid grid-cols-2 gap-6 mt-10">
 
-              <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+              <div className="rounded-2xl p-6 border" style={{ background: '#f5f7fa', borderColor: '#e2e8f0' }}>
 
-                <h3 className="text-4xl font-bold text-orange-500">
+                <h3 className="text-4xl font-bold" style={{ color: '#cc6926' }}>
 
                   450+
 
@@ -109,9 +109,9 @@ const About = () => {
 
               </div>
 
-              <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+              <div className="rounded-2xl p-6 border" style={{ background: '#f5f7fa', borderColor: '#e2e8f0' }}>
 
-                <h3 className="text-4xl font-bold text-orange-500">
+                <h3 className="text-4xl font-bold" style={{ color: '#cc6926' }}>
 
                   18
 
@@ -144,13 +144,13 @@ const About = () => {
                   className="hover:border-orange-500 hover:-translate-y-2 transition-all duration-500"
                 >
 
-                  <div className="w-14 h-14 rounded-xl bg-orange-500 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: '#cc6926' }}>
 
                     <Icon size={28} />
 
                   </div>
 
-                  <h3 className="mt-5 text-xl font-bold">
+                  <h3 className="mt-5 text-xl font-bold" style={{ color: '#0b2545' }}>
 
                     {item.title}
 

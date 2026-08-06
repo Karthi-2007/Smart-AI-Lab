@@ -5,117 +5,90 @@ import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen((prev) => !prev);
-  };
-
-  const closeMenu = () => {
-    setMobileMenuOpen(false);
-  };
+  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+  const closeMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-900/90 border-b border-slate-800">
+    <header className="sticky top-0 z-50 bg-white border-b-2 shadow-sm" style={{ borderColor: "#cc6926" }}>
       <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        {/* Logo */}
+
+        {/* Logo — KCE Official Logo + SmartLab AI text */}
         <Link to="/" onClick={closeMenu} className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-orange-500/30">
-            SL
-          </div>
-
-          <div>
-            <h1 className="text-xl font-bold text-white">
-              SmartLab
-              <span className="text-orange-500"> AI</span>
+          <img
+            src="https://kce.ac.in/images/kce/logo/KCE-logo-color.png"
+            alt="Karpagam College of Engineering"
+            className="h-10 w-auto object-contain"
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+          <div className="border-l-2 pl-3" style={{ borderColor: "#cc6926" }}>
+            <h1 className="text-lg font-extrabold leading-tight" style={{ color: "#0b2545" }}>
+              SmartLab <span style={{ color: "#cc6926" }}>AI</span>
             </h1>
-
-            <p className="text-xs text-slate-400">
-              Karpagam College of Engineering
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Lab Management System
             </p>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
-          <HashLink smooth to="/#home" className="hover:text-orange-400 transition duration-300">
-            Home
-          </HashLink>
-
-          <HashLink smooth to="/#features" className="hover:text-orange-400 transition duration-300">
-            Features
-          </HashLink>
-
-          <HashLink smooth to="/#about" className="hover:text-orange-400 transition duration-300">
-            About
-          </HashLink>
-
-          <HashLink smooth to="/#contact" className="hover:text-orange-400 transition duration-300">
-            Contact
-          </HashLink>
+        <div className="hidden lg:flex items-center gap-8 text-sm font-semibold" style={{ color: "#0b2545" }}>
+          <HashLink smooth to="/#home" className="hover:text-[#cc6926] transition-colors duration-200">Home</HashLink>
+          <HashLink smooth to="/#features" className="hover:text-[#cc6926] transition-colors duration-200">Features</HashLink>
+          <HashLink smooth to="/#about" className="hover:text-[#cc6926] transition-colors duration-200">About</HashLink>
+          <HashLink smooth to="/#departments" className="hover:text-[#cc6926] transition-colors duration-200">Labs</HashLink>
+          <HashLink smooth to="/#contact" className="hover:text-[#cc6926] transition-colors duration-200">Contact</HashLink>
         </div>
 
         {/* Desktop Buttons */}
         <div className="hidden lg:flex items-center gap-3">
           <NavLink
             to="/activate-account"
-            className="px-5 py-2.5 rounded-xl border border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white transition duration-300 text-sm font-semibold"
+            className="px-5 py-2.5 rounded-lg border-2 font-bold text-sm transition-all duration-200 hover:text-white"
+            style={{ borderColor: "#cc6926", color: "#cc6926" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#cc6926"; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#cc6926"; }}
           >
             Activate Account
           </NavLink>
-
           <Link
             to="/login"
-            className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 transition duration-300 text-white font-semibold text-sm shadow-lg shadow-orange-500/30"
+            className="px-5 py-2.5 rounded-lg text-white font-bold text-sm shadow-lg transition-all duration-200 hover:opacity-90"
+            style={{ background: "#cc6926" }}
           >
             Login
           </Link>
         </div>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Hamburger */}
         <button
           onClick={toggleMobileMenu}
-          className="lg:hidden p-2.5 text-slate-300 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition"
+          className="lg:hidden p-2.5 rounded-lg border-2 transition"
+          style={{ borderColor: "#cc6926", color: "#cc6926" }}
           aria-label="Toggle Menu"
         >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
 
-      {/* Mobile Drawer Dropdown */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-6 py-6 space-y-5 animate-in slide-in-from-top duration-200">
-          <div className="flex flex-col space-y-4 text-base font-semibold text-slate-200">
-            <HashLink smooth to="/#home" onClick={closeMenu} className="hover:text-orange-400 transition py-1">
-              Home
-            </HashLink>
-
-            <HashLink smooth to="/#features" onClick={closeMenu} className="hover:text-orange-400 transition py-1">
-              Features
-            </HashLink>
-
-            <HashLink smooth to="/#about" onClick={closeMenu} className="hover:text-orange-400 transition py-1">
-              About
-            </HashLink>
-
-            <HashLink smooth to="/#contact" onClick={closeMenu} className="hover:text-orange-400 transition py-1">
-              Contact
-            </HashLink>
+        <div className="lg:hidden bg-white border-b-2 px-6 py-6 space-y-5" style={{ borderColor: "#cc6926" }}>
+          <div className="flex flex-col space-y-4 text-base font-semibold" style={{ color: "#0b2545" }}>
+            <HashLink smooth to="/#home" onClick={closeMenu} className="hover:text-[#cc6926] transition py-1">Home</HashLink>
+            <HashLink smooth to="/#features" onClick={closeMenu} className="hover:text-[#cc6926] transition py-1">Features</HashLink>
+            <HashLink smooth to="/#about" onClick={closeMenu} className="hover:text-[#cc6926] transition py-1">About</HashLink>
+            <HashLink smooth to="/#departments" onClick={closeMenu} className="hover:text-[#cc6926] transition py-1">Labs</HashLink>
+            <HashLink smooth to="/#contact" onClick={closeMenu} className="hover:text-[#cc6926] transition py-1">Contact</HashLink>
           </div>
-
-          <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
-            <NavLink
-              to="/activate-account"
-              onClick={closeMenu}
-              className="w-full text-center px-5 py-3 rounded-xl border border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white transition text-sm font-semibold"
-            >
+          <div className="pt-4 border-t flex flex-col gap-3" style={{ borderColor: "#e2e8f0" }}>
+            <NavLink to="/activate-account" onClick={closeMenu}
+              className="w-full text-center px-5 py-3 rounded-lg border-2 font-bold text-sm transition"
+              style={{ borderColor: "#cc6926", color: "#cc6926" }}>
               Activate Account
             </NavLink>
-
-            <Link
-              to="/login"
-              onClick={closeMenu}
-              className="w-full text-center px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition text-sm font-semibold shadow-lg shadow-orange-500/30"
-            >
+            <Link to="/login" onClick={closeMenu}
+              className="w-full text-center px-5 py-3 rounded-lg text-white font-bold text-sm"
+              style={{ background: "#cc6926" }}>
               Login
             </Link>
           </div>

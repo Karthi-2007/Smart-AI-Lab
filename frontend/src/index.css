@@ -1,127 +1,160 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   KCE (Karpagam College of Engineering) Design System
+   Primary: #cc6926 (KCE Orange)
+   Navy:    #0b2545 (KCE Dark Navy)
+   Font:    Mona Sans (KCE Official)
+   ============================================================ */
+
 :root {
-  --primary: #F97316;
-  --primary-dark: #EA580C;
-  --bg: #0F172A;
-  --card: #1E293B;
-  --border: #334155;
-  --success: #22C55E;
-  --warning: #FACC15;
-  --danger: #EF4444;
+  /* KCE Brand Colors */
+  --kce-orange:      #cc6926;
+  --kce-orange-dark: #a8531a;
+  --kce-orange-light: #e07a32;
+  --kce-navy:        #0b2545;
+  --kce-navy-light:  #163760;
+
+  /* Semantic Aliases */
+  --primary:         #cc6926;
+  --primary-dark:    #a8531a;
+  --bg:              #f5f7fa;
+  --bg-dark:         #0b2545;
+  --card:            #ffffff;
+  --card-dark:       #1e293b;
+  --border:          #e2e8f0;
+  --border-dark:     #334155;
+  --text:            #0b2545;
+  --text-muted:      #64748b;
+
+  /* Status */
+  --success:  #16a34a;
+  --warning:  #d97706;
+  --danger:   #dc2626;
 }
 
+/* Font */
 html {
   scroll-behavior: smooth;
+  font-family: 'Mona Sans', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Mona Sans', 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);
-  color: white;
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ============================================================
+   Dashboard pages override — keep dark for data density
+   ============================================================ */
+.dashboard-root {
+  background: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
 }
 
-::-webkit-scrollbar-track {
-  background: #1E293B;
+/* ============================================================
+   KCE Scrollbar
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #e2e8f0; }
+::-webkit-scrollbar-thumb { background: #cc6926; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #a8531a; }
+
+/* ============================================================
+   KCE Button Styles
+   ============================================================ */
+.kce-btn-primary {
+  background: var(--kce-orange);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  font-family: 'Mona Sans', sans-serif;
+}
+.kce-btn-primary:hover { background: var(--kce-orange-dark); transform: translateY(-1px); }
+
+.kce-btn-outline {
+  background: transparent;
+  color: var(--kce-orange);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border: 2px solid var(--kce-orange);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Mona Sans', sans-serif;
+}
+.kce-btn-outline:hover { background: var(--kce-orange); color: #fff; }
+
+/* ============================================================
+   KCE Section Label (small caps above headings)
+   ============================================================ */
+.kce-label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--kce-orange);
+  margin-bottom: 0.5rem;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 8px;
+/* ============================================================
+   KCE Card
+   ============================================================ */
+.kce-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px rgba(11, 37, 69, 0.07);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+.kce-card:hover {
+  box-shadow: 0 8px 32px rgba(204, 105, 38, 0.15);
+  border-color: var(--kce-orange);
+  transform: translateY(-2px);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #F97316;
-}
-
-/* Responsive table wrapper */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Mobile sidebar overlay */
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 40;
-  backdrop-filter: blur(2px);
-}
-
-/* Smooth transitions */
-.sidebar-enter {
-  transform: translateX(-100%);
-}
-
-.sidebar-enter-active {
-  transform: translateX(0);
-  transition: transform 0.3s ease;
-}
-
-/* Input focus ring */
-input:focus, textarea:focus, select:focus {
-  outline: none;
-}
+/* ============================================================
+   Responsive utilities
+   ============================================================ */
+.table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(2px); }
+input:focus, textarea:focus, select:focus { outline: none; }
 
 /* OTP input */
 .otp-input {
-  width: 3rem;
-  height: 3.5rem;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border-radius: 0.75rem;
-  background: #1E293B;
-  border: 1px solid #334155;
-  color: white;
-  transition: border-color 0.2s;
+  width: 3rem; height: 3.5rem; text-align: center; font-size: 1.25rem; font-weight: 700;
+  border-radius: 0.75rem; background: #f1f5f9; border: 2px solid #e2e8f0;
+  color: var(--kce-navy); transition: border-color 0.2s; font-family: 'Mona Sans', sans-serif;
 }
+.otp-input:focus { border-color: var(--kce-orange); box-shadow: 0 0 0 3px rgba(204,105,38,0.15); }
 
-.otp-input:focus {
-  border-color: #F97316;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
-}
-
-/* Card hover lift */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
+/* Card hover */
+.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(204,105,38,0.12); }
 
 /* Loading pulse */
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
+@keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
+/* Responsive padding */
+@media (max-width: 768px) { .page-padding { padding: 1rem; } }
+@media (min-width: 768px) { .page-padding { padding: 2rem; } }
 
-/* Responsive padding utility */
-@media (max-width: 768px) {
-  .page-padding {
-    padding: 1rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .page-padding {
-    padding: 2rem;
-  }
+/* ============================================================
+   KCE Gradient Accent Line
+   ============================================================ */
+.kce-accent-line {
+  width: 3rem; height: 4px; border-radius: 2px;
+  background: linear-gradient(90deg, #cc6926, #e07a32);
+  margin: 0.75rem auto 0;
 }

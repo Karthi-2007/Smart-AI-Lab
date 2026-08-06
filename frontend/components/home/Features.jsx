@@ -45,7 +45,7 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="bg-slate-900 py-16 px-6">
+    <section id="features" className="py-16 px-6" style={{ background: '#f5f7fa' }}>
       <div className="max-w-7xl mx-auto">
         <SectionTitle
           title="Why Choose SmartLab AI?"
@@ -59,13 +59,13 @@ const Features = () => {
             return (
               <GlassCard
                 key={index}
-                className="group hover:border-orange-500 hover:shadow-orange-500/20 hover:shadow-2xl transition-all duration-500"
+                className={`group hover:border-[#cc6926]/60 hover:shadow-2xl transition-all duration-500`}
               >
-                <div className="w-16 h-16 rounded-2xl bg-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform" style={{ background: '#cc6926' }}>
                   <Icon size={30} />
                 </div>
 
-                <h3 className="mt-6 text-2xl font-bold">
+                <h3 className="mt-6 text-2xl font-bold" style={{ color: '#0b2545' }}>
                   {feature.title}
                 </h3>
 
