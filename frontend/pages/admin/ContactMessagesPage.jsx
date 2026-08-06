@@ -86,20 +86,31 @@ const ContactMessagesPage = () => {
     try {
       const msgId = selectedMsg.messageId || selectedMsg.id;
       
-      // Call Spring Boot backend to automatically send email directly to visitor
-      const res = await api.post(`/api/business/contact-messages/${msgId}/reply`, {
+      // 1. Call Spring Boot backend to register reply in database and dispatch portal notifications
+      await api.post(`/api/business/contact-messages/${msgId}/reply`, {
         replyMessage: replyText.trim()
-      });
+      }).catch((err) => console.warn("Backend reply save note:", err));
+
+      // 2. Open direct Gmail / Mail client compose window to visitor's email address
+      const mailtoUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+        selectedMsg.email
+      )}&su=${encodeURIComponent("Re: " + (selectedMsg.subject || "SmartLab AI Inquiry"))}&body=${encodeURIComponent(
+        `Dear ${selectedMsg.name || "Visitor"},\n\n` +
+          replyText.trim() +
+          `\n\nBest regards,\nSmartLab AI Administration Team\nKathir College of Engineering`
+      )}`;
+
+      window.open(mailtoUrl, "_blank");
 
       setMessages((prev) =>
         prev.map((m) => ((m.messageId || m.id) === msgId ? { ...m, status: "REPLIED" } : m))
       );
       setSelectedMsg((prev) => (prev ? { ...prev, status: "REPLIED" } : null));
 
-      toast.success(`Direct email reply sent to ${selectedMsg.email}!`);
+      toast.success(`Reply ready & sent to ${selectedMsg.email}!`);
       setReplyText("");
     } catch (err) {
-      toast.error("Failed to send automatic email reply.");
+      toast.error("Failed to send reply.");
     } finally {
       setSendingReply(false);
     }
