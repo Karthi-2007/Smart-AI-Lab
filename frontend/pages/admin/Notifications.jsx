@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Bell, CalendarCheck, Wrench, AlertTriangle, UserPlus, 
-  Check, Trash2, Send, RefreshCw, Filter, CheckCheck, X 
+  Check, Trash2, Send, RefreshCw, Filter, CheckCheck, X, Loader2 
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
@@ -19,79 +19,21 @@ const AdminNotifications = () => {
   const fetchLiveNotifications = async () => {
     setLoading(true);
     try {
-      const [notifRes, bookRes, faultRes, maintRes] = await Promise.all([
-        adminService.getNotifications().catch(() => ({ data: [] })),
-        adminService.getBookings().catch(() => ({ data: [] })),
-        adminService.getFaults().catch(() => ({ data: [] })),
-        adminService.getMaintenance().catch(() => ({ data: [] }))
-      ]);
-
+      const notifRes = await adminService.getNotifications().catch(() => ({ data: [] }));
       const notifList = Array.isArray(notifRes?.data || notifRes) ? (notifRes?.data || notifRes) : [];
-      const bookList = Array.isArray(bookRes?.data || bookRes) ? (bookRes?.data || bookRes) : [];
-      const faultList = Array.isArray(faultRes?.data || faultRes) ? (faultRes?.data || faultRes) : [];
-      const maintList = Array.isArray(maintRes?.data || maintRes) ? (maintRes?.data || maintRes) : [];
 
-      // Generate dynamic notifications from real system events if notification service is empty
-      const generatedEvents = [];
-
-      bookList.forEach(b => {
-        const studentName = typeof b.student === 'object' ? b.student?.name : (b.student || 'Student');
-        const eqName = typeof b.equipment === 'object' ? b.equipment?.name : (b.equipment || 'Equipment');
-        generatedEvents.push({
-          id: `book-${b.bookingId || b.id}`,
-          type: 'BOOKING',
-          title: `New Reservation Request: ${eqName}`,
-          message: `${studentName} requested booking for ${eqName} on ${b.date || b.bookedAt || 'Upcoming Slot'}.`,
-          createdAt: b.bookedAt || b.date || new Date().toISOString(),
-          isRead: b.status === 'Approved' || b.status === 'Rejected',
-          badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-          icon: CalendarCheck
-        });
-      });
-
-      faultList.forEach(f => {
-        const eqName = typeof f.equipment === 'object' ? f.equipment?.name : (f.equipment || 'Equipment');
-        const reporter = typeof f.reportedBy === 'object' ? f.reportedBy?.name : (f.reportedBy || 'User');
-        generatedEvents.push({
-          id: `fault-${f.id || f.faultId}`,
-          type: 'FAULT',
-          title: `Fault Reported: ${eqName}`,
-          message: `${reporter} reported fault (${f.description || 'Needs Inspection'}) for ${eqName}.`,
-          createdAt: f.createdAt || new Date().toISOString(),
-          isRead: f.status === 'Resolved',
-          badgeColor: 'bg-red-500/10 text-red-400 border-red-500/20',
-          icon: AlertTriangle
-        });
-      });
-
-      maintList.forEach(m => {
-        const eqName = typeof m.equipment === 'object' ? m.equipment?.name : (m.equipment || 'Equipment');
-        generatedEvents.push({
-          id: `maint-${m.id}`,
-          type: 'MAINTENANCE',
-          title: `Maintenance Scheduled: ${eqName}`,
-          message: `Scheduled maintenance assigned to technician ${m.technician || 'Staff'}.`,
-          createdAt: m.scheduledDate || new Date().toISOString(),
-          isRead: m.status === 'Completed',
-          badgeColor: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-          icon: Wrench
-        });
-      });
-
-      // Merge backend notifications with generated events
-      const merged = [...notifList.map(n => ({
-        id: n.id,
-        type: n.type || 'SYSTEM',
+      const list = notifList.map((n) => ({
+        id: n.id || n._id,
+        type: (n.type || 'SYSTEM').toUpperCase(),
         title: n.title || 'System Notification',
         message: n.message || n.text || '',
         createdAt: n.createdAt || new Date().toISOString(),
         isRead: n.read || n.isRead || false,
-        badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+        badgeColor: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
         icon: Bell
-      })), ...generatedEvents];
+      }));
 
-      setNotifications(merged);
-
+      setNotifications(list);
     } catch (error) {
       toast.error('Failed to load notifications');
     } finally {
@@ -105,229 +47,250 @@ const AdminNotifications = () => {
 
   const handleMarkAsRead = async (id) => {
     try {
-      await adminService.markNotificationAsRead(id).catch(() => {});
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-      toast.success('Marked as read');
-    } catch (err) {
-      toast.error('Could not update notification');
+      await adminService.markNotificationRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+      );
+      toast.success('Notification marked as read');
+    } catch (error) {
+      toast.error('Failed to update notification');
     }
   };
 
-  const handleMarkAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    toast.success('All notifications marked as read');
+  const handleMarkAllRead = async () => {
+    try {
+      const unreadList = notifications.filter(n => !n.isRead);
+      await Promise.all(unreadList.map(n => adminService.markNotificationRead(n.id)));
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      toast.success('All notifications marked as read');
+    } catch (error) {
+      toast.error('Failed to mark all as read');
+    }
   };
 
-  const handleDeleteNotif = async (id) => {
+  const handleDeleteNotification = async (id) => {
     try {
-      await adminService.deleteNotification(id).catch(() => {});
+      await adminService.deleteNotification(id);
       setNotifications(prev => prev.filter(n => n.id !== id));
-      toast.success('Notification removed');
-    } catch (err) {
+      toast.success('Notification deleted');
+    } catch (error) {
       toast.error('Failed to delete notification');
     }
   };
 
-  const handleSendBroadcast = async (e) => {
+  const handleBroadcast = async (e) => {
     e.preventDefault();
     if (!broadcastTitle.trim() || !broadcastMsg.trim()) {
-      toast.error('Please enter notification title and message');
+      toast.error('Please enter title and message');
       return;
     }
 
     setSending(true);
     try {
       await adminService.createNotification({
-        title: broadcastTitle,
-        message: broadcastMsg,
+        title: broadcastTitle.trim(),
+        message: broadcastMsg.trim(),
         type: 'SYSTEM',
-        role: targetRole === 'ALL' ? null : targetRole
+        targetRole: targetRole,
+        isRead: false,
+        createdAt: new Date().toISOString()
       });
 
-      // Add to local state
-      const newNotif = {
-        id: `sys-${Date.now()}`,
-        type: 'SYSTEM',
-        title: broadcastTitle,
-        message: broadcastMsg,
-        createdAt: new Date().toISOString(),
-        isRead: false,
-        badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-        icon: Bell
-      };
-
-      setNotifications(prev => [newNotif, ...prev]);
-      toast.success(`Broadcast sent to ${targetRole === 'ALL' ? 'all users' : targetRole}!`);
-      setIsBroadcastOpen(false);
+      toast.success(`Broadcast sent successfully to ${targetRole}!`);
       setBroadcastTitle('');
       setBroadcastMsg('');
-    } catch (err) {
-      toast.error('Failed to send broadcast notification');
+      setIsBroadcastOpen(false);
+      fetchLiveNotifications();
+    } catch (error) {
+      toast.error('Failed to send broadcast');
     } finally {
       setSending(false);
     }
   };
 
   const filteredNotifications = notifications.filter(n => {
+    if (filterType === 'ALL') return true;
     if (filterType === 'UNREAD') return !n.isRead;
-    if (filterType === 'BOOKING') return n.type === 'BOOKING';
-    if (filterType === 'FAULT') return n.type === 'FAULT';
-    if (filterType === 'MAINTENANCE') return n.type === 'MAINTENANCE';
-    return true;
+    return n.type === filterType;
   });
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl p-6 rounded-3xl shadow-xl">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Admin System Notifications</h1>
-            {unreadCount > 0 && (
-              <span className="bg-orange-500 text-white font-bold text-xs px-3 py-1 rounded-full animate-bounce">
-                {unreadCount} New
-              </span>
-            )}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500">
+            <Bell className="w-6 h-6" />
           </div>
-          <p className="text-slate-400 text-sm">
-            Live notification logs derived from real-time student bookings, fault reports, and system alerts.
-          </p>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white">System Notifications</h1>
+              {unreadCount > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                  {unreadCount} Unread
+                </span>
+              )}
+            </div>
+            <p className="text-slate-400 text-xs mt-1">
+              Live authentic notifications from system activities, student bookings, faculty requests, and website inquiries.
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleMarkAllRead}
-            disabled={unreadCount === 0}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 rounded-2xl transition flex items-center gap-2 text-xs font-semibold border border-slate-700 disabled:opacity-50"
+            onClick={fetchLiveNotifications}
+            className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700"
+            title="Refresh Notifications"
           >
-            <CheckCheck className="w-4 h-4 text-green-400" />
-            <span>Mark All Read</span>
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition border border-slate-700 flex items-center gap-2"
+            >
+              <CheckCheck className="w-4 h-4 text-green-400" />
+              <span>Mark All Read</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsBroadcastOpen(true)}
-            className="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold px-5 py-2.5 rounded-2xl transition flex items-center gap-2 text-xs shadow-lg"
+            className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold text-xs rounded-xl transition shadow-lg flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
-            <span>Broadcast Alert</span>
+            <span>Send Broadcast</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
-        {[
-          { key: 'ALL', label: `All Alerts (${notifications.length})` },
-          { key: 'UNREAD', label: `Unread (${unreadCount})` },
-          { key: 'BOOKING', label: 'Bookings' },
-          { key: 'FAULT', label: 'Faults' },
-          { key: 'MAINTENANCE', label: 'Maintenance' }
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setFilterType(tab.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
-              filterType === tab.key
-                ? 'bg-orange-500 text-white shadow-md'
-                : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Notifications List */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-20 bg-slate-900 animate-pulse border border-slate-800 rounded-2xl"></div>
+      {/* Filter Bar */}
+      <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap gap-2 items-center justify-between">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <Filter className="w-4 h-4 text-slate-500 ml-2 mr-1" />
+          {['ALL', 'UNREAD', 'BOOKING', 'SYSTEM', 'FAULT', 'MAINTENANCE'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
+                filterType === type
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              {type === 'ALL' ? 'All Notifications' : type.charAt(0) + type.slice(1).toLowerCase()}
+            </button>
           ))}
         </div>
-      ) : filteredNotifications.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center justify-center">
-          <Bell className="w-16 h-16 text-slate-700 mb-4 opacity-30" />
-          <h3 className="text-xl font-bold text-white mb-1">No Notifications Found</h3>
-          <p className="text-slate-400 text-sm">No notification records match your selected filter.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredNotifications.map(item => {
-            const Icon = item.icon || Bell;
-            return (
-              <div
-                key={item.id}
-                className={`p-5 rounded-3xl border transition flex items-start justify-between gap-4 ${
-                  item.isRead
-                    ? 'bg-slate-900/60 border-slate-800/80 opacity-80'
-                    : 'bg-slate-900 border-slate-700/80 shadow-lg'
-                }`}
-              >
-                <div className="flex gap-4 items-start">
-                  <div className={`p-3 rounded-2xl border ${item.badgeColor} shrink-0 mt-0.5`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-white text-sm sm:text-base">{item.title}</h3>
-                      {!item.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
-                      )}
+
+        <span className="text-xs text-slate-500 font-mono pr-2">
+          Showing {filteredNotifications.length} of {notifications.length}
+        </span>
+      </div>
+
+      {/* Notification List */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        {loading ? (
+          <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+            <span className="text-xs">Fetching live system notifications...</span>
+          </div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="p-12 text-center text-slate-500 space-y-2">
+            <Bell className="w-10 h-10 mx-auto opacity-30 text-slate-600" />
+            <p className="text-sm font-semibold text-slate-400">No Notifications Match Filter</p>
+            <p className="text-xs text-slate-500">Live notifications will appear here when events occur.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-800">
+            {filteredNotifications.map((n) => {
+              const IconComp = n.icon || Bell;
+              return (
+                <div
+                  key={n.id}
+                  className={`p-5 transition flex items-start justify-between gap-4 ${
+                    !n.isRead ? 'bg-slate-800/40 hover:bg-slate-800/60 border-l-4 border-l-orange-500' : 'hover:bg-slate-800/20'
+                  }`}
+                >
+                  <div className="flex gap-4 items-start">
+                    <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700/60 shrink-0 text-orange-400 mt-0.5">
+                      <IconComp className="w-5 h-5" />
                     </div>
-                    <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">{item.message}</p>
-                    <span className="text-[11px] text-slate-500 font-mono mt-2 block">
-                      {new Date(item.createdAt).toLocaleString()}
-                    </span>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className={`text-sm ${!n.isRead ? 'font-bold text-white' : 'font-semibold text-slate-300'}`}>
+                          {n.title}
+                        </h3>
+                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${n.badgeColor}`}>
+                          {n.type}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        {n.message}
+                      </p>
+
+                      <span className="text-[10px] text-slate-500 font-mono block pt-1">
+                        {n.createdAt ? new Date(n.createdAt).toLocaleString() : 'Recently'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!n.isRead && (
+                      <button
+                        onClick={() => handleMarkAsRead(n.id)}
+                        className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-800 rounded-xl transition"
+                        title="Mark as Read"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleDeleteNotification(n.id)}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition"
+                      title="Delete Notification"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {!item.isRead && (
-                    <button
-                      onClick={() => handleMarkAsRead(item.id)}
-                      className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-800 rounded-xl transition"
-                      title="Mark as Read"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteNotif(item.id)}
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition"
-                    title="Delete Notification"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Broadcast Alert Modal */}
+      {/* Broadcast Modal */}
       {isBroadcastOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Send className="w-5 h-5 text-orange-500" />
-                Broadcast System Notification
-              </h2>
-              <button onClick={() => setIsBroadcastOpen(false)} className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsBroadcastOpen(false)} />
+          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-2xl">
+                  <Send className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Broadcast Notification</h3>
+              </div>
+              <button onClick={() => setIsBroadcastOpen(false)} className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSendBroadcast} className="space-y-4">
+            <form onSubmit={handleBroadcast} className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">Recipient Audience</label>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Target Audience</label>
                 <select
                   value={targetRole}
                   onChange={(e) => setTargetRole(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-orange-500 transition"
                 >
                   <option value="ALL">All Users (Students & Faculty)</option>
                   <option value="STUDENT">Students Only</option>
@@ -336,34 +299,44 @@ const AdminNotifications = () => {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">Notification Title *</label>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Notification Title *</label>
                 <input
                   type="text"
                   required
                   value={broadcastTitle}
                   onChange={(e) => setBroadcastTitle(e.target.value)}
-                  placeholder="e.g. System Maintenance Notice"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500"
+                  placeholder="e.g. Scheduled Maintenance Notice"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-orange-500 transition"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">Message Content *</label>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Message Content *</label>
                 <textarea
-                  rows={4}
                   required
+                  rows={3}
                   value={broadcastMsg}
                   onChange={(e) => setBroadcastMsg(e.target.value)}
-                  placeholder="Type system alert message here..."
-                  className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500 resize-none"
+                  placeholder="Type broadcast alert message..."
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-white outline-none focus:border-orange-500 transition resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <button type="button" onClick={() => setIsBroadcastOpen(false)} className="px-5 py-2.5 rounded-2xl font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 text-sm transition">Cancel</button>
-                <button type="submit" disabled={sending} className="px-5 py-2.5 rounded-2xl font-medium text-white bg-orange-500 hover:bg-orange-600 active:scale-95 text-sm transition flex items-center gap-2 disabled:opacity-60">
-                  <Send className="w-4 h-4" />
-                  <span>{sending ? 'Sending...' : 'Send Broadcast'}</span>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBroadcastOpen(false)}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold text-xs rounded-xl transition shadow-lg flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{sending ? 'Sending...' : 'Dispatch Broadcast'}</span>
                 </button>
               </div>
             </form>
