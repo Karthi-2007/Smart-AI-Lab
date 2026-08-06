@@ -2,11 +2,11 @@ const students = [
   {
     id: 1,
     registerNo: "22BCS001",
-    name: "Karthikeyan S S",
+    name: "Premnath",
     department: "CSE",
     year: "IV",
     section: "A",
-    email: "karthikeyan@kce.ac.in",
+    email: "premnath@kce.ac.in",
     status: "Activated",
   },
   {
