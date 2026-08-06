@@ -8,9 +8,20 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    host: true, // Listens on 0.0.0.0 (allows access via LAN Wi-Fi IP)
+    host: true, // Enables LAN access via Wi-Fi IP (10.58.17.103)
     port: 5173,
     proxy: {
+      // Auth microservice on port 8081
+      "/api/auth": {
+        target: "http://localhost:8081",
+        changeOrigin: true,
+      },
+      // Business microservice on port 8082
+      "/api/business": {
+        target: "http://localhost:8082",
+        changeOrigin: true,
+      },
+      // Default fallback
       "/api": {
         target: "http://localhost:8082",
         changeOrigin: true,
