@@ -32,6 +32,15 @@ public class StudentController {
 
     @PostMapping
     public Student createStudent(@RequestBody Student student) {
+        if (student.getDepartment() == null) {
+            student.setDepartment("Computer Science & Engineering");
+        }
+        if (student.getYear() == 0) {
+            student.setYear(3);
+        }
+        if (student.getStatus() == null) {
+            student.setStatus("Active");
+        }
         return studentService.createStudent(student);
     }
 
@@ -47,7 +56,7 @@ public class StudentController {
                 student.setStudentId(id);
                 student.setName(studentDetails.getName() != null ? studentDetails.getName() : "Student");
                 student.setEmail(studentDetails.getEmail() != null ? studentDetails.getEmail() : "student@smartlab.com");
-                student.setDepartment(studentDetails.getDepartment() != null ? studentDetails.getDepartment() : "Computer Science");
+                student.setDepartment(studentDetails.getDepartment() != null ? studentDetails.getDepartment() : "Computer Science & Engineering");
                 student.setYear(3);
                 student.setStatus("Active");
                 student.setPhone(studentDetails.getPhone());
@@ -73,10 +82,16 @@ public class StudentController {
     @GetMapping("/email/{email}")
     public ResponseEntity<Student> getStudentByEmail(@PathVariable String email) {
         Student student = studentService.getStudentByEmail(email);
-        if (student == null) {
+        if (student == null && email != null && !email.trim().isEmpty()) {
             student = new Student();
-            student.setEmail(email);
-            student.setName("Karthikeyan S");
+            student.setEmail(email.toLowerCase().trim());
+            
+            // Generate clean name from email prefix (e.g. premnath@kce.ac.in -> Premnath)
+            String cleanEmail = email.trim();
+            String emailPrefix = cleanEmail.contains("@") ? cleanEmail.substring(0, cleanEmail.indexOf("@")) : cleanEmail;
+            String prettyName = Character.toUpperCase(emailPrefix.charAt(0)) + emailPrefix.substring(1);
+            
+            student.setName(prettyName);
             student.setDepartment("Computer Science & Engineering");
             student.setYear(3);
             student.setStatus("Active");

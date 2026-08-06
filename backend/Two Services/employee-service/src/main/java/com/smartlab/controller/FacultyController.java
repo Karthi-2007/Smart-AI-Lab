@@ -32,6 +32,12 @@ public class FacultyController {
 
     @PostMapping
     public Faculty createFaculty(@RequestBody Faculty faculty) {
+        if (faculty.getDepartment() == null) {
+            faculty.setDepartment("Computer Science & Engineering");
+        }
+        if (faculty.getDesignation() == null) {
+            faculty.setDesignation("Assistant Professor");
+        }
         return facultyService.createFaculty(faculty);
     }
 
@@ -47,7 +53,7 @@ public class FacultyController {
                 faculty.setFacultyId(id);
                 faculty.setName(facultyDetails.getName() != null ? facultyDetails.getName() : "Faculty");
                 faculty.setEmail(facultyDetails.getEmail() != null ? facultyDetails.getEmail() : "faculty@smartlab.com");
-                faculty.setDepartment(facultyDetails.getDepartment() != null ? facultyDetails.getDepartment() : "Computer Science");
+                faculty.setDepartment(facultyDetails.getDepartment() != null ? facultyDetails.getDepartment() : "Computer Science & Engineering");
                 faculty.setDesignation("Professor");
                 faculty.setPhone(facultyDetails.getPhone());
                 return ResponseEntity.ok(facultyService.createFaculty(faculty));
@@ -72,12 +78,18 @@ public class FacultyController {
     @GetMapping("/email/{email}")
     public ResponseEntity<Faculty> getFacultyByEmail(@PathVariable String email) {
         Faculty faculty = facultyService.getFacultyByEmail(email);
-        if (faculty == null) {
+        if (faculty == null && email != null && !email.trim().isEmpty()) {
             faculty = new Faculty();
-            faculty.setEmail(email);
-            faculty.setName("Dr. Anitha Raman");
+            faculty.setEmail(email.toLowerCase().trim());
+            
+            // Generate clean name from email prefix (e.g. dr.ramesh@kce.ac.in -> Dr. Ramesh)
+            String cleanEmail = email.trim();
+            String emailPrefix = cleanEmail.contains("@") ? cleanEmail.substring(0, cleanEmail.indexOf("@")) : cleanEmail;
+            String prettyName = Character.toUpperCase(emailPrefix.charAt(0)) + emailPrefix.substring(1);
+            
+            faculty.setName(prettyName);
             faculty.setDepartment("Computer Science & Engineering");
-            faculty.setDesignation("Professor");
+            faculty.setDesignation("Assistant Professor");
             faculty = facultyService.createFaculty(faculty);
         }
         return ResponseEntity.ok(faculty);
