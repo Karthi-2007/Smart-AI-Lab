@@ -7,23 +7,15 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Brand */}
         <div className="md:col-span-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white px-2.5 py-1.5 rounded-xl inline-block shadow-md">
-              <img
-                src="/images/kce/KCE-logo-color.png"
-                alt="KCE Logo"
-                className="h-7 w-auto object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://www.kce.ac.in/images/kce/logo/KCE-logo-color.png";
-                }}
-              />
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-black text-base shadow-md shrink-0" style={{ background: '#cc6926' }}>
+              SL
             </div>
-            <div className="border-l-2 pl-3" style={{ borderColor: "#cc6926" }}>
-              <h2 className="text-xl font-extrabold text-white">
+            <div>
+              <h2 className="text-xl font-extrabold text-white leading-none">
                 SmartLab <span style={{ color: "#cc6926" }}>AI</span>
               </h2>
-              <p className="text-xs text-slate-400 uppercase tracking-wider">Lab Management System</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider mt-1">Lab Management System</p>
             </div>
           </div>
           <p className="text-slate-400 text-sm max-w-md leading-relaxed">

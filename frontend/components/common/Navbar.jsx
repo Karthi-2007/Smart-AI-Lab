@@ -12,22 +12,16 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm" style={{ borderColor: "#cc6926" }}>
       <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-        {/* Logo — KCE Official Logo + SmartLab AI text */}
-        <Link to="/" onClick={closeMenu} className="flex items-center gap-2">
-          <img
-            src="/images/kce/KCE-logo-color.png"
-            alt="Karpagam College of Engineering"
-            className="h-8 w-auto object-contain"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "https://www.kce.ac.in/images/kce/logo/KCE-logo-color.png";
-            }}
-          />
-          <div className="border-l pl-2" style={{ borderColor: "#cc6926" }}>
+        {/* Logo — SmartLab AI text */}
+        <Link to="/" onClick={closeMenu} className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md shrink-0" style={{ background: '#cc6926' }}>
+            SL
+          </div>
+          <div>
             <h1 className="text-base font-extrabold leading-none" style={{ color: "#0b2545" }}>
               SmartLab <span style={{ color: "#cc6926" }}>AI</span>
             </h1>
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+            <p className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider mt-0.5">
               Lab Management System
             </p>
           </div>
