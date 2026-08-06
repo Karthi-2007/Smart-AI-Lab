@@ -6,6 +6,8 @@ import {
   Clock,
   Send,
   Loader2,
+  Globe,
+  Award,
   CheckCircle2
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -65,61 +67,97 @@ const ContactSection = () => {
         <SectionTitle
           subtitle="GET IN TOUCH"
           title="We're Here to Help"
-          description="Have questions about laboratory access, equipment reservation, or AI infrastructure? Reach out to our technical team."
+          description="Have questions about SmartLab AI infrastructure, equipment reservation, or research access at Karpagam College of Engineering?"
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-12">
-          {/* Contact Information Column */}
+          {/* Official College Contact Information Column */}
           <div className="lg:col-span-5 space-y-6">
-            <GlassCard className="p-8 space-y-8">
-              <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                <span className="w-2 h-6 bg-orange-500 rounded-full"></span>
-                Contact Information
-              </h3>
+            <GlassCard className="p-8 space-y-7">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                  <span className="w-2 h-6 bg-orange-500 rounded-full"></span>
+                  College Campus & Details
+                </h3>
+                <span className="px-2.5 py-1 bg-orange-500/10 text-orange-400 border border-orange-500/30 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                  TNEA CODE: 2710
+                </span>
+              </div>
 
               <div className="space-y-6 text-sm">
+                {/* College Address */}
                 <div className="flex items-start gap-4">
-                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0">
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0 mt-0.5">
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white">Laboratory Location</h4>
-                    <p className="text-slate-400 mt-1 leading-relaxed">
-                      Smart AI Lab Complex, Block C - 3rd Floor,<br />
-                      Kathir College of Engineering, Neelambur,<br />
-                      Coimbatore - 641062, Tamil Nadu.
+                    <h4 className="font-semibold text-white">Karpagam College of Engineering</h4>
+                    <p className="text-slate-400 text-xs mt-1 leading-relaxed">
+                      Myleripalayam Road, Othakkalmandapam Post,<br />
+                      Coimbatore - 641 032, Tamil Nadu, India.
+                    </p>
+                    <span className="text-[10px] text-slate-500 font-semibold mt-1 block">
+                      (NAAC 'A+' Grade Autonomous Institution | NBA Accredited)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Email Addresses */}
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0 mt-0.5">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-white">Official Email Addresses</h4>
+                    <div className="flex flex-col gap-0.5 mt-1 text-xs">
+                      <a href="mailto:smartlab.college.auth@gmail.com" className="text-orange-400 hover:underline font-mono">
+                        smartlab.college.auth@gmail.com
+                      </a>
+                      <a href="mailto:info@kce.ac.in" className="text-slate-300 hover:underline font-mono text-[11px]">
+                        info@kce.ac.in (General Info)
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phone Numbers */}
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0 mt-0.5">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-white">Helpline & Support</h4>
+                    <p className="text-slate-300 font-mono text-xs mt-1">
+                      +91 - 422 2619005 / +91 93605 36215
                     </p>
                   </div>
                 </div>
 
+                {/* Website Link */}
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0">
-                    <Mail className="w-5 h-5" />
+                    <Globe className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white">Email Us</h4>
-                    <a href="mailto:smartlab.college.auth@gmail.com" className="text-orange-400 hover:underline">
-                      smartlab.college.auth@gmail.com
+                    <h4 className="font-semibold text-white">Official Website</h4>
+                    <a
+                      href="https://kce.ac.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-orange-400 hover:underline text-xs font-semibold"
+                    >
+                      https://kce.ac.in/
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-white">Lab Support Helpline</h4>
-                    <p className="text-slate-300 font-mono">+91 93605 36215 / +91 422 2687200</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 pt-2 border-t border-slate-800">
+                {/* Operating Hours */}
+                <div className="flex items-center gap-4 pt-3 border-t border-slate-800">
                   <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-orange-400 shrink-0">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white">Operating Hours</h4>
+                    <h4 className="font-semibold text-white">Laboratory Hours</h4>
                     <p className="text-slate-400 text-xs mt-0.5">Mon - Sat: 08:30 AM - 06:00 PM</p>
                   </div>
                 </div>
@@ -134,7 +172,7 @@ const ContactSection = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-white">Send Us a Message</h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Fill out the form below to submit an inquiry directly to the Admin portal.
+                    Fill out the form below to submit an inquiry directly to the SmartLab AI Admin portal.
                   </p>
                 </div>
 
