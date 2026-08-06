@@ -51,6 +51,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/error").permitAll()
 
+                    // Public Contact Us endpoint (anonymous submit allowed)
+                    .requestMatchers(HttpMethod.POST, "/contact-messages/**", "/api/business/contact-messages/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/contact-messages/**", "/api/business/contact-messages/**").hasAnyRole("ADMIN", "FACULTY")
+                    .requestMatchers(HttpMethod.PUT, "/contact-messages/**", "/api/business/contact-messages/**").hasAnyRole("ADMIN", "FACULTY")
+                    .requestMatchers(HttpMethod.DELETE, "/contact-messages/**", "/api/business/contact-messages/**").hasRole("ADMIN")
+
                     // Students
                     .requestMatchers(HttpMethod.GET, "/students/**", "/api/business/students/**")
                         .hasAnyRole("STUDENT", "FACULTY", "ADMIN")
@@ -85,7 +91,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PUT, "/equipments/**", "/api/business/equipments/**")
                         .hasAnyRole("FACULTY", "ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/equipments/**", "/api/business/equipments/**")
-                        .hasAnyRole("ADMIN")
+                        .hasRole("ADMIN")
 
                     // Booking endpoints
                     .requestMatchers(HttpMethod.GET, "/bookings/**", "/api/business/bookings/**")
