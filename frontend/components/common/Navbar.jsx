@@ -15,7 +15,7 @@ const Navbar = () => {
         {/* Logo — KCE Official Logo + SmartLab AI text */}
         <Link to="/" onClick={closeMenu} className="flex items-center gap-2">
           <img
-            src="https://kce.ac.in/images/kce/logo/KCE-logo-color.png"
+            src="/images/kce/KCE-logo-color.png"
             alt="Karpagam College of Engineering"
             className="h-8 w-auto object-contain"
             onError={(e) => { e.target.style.display = "none"; }}

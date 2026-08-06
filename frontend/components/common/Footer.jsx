@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="flex items-center gap-3">
             <div className="bg-white px-2.5 py-1.5 rounded-xl inline-block shadow-md">
               <img
-                src="https://kce.ac.in/images/kce/logo/KCE-logo-color.png"
+                src="/images/kce/KCE-logo-color.png"
                 alt="KCE Logo"
                 className="h-7 w-auto object-contain"
                 onError={(e) => { e.target.style.display = "none"; }}

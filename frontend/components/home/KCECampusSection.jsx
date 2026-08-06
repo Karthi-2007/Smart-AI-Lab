@@ -3,15 +3,15 @@ import { ExternalLink, Award, MapPin } from "lucide-react";
 
 const campusImages = [
   {
-    src: "https://kce.ac.in/images/kce/home/banner/banner-img2.webp",
+    src: "/images/kce/banner-img2.webp",
     label: "Engineering Campus",
   },
   {
-    src: "https://kce.ac.in/images/kce/home/banner/banner-img3.webp",
+    src: "/images/kce/banner-img3.webp",
     label: "Research Facilities",
   },
   {
-    src: "https://kce.ac.in/images/kce/home/banner/banner-img5.webp",
+    src: "/images/kce/banner-img5.webp",
     label: "Innovation Centre",
   },
 ];

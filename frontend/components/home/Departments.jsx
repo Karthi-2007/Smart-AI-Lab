@@ -90,8 +90,8 @@ const Departments = () => {
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-800">
-                  <span className="inline-block bg-orange-500/10 text-orange-400 border border-orange-500/20 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                <div className="mt-6 pt-4 border-t border-slate-100">
+                  <span className="inline-block px-3.5 py-1.5 rounded-full text-xs font-bold" style={{ background: 'rgba(204,105,38,0.08)', border: '1px solid rgba(204,105,38,0.25)', color: '#cc6926' }}>
                     {dept.count}
                   </span>
                 </div>
