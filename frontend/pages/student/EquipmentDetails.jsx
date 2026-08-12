@@ -4,6 +4,36 @@ import { Search, Info, Package, AlertCircle, Clock, Wrench } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { studentService } from '../../services/studentService';
 
+const EquipmentImage = ({ src, alt }) => {
+  const [imgSrc, setImgSrc] = useState(src || "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setImgSrc(src || "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop");
+    setLoading(true);
+  }, [src]);
+
+  return (
+    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-950/80 mb-3 border border-slate-800/80">
+      {loading && (
+        <div className="absolute inset-0 bg-slate-800/60 animate-pulse flex items-center justify-center">
+          <span className="text-[10px] text-slate-500">Loading...</span>
+        </div>
+      )}
+      <img
+        src={imgSrc}
+        onLoad={() => setLoading(false)}
+        onError={() => {
+          setImgSrc("https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop");
+          setLoading(false);
+        }}
+        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+        alt={alt}
+      />
+    </div>
+  );
+};
+
 const EquipmentDetails = () => {
   const [equipmentList, setEquipmentList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,26 +132,28 @@ const EquipmentDetails = () => {
             return (
               <div key={equipmentId} className="bg-slate-900 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition-colors flex flex-col h-full">
                 <div className="flex-grow">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-white line-clamp-1" title={equipment.name}>
-                      {equipment.name}
-                    </h3>
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusConfig(equipment.status).color}`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusConfig(equipment.status).color}`}>
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {equipment.status}
                     </span>
+                    {(equipment.equipmentId || equipmentId) && (
+                      <span className="text-[11px] font-mono text-slate-500 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800/80">
+                        #{equipment.equipmentId || equipmentId}
+                      </span>
+                    )}
                   </div>
+
+                  <EquipmentImage src={equipment.imageUrl} alt={equipment.name} />
+
+                  <h3 className="text-base font-bold text-white mb-3 line-clamp-2 h-12 flex items-center" title={equipment.name}>
+                    {equipment.name}
+                  </h3>
                   
                   <div className="space-y-2 mb-4">
                     <p className="text-sm text-slate-400 line-clamp-2" title={equipment.description}>
                       {equipment.description || 'No description available'}
                     </p>
-                    
-                    {(equipment.equipmentId || equipmentId) && (
-                      <div className="text-sm text-slate-300">
-                        <span className="text-slate-500">ID: </span> {equipment.equipmentId || equipmentId}
-                      </div>
-                    )}
                   </div>
                 </div>
                 

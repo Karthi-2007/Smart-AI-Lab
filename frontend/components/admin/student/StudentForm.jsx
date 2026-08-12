@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { adminService } from "../../../services/adminService";
 
 const StudentForm = ({
   isOpen,
@@ -8,15 +9,25 @@ const StudentForm = ({
   student,
   onSave,
 }) => {
-    const [formData, setFormData] = useState({
-  name: "",
-  registerNo: "",
-  department: "",
-  year: "",
-  section: "",
-  dob: "",
-  email: "",
-});
+  const [departments, setDepartments] = useState([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    registerNo: "",
+    department: "",
+    year: "",
+    section: "",
+    dob: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      adminService.getDepartments().then(res => {
+        const list = res?.data || res || [];
+        setDepartments(Array.isArray(list) ? list : []);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 useEffect(() => {
   if (mode === "edit" && student) {
     setFormData({
@@ -57,7 +68,7 @@ const handleSubmit = (e) => {
             ...formData,
             regNo: formData.regNo || formData.registerNo || "REG-" + Date.now().toString().slice(-6),
             password: formData.password || "Password123!",
-            department: formData.department || "Computer Science",
+            department: formData.department || "Computer Science & Technology / ECE",
             role: "STUDENT"
         };
         onSave(payload);
@@ -150,18 +161,18 @@ const handleSubmit = (e) => {
               </label>
 
               <select
-  name="department"
-  value={formData.department}
-  onChange={handleChange}
-  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
->
-
-                <option>CSE</option>
-                <option>ECE</option>
-                <option>EEE</option>
-                <option>Mechanical</option>
-                <option>Civil</option>
-
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                required
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none focus:border-orange-500 transition"
+              >
+                <option value="">Select Department</option>
+                {departments.map((dept) => (
+                  <option key={dept.departmentId || dept.id} value={dept.name}>
+                    {dept.name} ({dept.code})
+                  </option>
+                ))}
               </select>
 
             </div>
@@ -175,17 +186,15 @@ const handleSubmit = (e) => {
               </label>
 
               <select
-  name="year"
-  value={formData.year}
-  onChange={handleChange}
-  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
->
-
-                <option>I</option>
-                <option>II</option>
-                <option>III</option>
-                <option>IV</option>
-
+                name="year"
+                value={formData.year}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
+              >
+                <option value="1">I</option>
+                <option value="2">II</option>
+                <option value="3">III</option>
+                <option value="4">IV</option>
               </select>
 
             </div>
@@ -229,22 +238,34 @@ const handleSubmit = (e) => {
 
             <div className="md:col-span-2">
 
+            <div>
               <label className="block mb-2">
-
                 College Email
-
               </label>
-
-                <input
-  type="email"
-  name="email"
-  value={formData.email}
-  onChange={handleChange}
-  placeholder="student@kce.ac.in"
-  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
-/>
-
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="student@kce.ac.in"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3"
+              />
             </div>
+            <div>
+              <label className="block mb-2">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none focus:border-orange-500 transition"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
 
           </div>
 

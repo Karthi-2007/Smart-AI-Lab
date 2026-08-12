@@ -3,6 +3,8 @@ import { Eye, Pencil, Trash2, Loader2, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../../services/adminService';
 
+const fallbackUrl = "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop";
+
 const EquipmentTable = ({ search = '', equipment = [], loading = false, onDeleteSuccess, onDetail, onEdit }) => {
 
   const handleDelete = async (id) => {
@@ -82,7 +84,15 @@ const EquipmentTable = ({ search = '', equipment = [], loading = false, onDelete
               return (
                 <tr key={eqId} className="hover:bg-slate-800/50 transition">
                   <td className="px-6 py-4 text-sm text-slate-300">{item.code || `EQ-${eqId}`}</td>
-                  <td className="px-6 py-4 text-sm text-white font-medium">{item.name}</td>
+                  <td className="px-6 py-4 text-sm text-white font-medium flex items-center gap-3">
+                    <img
+                      src={item.imageUrl || fallbackUrl}
+                      onError={(e) => { e.target.src = fallbackUrl; }}
+                      className="w-12 h-10 object-cover rounded-lg border border-slate-700 bg-slate-950/60"
+                      alt={item.name}
+                    />
+                    <span>{item.name}</span>
+                  </td>
                   <td className="px-6 py-4 text-sm text-slate-300">{item.category || 'General'}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">{labName}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">{item.serialNo || '-'}</td>

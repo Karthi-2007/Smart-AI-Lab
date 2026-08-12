@@ -43,7 +43,10 @@ export const adminService = {
                         studentId: profile?.studentId,
                         department: profile?.department || '',
                         year: profile?.year || '',
-                        status: user.status || 'UNACTIVATED'
+                        status: profile?.status || user.status || 'Active',
+                        phone: profile?.phone || '',
+                        regNo: profile?.regNo || '',
+                        registerNo: profile?.regNo || ''
                     };
                 } else if (user.role === 'FACULTY' || user.role === 'faculty') {
                     const profile = faculty.find(f => f.email?.toLowerCase().trim() === email);
@@ -53,7 +56,9 @@ export const adminService = {
                         facultyId: profile?.facultyId,
                         department: profile?.department || '',
                         designation: profile?.designation || '',
-                        status: user.status || 'UNACTIVATED'
+                        status: profile?.status || user.status || 'ACTIVE',
+                        lab: profile?.lab || '',
+                        phone: profile?.phone || ''
                     };
                 }
                 return {
@@ -87,6 +92,10 @@ export const adminService = {
     
     // Maintenance & Faults
     getMaintenance: () => api.get('/api/business/maintenance'),
+    scheduleMaintenance: (data) => api.post('/api/business/maintenance', data),
+    updateMaintenance: (id, data) => api.put(`/api/business/maintenance/${id}`, data),
+    completeMaintenance: (id) => api.put(`/api/business/maintenance/${id}/complete`),
+    deleteMaintenance: (id) => api.delete(`/api/business/maintenance/${id}`),
     getFaults: () => api.get('/api/business/faults'),
     
     // Notifications
@@ -110,7 +119,10 @@ export const adminService = {
             dob: data.dob
         });
         
+        const newUserId = authRes.data.userId || authRes.data.id;
+        
         const bizRes = await api.post('/api/business/students', {
+            studentId: newUserId,
             name: data.name,
             email: data.email,
             department: data.department || 'Computer Science & Engineering',
@@ -141,7 +153,10 @@ export const adminService = {
             dob: data.dob
         });
         
+        const newUserId = authRes.data.userId || authRes.data.id;
+        
         const bizRes = await api.post('/api/business/faculty', {
+            facultyId: newUserId,
             name: data.name,
             email: data.email,
             department: data.department || 'Computer Science & Engineering',
@@ -151,6 +166,29 @@ export const adminService = {
         return { auth: authRes.data, business: bizRes.data };
     },
     
+    updateStudent: async (authId, data) => {
+        const users = await adminService.getUsers();
+        const user = users.find(u => u.id === authId || u.userId === authId);
+        
+        const promises = [
+            api.put(`/api/auth/admin/users/${authId}`, {
+                name: data.name,
+                email: data.email,
+                regNo: data.regNo || data.registerNo
+            })
+        ];
+        if (user && user.studentId) {
+            promises.push(api.put(`/api/business/students/${user.studentId}`, {
+                name: data.name,
+                email: data.email,
+                department: data.department,
+                year: parseInt(data.year) || 3,
+                status: data.status || 'Active'
+            }));
+        }
+        await Promise.all(promises);
+    },
+
     updateFaculty: async (authId, data) => {
         const users = await adminService.getUsers();
         const user = users.find(u => u.id === authId || u.userId === authId);
@@ -167,7 +205,9 @@ export const adminService = {
                 name: data.name,
                 email: data.email,
                 department: data.department,
-                designation: data.designation
+                designation: data.designation,
+                status: data.status || 'ACTIVE',
+                lab: data.lab || '-'
             }));
         }
         await Promise.all(promises);

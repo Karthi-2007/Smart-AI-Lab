@@ -30,7 +30,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
   const handleComplete = async (id) => {
     try {
       await adminService.completeMaintenance(id);
-      setMaintenance(prev => prev.map(m => m.id === id ? { ...m, status: 'Completed' } : m));
+      setMaintenance(prev => prev.map(m => m.maintenanceId === id ? { ...m, status: 'Completed' } : m));
       toast.success('Maintenance completed!');
       fetchMaintenance();
     } catch (error) {
@@ -42,7 +42,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
     if (window.confirm('Are you sure you want to delete this maintenance task?')) {
       try {
         await adminService.deleteMaintenance(id);
-        setMaintenance(prev => prev.filter(m => m.id !== id));
+        setMaintenance(prev => prev.filter(m => m.maintenanceId !== id));
         toast.success('Maintenance task deleted!');
         fetchMaintenance();
       } catch (error) {
@@ -59,7 +59,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
       eqName.toLowerCase().includes(term) ||
       (m.technician || '').toLowerCase().includes(term) ||
       (m.status || '').toLowerCase().includes(term) ||
-      String(m.id || '').toLowerCase().includes(term)
+      String(m.maintenanceId || '').toLowerCase().includes(term)
     );
   });
 
@@ -112,7 +112,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filtered.map((item, idx) => {
-              const mId = item.id || idx;
+              const mId = item.maintenanceId || idx;
               const eqName = typeof item.equipment === 'object' ? item.equipment?.name : (item.equipment || 'N/A');
               return (
                 <tr key={mId} className="hover:bg-slate-800/50 transition">
@@ -160,7 +160,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
             <div className="space-y-3 text-sm text-slate-300">
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Task ID:</span>
-                <span className="font-mono text-white">#{detailMaintenance.id}</span>
+                <span className="font-mono text-white">#{detailMaintenance.maintenanceId}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Equipment:</span>

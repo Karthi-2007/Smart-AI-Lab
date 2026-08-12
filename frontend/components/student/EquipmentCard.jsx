@@ -1,29 +1,59 @@
+import React, { useState, useEffect } from "react";
 import { Package, Eye, CalendarPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop";
 
 const EquipmentCard = ({ equipment }) => {
   const navigate = useNavigate();
   const eqId = equipment.equipmentId || equipment.id || equipment._id;
   const isAvailable = (equipment.status || '').toLowerCase() === 'available';
 
+  const [imgSrc, setImgSrc] = useState(equipment.imageUrl || FALLBACK_IMAGE);
+  const [imgLoading, setImgLoading] = useState(true);
+
+  useEffect(() => {
+    setImgSrc(equipment.imageUrl || FALLBACK_IMAGE);
+    setImgLoading(true);
+  }, [equipment.imageUrl]);
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all flex flex-col justify-between">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all flex flex-col justify-between h-full">
       <div>
+        {/* Equipment Image */}
+        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-950 mb-4 border border-slate-800/80">
+          {imgLoading && (
+            <div className="absolute inset-0 bg-slate-800/60 animate-pulse flex items-center justify-center">
+              <Package size={24} className="text-slate-600 animate-bounce" />
+            </div>
+          )}
+          <img
+            src={imgSrc}
+            onLoad={() => setImgLoading(false)}
+            onError={() => {
+              setImgSrc(FALLBACK_IMAGE);
+              setImgLoading(false);
+            }}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            alt={equipment.name}
+          />
+        </div>
+
         <div className="flex justify-between items-start gap-3">
           <div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-lg font-bold text-white line-clamp-1" title={equipment.name}>
               {equipment.name}
             </h2>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-400 text-xs mt-1">
               {equipment.laboratory?.name || equipment.labName || equipment.lab || 'General Lab'}
             </p>
           </div>
-          <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500 shrink-0">
-            <Package size={22} />
+          <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 shrink-0">
+            <Package size={18} />
           </div>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-4">
           <span
             className={`px-3 py-1 rounded-full text-xs font-semibold border inline-block ${
               isAvailable

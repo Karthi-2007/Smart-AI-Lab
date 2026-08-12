@@ -81,6 +81,7 @@ const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
               <th className="px-6 py-4 font-medium">Name</th>
               <th className="px-6 py-4 font-medium">HOD</th>
               <th className="px-6 py-4 font-medium">Faculty Count</th>
+              <th className="px-6 py-4 font-medium">Student Count</th>
               <th className="px-6 py-4 font-medium">Labs</th>
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -96,6 +97,7 @@ const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
                     <td className="px-6 py-4">{d.name}</td>
                     <td className="px-6 py-4">{d.hod || '-'}</td>
                     <td className="px-6 py-4">{d.facultyCount || 0}</td>
+                    <td className="px-6 py-4">{d.studentCount || 0}</td>
                     <td className="px-6 py-4">{d.labCount || 0}</td>
                     <td className="px-6 py-4">{getStatusBadge(d.status || 'ACTIVE')}</td>
                     <td className="px-6 py-4">

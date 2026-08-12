@@ -13,7 +13,9 @@ const FacultyForm = ({ isOpen, onClose, mode, onSave, initialData }) => {
     email: '',
     facultyId: '',
     department: 'Computer Science & Engineering',
-    designation: 'Assistant Professor'
+    designation: 'Assistant Professor',
+    status: 'ACTIVE',
+    lab: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -24,7 +26,9 @@ const FacultyForm = ({ isOpen, onClose, mode, onSave, initialData }) => {
         email: initialData.email || '',
         facultyId: initialData.facultyId || '',
         department: initialData.department || 'Computer Science & Engineering',
-        designation: initialData.designation || 'Assistant Professor'
+        designation: initialData.designation || 'Assistant Professor',
+        status: initialData.status || 'ACTIVE',
+        lab: initialData.lab || ''
       });
     } else {
       setForm({
@@ -32,7 +36,9 @@ const FacultyForm = ({ isOpen, onClose, mode, onSave, initialData }) => {
         email: '',
         facultyId: `FAC-${Math.floor(100 + Math.random() * 900)}`,
         department: 'Computer Science & Engineering',
-        designation: 'Assistant Professor'
+        designation: 'Assistant Professor',
+        status: 'ACTIVE',
+        lab: ''
       });
     }
   }, [initialData, isOpen]);
@@ -132,6 +138,31 @@ const FacultyForm = ({ isOpen, onClose, mode, onSave, initialData }) => {
               <option value="Mechanical Engineering">Mechanical Engineering</option>
               <option value="Civil & Structural Engineering">Civil & Structural Engineering</option>
             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">Lab Name</label>
+              <input
+                name="lab"
+                value={form.lab}
+                onChange={handleChange}
+                placeholder="e.g. VLSI & DSP Labs"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-orange-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">Status</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-orange-500"
+              >
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">

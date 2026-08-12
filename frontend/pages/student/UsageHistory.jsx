@@ -13,11 +13,11 @@ export default function UsageHistory() {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const bookings = await studentService.getMyBookings(user.id);
-        if (bookings) {
-          const completed = bookings.filter(b => b.status === 'Completed');
-          setHistory(completed);
-        }
+        const res = await studentService.getMyBookings(user.id);
+        const data = res?.data || res || [];
+        const list = Array.isArray(data) ? data : [];
+        const completed = list.filter(b => b.status?.toLowerCase() === 'completed');
+        setHistory(completed);
       } catch (error) {
         toast.error('Failed to load usage history.');
       } finally {

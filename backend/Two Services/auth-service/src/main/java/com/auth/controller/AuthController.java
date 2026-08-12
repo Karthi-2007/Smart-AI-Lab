@@ -38,19 +38,22 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final OtpService otpService;
+    private final com.auth.service.UserSyncService userSyncService;
 
     public AuthController(
             AppUserRepository appUserRepository,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
             AuthenticationManager authenticationManager,
-            OtpService otpService
+            OtpService otpService,
+            com.auth.service.UserSyncService userSyncService
     ) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.otpService = otpService;
+        this.userSyncService = userSyncService;
     }
 
     private String normalize(String email) {
@@ -199,7 +202,10 @@ public class AuthController {
         }
 
         user.setStatus("ACTIVE");
-        appUserRepository.save(user);
+        AppUser savedUser = appUserRepository.save(user);
+
+        // Sync with smartlab-service
+        userSyncService.syncUser(savedUser);
 
         return ResponseEntity.ok("Password created and account activated successfully");
     }
@@ -243,6 +249,8 @@ public class AuthController {
                 role
         );
 
+        String regNo = user.getRegNo() != null ? user.getRegNo() : "";
+
         return ResponseEntity.ok(
                 Map.of(
                         "token", token,
@@ -250,7 +258,7 @@ public class AuthController {
                         "userId", user.getUserId(),
                         "name", user.getName(),
                         "email", user.getEmail(),
-                        "regNo", user.getRegNo() != null ? user.getRegNo() : ""
+                        "regNo", regNo
                 )
         );
     }

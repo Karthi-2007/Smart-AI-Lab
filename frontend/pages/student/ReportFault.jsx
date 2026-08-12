@@ -95,9 +95,10 @@ export default function ReportFault() {
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-orange-500"
             >
               <option value="">Select Equipment</option>
-              {equipments.map((eq) => (
-                <option key={eq.id} value={eq.id}>{eq.name} ({eq.id})</option>
-              ))}
+              {equipments.map((eq) => {
+                const eqId = eq.equipmentId || eq.id;
+                return <option key={eqId} value={eqId}>{eq.name} (#{eqId})</option>;
+              })}
             </select>
           </div>
 

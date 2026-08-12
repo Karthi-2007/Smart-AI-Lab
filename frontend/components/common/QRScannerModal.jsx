@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { QrCode, X, CheckCircle2, AlertTriangle, ShieldCheck, Clock, User, Package, Search, Camera, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../services/api";
+import { Html5Qrcode } from "html5-qrcode";
 
 const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
   const [manualCode, setManualCode] = useState("");
@@ -10,46 +11,93 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
   const [verificationError, setVerificationError] = useState(null);
   const [activeTab, setActiveTab] = useState("CAMERA");
   const [cameraActive, setCameraActive] = useState(false);
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
+  
+  const scannerRef = useRef(null);
 
-  // Start native camera stream
+  // We manage scanning state using a simple ref to prevent double-starting/concurrency bugs
+  const isScanningRef = useRef(false);
+
   useEffect(() => {
     if (!isOpen || activeTab !== "CAMERA" || bookingData) {
-      stopCamera();
+      stopScanner();
       return;
     }
 
-    startCamera();
+    // Delay start slightly to allow the modal animation and DOM container to fully mount
+    const timer = setTimeout(() => {
+      startScanner();
+    }, 150);
 
     return () => {
-      stopCamera();
+      clearTimeout(timer);
+      stopScanner();
     };
   }, [isOpen, activeTab, bookingData]);
 
-  const startCamera = async () => {
+  const startScanner = async () => {
+    if (isScanningRef.current) return;
+    
+    setCameraActive(false);
+    setVerificationError(null);
+
+    const isSecure = window.location.protocol === "https:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (!isSecure) {
+      console.warn("Camera access requires HTTPS or localhost.");
+      setVerificationError(
+        "Camera access blocked: Mobile browsers require a secure connection (HTTPS) to open the camera. Please access the portal via HTTPS, localhost, or configure an HTTPS proxy."
+      );
+      return;
+    }
+
     try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }
-        });
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-        setCameraActive(true);
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode("qr-reader");
       }
+
+      isScanningRef.current = true;
+      await scannerRef.current.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: (width, height) => {
+            const size = Math.min(width, height) * 0.7;
+            return { width: size, height: size };
+          }
+        },
+        (decodedText) => {
+          // Success callback
+          verifyBookingCode(decodedText);
+        },
+        (errorMessage) => {
+          // Silent verbose scanner diagnostics
+        }
+      );
+
+      setCameraActive(true);
     } catch (err) {
-      console.warn("Camera access denied or unavailable", err);
+      console.warn("QR Scanner start failed:", err);
+      isScanningRef.current = false;
       setCameraActive(false);
+      
+      const errStr = String(err);
+      if (errStr.includes("NotAllowedError") || errStr.includes("Permission denied")) {
+        setVerificationError(
+          "Camera Permission Denied: The browser blocked camera access. Please click the lock or settings icon in your browser address bar, reset the camera permission to 'Allow', and refresh the page."
+        );
+      } else {
+        setVerificationError("Could not access camera. Ensure you have granted camera permissions in your browser.");
+      }
     }
   };
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
+  const stopScanner = async () => {
+    if (scannerRef.current && isScanningRef.current) {
+      try {
+        isScanningRef.current = false;
+        await scannerRef.current.stop();
+      } catch (err) {
+        console.warn("Failed to stop scanner:", err);
+      }
     }
     setCameraActive(false);
   };
@@ -77,7 +125,7 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
 
       if (found) {
         setBookingData(found);
-        stopCamera();
+        stopScanner();
         toast.success(`Access Pass Verified: #${found.bookingId || found.id}`);
       } else {
         setVerificationError(`No active booking pass found matching ID: "${codeStr}"`);
@@ -133,10 +181,15 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
     setActiveTab("CAMERA");
   };
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    stopScanner();
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300 ${
+      isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+    }`}>
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
@@ -149,7 +202,7 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
               <p className="text-xs text-slate-400">Scan student entry passes for lab check-in & verification</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
+          <button onClick={handleClose} className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -272,15 +325,17 @@ const QRScannerModal = ({ isOpen, onClose, onVerificationSuccess }) => {
             {/* Camera View Area */}
             {activeTab === "CAMERA" && (
               <div className="space-y-4">
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 overflow-hidden relative min-h-[220px] flex flex-col items-center justify-center text-center">
-                  <video ref={videoRef} className="w-full h-48 object-cover rounded-xl border border-slate-800" />
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className="w-48 h-36 border-2 border-dashed border-orange-500/80 rounded-2xl animate-pulse flex items-center justify-center">
-                      <span className="text-[10px] text-orange-400 font-mono bg-slate-950/80 px-2 py-1 rounded">Align Pass QR Code</span>
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 overflow-hidden relative min-h-[240px] flex flex-col items-center justify-center text-center">
+                  <div id="qr-reader" className="w-full rounded-xl overflow-hidden" />
+                  {cameraActive && (
+                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                      <div className="w-48 h-36 border-2 border-dashed border-orange-500/80 rounded-2xl animate-pulse flex items-center justify-center">
+                        <span className="text-[10px] text-orange-400 font-mono bg-slate-950/80 px-2 py-1 rounded">Align Pass QR Code</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-                <p className="text-center text-xs text-slate-400">Live Camera Reticle Active — Or switch to Manual Entry to verify by Booking ID</p>
+                <p className="text-center text-xs text-slate-400">Live Camera Scan Active — Or switch to Manual Entry to verify by Booking ID</p>
               </div>
             )}
 

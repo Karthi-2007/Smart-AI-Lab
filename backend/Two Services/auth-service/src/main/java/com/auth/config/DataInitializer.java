@@ -1,8 +1,14 @@
 package com.auth.config;
 
 import com.auth.entity.AppUser;
+import com.auth.entity.Student;
+import com.auth.entity.Faculty;
+import com.auth.entity.Admin;
 import com.auth.entity.Role;
 import com.auth.repository.AppUserRepository;
+import com.auth.repository.StudentRepository;
+import com.auth.repository.FacultyRepository;
+import com.auth.repository.AdminRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -17,10 +23,20 @@ public class DataInitializer implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final AppUserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final FacultyRepository facultyRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(AppUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(AppUserRepository userRepository,
+                           StudentRepository studentRepository,
+                           FacultyRepository facultyRepository,
+                           AdminRepository adminRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
+        this.facultyRepository = facultyRepository;
+        this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -28,19 +44,32 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Checking Auth Service seed users...");
 
-        // Admin User
+        // Admin User — always ensure correct password is set on startup
+        AppUser admin;
         if (!userRepository.existsByEmail("admin@smartlab.com")) {
-            AppUser admin = new AppUser();
+            admin = new AppUser();
             admin.setName("System Admin");
             admin.setEmail("admin@smartlab.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(Role.ADMIN);
             admin.setStatus("ACTIVE");
-            admin.setRegNo("ADM-001");
             admin.setDob(LocalDate.of(1990, 1, 1));
-            userRepository.save(admin);
+            admin = userRepository.save(admin);
+
+            Admin profile = new Admin();
+            profile.setUser(admin);
+            adminRepository.save(profile);
+
             log.info("Created seed user: admin@smartlab.com / admin123");
+        } else {
+            admin = userRepository.findByEmail("admin@smartlab.com").orElse(null);
         }
+        // Always sync admin password to ensure it matches admin123
+        if (admin != null) {
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            userRepository.save(admin);
+            log.info("Admin password synchronized: admin@smartlab.com / admin123");
+        }
+
 
         // Faculty User (Default Active)
         if (!userRepository.existsByEmail("faculty@smartlab.com")) {
@@ -52,7 +81,14 @@ public class DataInitializer implements CommandLineRunner {
             faculty.setStatus("ACTIVE");
             faculty.setFacultyId("FAC-101");
             faculty.setDob(LocalDate.of(1985, 5, 15));
-            userRepository.save(faculty);
+            AppUser savedFaculty = userRepository.save(faculty);
+
+            Faculty profile = new Faculty();
+            profile.setUser(savedFaculty);
+            profile.setFacultyCode("FAC-101");
+            profile.setDob(LocalDate.of(1985, 5, 15));
+            facultyRepository.save(profile);
+
             log.info("Created seed user: faculty@smartlab.com / faculty123");
         }
 
@@ -66,7 +102,14 @@ public class DataInitializer implements CommandLineRunner {
             student.setStatus("ACTIVE");
             student.setRegNo("21CS101");
             student.setDob(LocalDate.of(2002, 8, 20));
-            userRepository.save(student);
+            AppUser savedStudent = userRepository.save(student);
+
+            Student profile = new Student();
+            profile.setUser(savedStudent);
+            profile.setRegNo("21CS101");
+            profile.setDob(LocalDate.of(2002, 8, 20));
+            studentRepository.save(profile);
+
             log.info("Created seed user: student@smartlab.com / student123");
         }
 
@@ -99,6 +142,14 @@ public class DataInitializer implements CommandLineRunner {
         seedActiveStudent("Student 250", "717824f250@kce.ac.in", "717824F250", LocalDate.of(2004, 5, 12));
         seedActiveStudent("Student 256", "717824f256@kce.ac.in", "717824F256", LocalDate.of(2004, 6, 18));
         seedActiveStudent("Student 251", "717824f251@kce.ac.in", "717824F251", LocalDate.of(2004, 7, 22));
+
+        // --- SEED CIVIL, IT, AND AIDS DEPARTMENTS (FOR 6 DEPARTMENTS REQUIREMENT) ---
+        seedActiveFaculty("Dr. Alan Turing", "faculty.it@kce.ac.in", "FAC-IT-140", LocalDate.of(1980, 6, 23));
+        seedActiveFaculty("Dr. Grace Hopper", "faculty.aids@kce.ac.in", "FAC-AIDS-150", LocalDate.of(1986, 12, 9));
+        seedActiveStudent("Student Civil 1", "student.civil1@kce.ac.in", "7178CIVIL01", LocalDate.of(2004, 3, 10));
+        seedActiveStudent("Student Civil 2", "student.civil2@kce.ac.in", "7178CIVIL02", LocalDate.of(2003, 11, 15));
+        seedActiveStudent("Student IT 1", "student.it1@kce.ac.in", "7178IT001", LocalDate.of(2004, 4, 18));
+        seedActiveStudent("Student AIDS 1", "student.aids1@kce.ac.in", "7178AIDS001", LocalDate.of(2003, 8, 25));
     }
 
     private void seedActiveStudent(String name, String email, String regNo, LocalDate dob) {
@@ -111,7 +162,14 @@ public class DataInitializer implements CommandLineRunner {
             u.setRole(Role.STUDENT);
             u.setPassword(passwordEncoder.encode("student123"));
             u.setStatus("ACTIVE");
-            userRepository.save(u);
+            AppUser savedUser = userRepository.save(u);
+
+            Student profile = new Student();
+            profile.setUser(savedUser);
+            profile.setRegNo(regNo);
+            profile.setDob(dob);
+            studentRepository.save(profile);
+
             log.info("Seeded active student: {}", email);
         }
     }
@@ -126,7 +184,14 @@ public class DataInitializer implements CommandLineRunner {
             u.setRole(Role.FACULTY);
             u.setPassword(passwordEncoder.encode("password123"));
             u.setStatus("ACTIVE");
-            userRepository.save(u);
+            AppUser savedUser = userRepository.save(u);
+
+            Faculty profile = new Faculty();
+            profile.setUser(savedUser);
+            profile.setFacultyCode(facultyId);
+            profile.setDob(dob);
+            facultyRepository.save(profile);
+
             log.info("Seeded active faculty/assistant: {}", email);
         }
     }

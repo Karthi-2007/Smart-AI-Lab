@@ -28,6 +28,36 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
+  // Synchronize student/faculty business profile ID on mount to correct legacy localStorage caches
+  useEffect(() => {
+    const syncProfileOnMount = async () => {
+      if (user && token && user.email) {
+        try {
+          if (user.role === "STUDENT") {
+            const res = await api.get(`/api/business/students/email/${user.email.toLowerCase().trim()}`).catch(() => null);
+            if (res?.data?.studentId) {
+              const currentId = res.data.studentId;
+              if (user.id !== currentId || user.name !== res.data.name) {
+                setUser(prev => prev ? { ...prev, id: currentId, name: res.data.name } : null);
+              }
+            }
+          } else if (user.role === "FACULTY") {
+            const res = await api.get(`/api/business/faculty/email/${user.email.toLowerCase().trim()}`).catch(() => null);
+            if (res?.data?.facultyId) {
+              const currentId = res.data.facultyId;
+              if (user.id !== currentId || user.name !== res.data.name) {
+                setUser(prev => prev ? { ...prev, id: currentId, name: res.data.name } : null);
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Error running auto-synchronization on mount:", err);
+        }
+      }
+    };
+    syncProfileOnMount();
+  }, [token]);
+
   const loginUser = async (email, password) => {
     try {
       const res = await authService.login({ email, password });
@@ -92,7 +122,7 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        console.warn("Could not sync profile by email with business-service:", err);
+        console.warn("Could not sync profile by email with smartlab-service:", err);
       }
       
       const userData = { id: profileId, userId, role, name, email, regNo };

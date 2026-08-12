@@ -29,10 +29,16 @@ const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess,
     }
   };
 
-  const handleUpdate = (updatedStudent) => {
-    setEditModal(false);
-    toast.success("Student updated.");
-    if (onUpdateSuccess) onUpdateSuccess();
+  const handleUpdate = async (updatedStudent) => {
+    try {
+      const studentId = selectedStudent.id || selectedStudent.studentId || selectedStudent.userId;
+      await adminService.updateStudent(studentId, updatedStudent);
+      toast.success("Student updated successfully.");
+      setEditModal(false);
+      if (onUpdateSuccess) onUpdateSuccess();
+    } catch (err) {
+      toast.error("Failed to update student.");
+    }
   };
 
   const filtered = students.filter((student) => {

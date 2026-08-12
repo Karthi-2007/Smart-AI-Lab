@@ -12,8 +12,9 @@ const BookingHistory = () => {
     const fetchBookings = async () => {
       try {
         setLoading(true);
-        const data = await studentService.getMyBookings(user?.id);
-        setBookings(data || []);
+        const res = await studentService.getMyBookings(user?.id);
+        const data = res?.data || res || [];
+        setBookings(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching bookings:', error);
         toast.error('Failed to load booking history');

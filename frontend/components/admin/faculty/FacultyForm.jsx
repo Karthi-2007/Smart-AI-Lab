@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { adminService } from "../../../services/adminService";
 
 const FacultyForm = ({
   isOpen,
@@ -8,6 +9,7 @@ const FacultyForm = ({
   faculty,
   onSave,
 }) => {
+  const [departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState({
     id: "",
     facultyId: "",
@@ -20,6 +22,15 @@ const FacultyForm = ({
     lab: "",
     status: "Active",
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      adminService.getDepartments().then(res => {
+        const list = res?.data || res || [];
+        setDepartments(Array.isArray(list) ? list : []);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (mode === "edit" && faculty) {
@@ -42,7 +53,7 @@ const FacultyForm = ({
         ...formData,
         regNo: formData.regNo || formData.facultyId || "FAC-" + Date.now().toString().slice(-6),
         password: formData.password || "Password123!",
-        department: formData.department || "Computer Science",
+        department: formData.department || "Computer Science & Technology / ECE",
         role: "FACULTY"
       };
       onSave(payload);
@@ -104,13 +115,15 @@ const FacultyForm = ({
               name="department"
               value={formData.department}
               onChange={handleChange}
-              className="bg-slate-800 border border-slate-700 rounded-xl p-3"
+              required
+              className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none focus:border-orange-500 transition"
             >
-              <option>CSE</option>
-              <option>ECE</option>
-              <option>EEE</option>
-              <option>Mechanical</option>
-              <option>Civil</option>
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.departmentId || dept.id} value={dept.name}>
+                  {dept.name} ({dept.code})
+                </option>
+              ))}
             </select>
 
             <select

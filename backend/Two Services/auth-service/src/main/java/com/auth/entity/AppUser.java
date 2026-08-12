@@ -37,7 +37,6 @@ public class AppUser {
     @Column(name = "DOB")
     private LocalDate dob;
 
-
     public Long getUserId() {
         return userId;
     }

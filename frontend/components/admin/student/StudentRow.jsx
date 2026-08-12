@@ -42,12 +42,12 @@ const StudentRow = ({ student,onView,onDelete,onEdit}) => {
 
         <span
           className={`px-3 py-1 rounded-full text-sm ${
-            student.status === "Activated"
+            student.status?.toLowerCase() === "active" || student.status?.toLowerCase() === "activated"
               ? "bg-green-500/20 text-green-400"
               : "bg-orange-500/20 text-orange-400"
           }`}
         >
-          {student.status}
+          {student.status || 'Active'}
         </span>
 
       </td>

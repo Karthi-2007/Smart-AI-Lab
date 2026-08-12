@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "smartlab-ai-api-collection-v21",
     "name": "SmartLab AI API Collection",
-    "description": "Complete Postman Collection for testing SmartLab AI microservices (Auth Service & Employee Service)",
+    "description": "Complete Postman Collection for testing SmartLab AI microservices (Auth Service & SmartLab Service)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

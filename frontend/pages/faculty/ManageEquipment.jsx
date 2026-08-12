@@ -12,7 +12,8 @@ function EquipmentModal({ mode, equipment, labs, onClose, onSave }) {
   const [form, setForm] = useState({
     name: isEdit ? (equipment?.name || '') : '',
     status: isEdit ? (equipment?.status || 'Available') : 'Available',
-    labId: isEdit ? (equipment?.laboratory?.labId || '') : (labs[0]?.labId || '')
+    labId: isEdit ? (equipment?.laboratory?.labId || '') : (labs[0]?.labId || ''),
+    imageUrl: isEdit ? (equipment?.imageUrl || '') : ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -27,7 +28,8 @@ function EquipmentModal({ mode, equipment, labs, onClose, onSave }) {
       await onSave({
         name: form.name.trim(),
         status: form.status,
-        laboratory: { labId: Number(form.labId) }
+        laboratory: { labId: Number(form.labId) },
+        imageUrl: form.imageUrl.trim()
       });
     } finally {
       setSaving(false);
@@ -93,6 +95,30 @@ function EquipmentModal({ mode, equipment, labs, onClose, onSave }) {
               <option value="Under Maintenance">Under Maintenance</option>
               <option value="Faulty">Faulty</option>
             </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Image URL</label>
+            <input
+              name="imageUrl"
+              value={form.imageUrl}
+              onChange={handleChange}
+              placeholder="e.g. https://images.unsplash.com/..."
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors text-sm"
+            />
+          </div>
+
+          {/* Live Preview inside Faculty Modal */}
+          <div className="flex items-center gap-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+            <img
+              src={form.imageUrl || "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop"}
+              onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop"; }}
+              className="w-12 h-10 object-cover rounded-lg border border-slate-800"
+              alt="preview"
+            />
+            <span className="text-[11px] text-slate-500 truncate flex-1">
+              {form.imageUrl ? "Image URL Active" : "Default Fallback Image"}
+            </span>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -364,7 +390,15 @@ export default function ManageEquipment() {
                   filteredEquipments.map((item, idx) => (
                     <tr key={item.equipmentId || item.id || `eq-${idx}`} className="hover:bg-slate-800/30 transition-colors text-slate-300">
                       <td className="px-6 py-4 font-mono text-xs text-slate-400">#{item.equipmentId}</td>
-                      <td className="px-6 py-4 font-medium text-white">{item.name}</td>
+                      <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
+                        <img
+                          src={item.imageUrl || "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop"}
+                          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop"; }}
+                          className="w-12 h-10 object-cover rounded-lg border border-slate-700 bg-slate-950/60"
+                          alt={item.name}
+                        />
+                        <span>{item.name}</span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Building2 className="w-4 h-4 text-orange-400/80" />

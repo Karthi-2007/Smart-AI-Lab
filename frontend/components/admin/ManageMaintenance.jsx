@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Wrench, X } from 'lucide-react';
 import MaintenanceTable from './maintenance/MaintenanceTable';
 import MaintenanceStats from './maintenance/MaintenanceStats';
@@ -10,7 +10,47 @@ const ManageMaintenance = () => {
   const [maintenance, setMaintenance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ equipment: '', scheduledDate: '', technician: '', type: 'Preventive' });
+  
+  const [equipments, setEquipments] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  
+  const [formData, setFormData] = useState({
+    equipmentId: '',
+    assignedToUserId: '',
+    description: '',
+    scheduledDate: '',
+    type: 'Preventive'
+  });
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [eqRes, techRes] = await Promise.all([
+          adminService.getEquipments(),
+          adminService.getUsers()
+        ]);
+        
+        const eqList = eqRes?.data || eqRes || [];
+        const sortedEq = Array.isArray(eqList) ? eqList : [];
+        setEquipments(sortedEq);
+        if (sortedEq.length > 0) {
+          setFormData(prev => ({ ...prev, equipmentId: sortedEq[0].equipmentId }));
+        }
+
+        const userList = techRes?.data || techRes || [];
+        if (Array.isArray(userList)) {
+          const facList = userList.filter(u => u.role === 'FACULTY' || u.role === 'faculty');
+          setTechnicians(facList);
+          if (facList.length > 0) {
+            setFormData(prev => ({ ...prev, assignedToUserId: facList[0].id }));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load options:", err);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   const handleMaintenanceLoaded = (data) => {
     setMaintenance(data);
@@ -20,10 +60,31 @@ const ManageMaintenance = () => {
   const handleAddMaintenance = async (e) => {
     e.preventDefault();
     try {
-      await adminService.scheduleMaintenance(formData);
+      const payload = {
+        equipment: {
+          equipmentId: parseInt(formData.equipmentId)
+        },
+        assignedToUserId: parseInt(formData.assignedToUserId) || null,
+        description: formData.description,
+        scheduledDate: formData.scheduledDate,
+        type: formData.type,
+        status: 'Scheduled'
+      };
+      
+      await adminService.scheduleMaintenance(payload);
       toast.success('Maintenance scheduled successfully!');
       setIsModalOpen(false);
-      // Let the table refetch or force it to, simple page reload for simplicity since we don't have a refetch trigger
+      
+      // Reset form
+      setFormData({
+        equipmentId: equipments[0]?.equipmentId || '',
+        assignedToUserId: technicians[0]?.id || '',
+        description: '',
+        scheduledDate: '',
+        type: 'Preventive'
+      });
+      
+      // Reload page to re-fetch
       window.location.reload(); 
     } catch (error) {
       toast.error('Failed to schedule maintenance.');
@@ -84,26 +145,58 @@ const ManageMaintenance = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleAddMaintenance} className="space-y-4">
+            <form onSubmit={handleAddMaintenance} className="space-y-4 text-left">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Equipment Name</label>
-                <input required type="text" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" value={formData.equipment} onChange={e => setFormData({...formData, equipment: e.target.value})} />
+                <label className="block text-sm font-medium text-slate-400 mb-1">Select Equipment</label>
+                <select 
+                  required 
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" 
+                  value={formData.equipmentId} 
+                  onChange={e => setFormData({...formData, equipmentId: e.target.value})}
+                >
+                  {equipments.map(eq => (
+                    <option key={eq.equipmentId} value={eq.equipmentId}>
+                      {eq.name} ({eq.laboratory?.name || eq.category})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Scheduled Date</label>
                 <input required type="date" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" value={formData.scheduledDate} onChange={e => setFormData({...formData, scheduledDate: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Technician Name</label>
-                <input required type="text" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" value={formData.technician} onChange={e => setFormData({...formData, technician: e.target.value})} />
+                <label className="block text-sm font-medium text-slate-400 mb-1">Select Technician (Faculty)</label>
+                <select 
+                  required 
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" 
+                  value={formData.assignedToUserId} 
+                  onChange={e => setFormData({...formData, assignedToUserId: e.target.value})}
+                >
+                  {technicians.map(tech => (
+                    <option key={tech.id} value={tech.id}>
+                      {tech.name} ({tech.designation || 'Staff'})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Type</label>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Maintenance Type</label>
                 <select className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                   <option value="Preventive">Preventive</option>
                   <option value="Corrective">Corrective</option>
                   <option value="Inspection">Inspection</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Description / Notes</label>
+                <textarea 
+                  required 
+                  rows="3" 
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-orange-500" 
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                ></textarea>
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white transition">Cancel</button>

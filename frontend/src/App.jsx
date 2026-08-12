@@ -52,6 +52,7 @@ import FacultyProfile from "../pages/faculty/FacultyProfile";
 import FacultySettings from "../pages/faculty/FacultySettings";
 import FacultyLayout from "../layouts/FacultyLayout";
 import StudentLayout from "../layouts/StudentLayout";
+import AIChatbotWidget from "../components/common/AIChatbotWidget";
 
 function App() {
   return (
@@ -125,6 +126,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        <AIChatbotWidget />
       </BrowserRouter>
     </AuthProvider>
   );

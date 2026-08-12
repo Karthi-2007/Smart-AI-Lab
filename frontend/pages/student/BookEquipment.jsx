@@ -148,6 +148,33 @@ const BookEquipment = () => {
             </select>
           </div>
 
+          {/* Equipment Live Preview */}
+          {(() => {
+            const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
+            if (!selectedEq) return null;
+            return (
+              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 mt-2">
+                <div className="w-full md:w-1/3 aspect-video md:aspect-auto md:h-28 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 flex-shrink-0">
+                  <img
+                    src={selectedEq.imageUrl || 'https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop'}
+                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop'; }}
+                    className="w-full h-full object-cover"
+                    alt={selectedEq.name}
+                  />
+                </div>
+                <div className="flex-1 space-y-1.5 text-xs text-slate-400">
+                  <h4 className="text-sm font-bold text-white">{selectedEq.name}</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <p><span className="font-semibold text-slate-500 text-[11px]">Asset ID:</span> {selectedEq.assetId || `EQ-${selectedEq.equipmentId}`}</p>
+                    <p><span className="font-semibold text-slate-500 text-[11px]">Category:</span> {selectedEq.category || 'General'}</p>
+                    <p><span className="font-semibold text-slate-500 text-[11px]">Lab:</span> {selectedEq.laboratory?.name || 'Main Lab'}</p>
+                    <p><span className="font-semibold text-slate-500 text-[11px]">Status:</span> <span className="text-emerald-400 font-semibold">{selectedEq.status}</span></p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
