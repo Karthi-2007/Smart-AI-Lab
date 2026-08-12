@@ -16,17 +16,17 @@ export default defineConfig({
     proxy: {
       // Auth microservice on port 8081
       "/api/auth": {
-        target: "http://localhost:8081",
+        target: "http://127.0.0.1:8081",
         changeOrigin: true,
       },
       // Business microservice on port 8082
       "/api/business": {
-        target: "http://localhost:8082",
+        target: "http://127.0.0.1:8082",
         changeOrigin: true,
       },
       // Default fallback
       "/api": {
-        target: "http://localhost:8082",
+        target: "http://127.0.0.1:8082",
         changeOrigin: true,
       },
     },
