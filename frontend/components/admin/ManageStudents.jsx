@@ -22,12 +22,42 @@ const ManageStudents = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const res = await adminService.getUsers();
-      const allUsers = res?.data || res || [];
-      const studentsOnly = (Array.isArray(allUsers) ? allUsers : []).filter(
-        (u) => u.role === 'STUDENT' || u.role === 'student'
-      );
-      setStudents(studentsOnly);
+      let res;
+      if (search && search.trim()) {
+        res = await adminService.searchStudents(search.trim());
+      } else if (selectedStatus === "Activated") {
+        res = await adminService.getStudentsActive();
+      } else if (selectedStatus === "Pending") {
+        res = await adminService.getStudentsPending();
+      } else if (selectedDept && selectedDept !== "All Departments") {
+        const codeMap = { "CSE": "cse", "ECE": "ece", "EEE": "eee", "Mechanical": "mechanical", "Civil": "civil" };
+        res = await adminService.getStudentsByDepartment(codeMap[selectedDept] || selectedDept.toLowerCase());
+      } else if (selectedYear && selectedYear !== "All Years") {
+        const yrMap = { "I Year": 1, "II Year": 2, "III Year": 3, "IV Year": 4 };
+        res = await adminService.getStudentsByYear(yrMap[selectedYear] || 1);
+      } else {
+        res = await adminService.getStudentsAll();
+      }
+
+      const body = res?.data || res;
+      let rawList = [];
+      if (body) {
+        if (body.success && body.data) {
+          rawList = body.data.content || body.data;
+        } else {
+          rawList = body.content || body;
+        }
+      }
+
+      if (!Array.isArray(rawList) || rawList.length === 0) {
+        // Fallback to combined user fetch if dedicated endpoint has no profile entries yet
+        const usersRes = await adminService.getUsers();
+        const allUsers = usersRes?.data || usersRes || [];
+        rawList = (Array.isArray(allUsers) ? allUsers : []).filter(
+          (u) => u.role === 'STUDENT' || u.role === 'student'
+        );
+      }
+      setStudents(Array.isArray(rawList) ? rawList : []);
     } catch (err) {
       toast.error("Failed to load students");
     } finally {
@@ -37,7 +67,7 @@ const ManageStudents = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [selectedDept, selectedYear, selectedStatus, search]);
 
   const handleAddStudent = async (formData) => {
     try {

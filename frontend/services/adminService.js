@@ -4,6 +4,21 @@ export const adminService = {
     getDashboard: () => api.get('/api/business/dashboard/admin'),
     getDashboardAdminSummary: () => api.get('/api/business/dashboard/admin/summary'),
     
+    // Dedicated Student Endpoints
+    getStudentsAll: () => api.get('/api/business/students/all'),
+    getStudentsActive: () => api.get('/api/business/students/active'),
+    getStudentsPending: () => api.get('/api/business/students/pending'),
+    getStudentsByDepartment: (deptCode) => api.get(`/api/business/students/department/${deptCode}`),
+    getStudentsByYear: (yearNum) => api.get(`/api/business/students/year/${yearNum}`),
+    searchStudents: (query) => api.get('/api/business/students/search', { params: { q: query } }),
+    
+    // Dedicated Faculty Endpoints
+    getFacultyAll: () => api.get('/api/business/faculty/all'),
+    getFacultyActive: () => api.get('/api/business/faculty/active'),
+    getFacultyPending: () => api.get('/api/business/faculty/pending'),
+    getFacultyByDepartment: (deptCode) => api.get(`/api/business/faculty/department/${deptCode}`),
+    searchFaculty: (query) => api.get('/api/business/faculty/search', { params: { q: query } }),
+    
     getUsers: async () => {
         try {
             const [authRes, studentsRes, facultyRes] = await Promise.all([
@@ -148,6 +163,10 @@ export const adminService = {
     updateEquipment: (id, data) => api.put(`/api/business/equipments/${id}`, data),
     deleteEquipment: (id) => api.delete(`/api/business/equipments/${id}`),
     changeEquipmentStatus: (id, status) => api.patch(`/api/business/equipments/${id}/status`, { status }),
+    markEquipmentAvailable: (id) => api.put(`/api/business/equipments/${id}/mark-available`),
+    markEquipmentBooked: (id) => api.put(`/api/business/equipments/${id}/mark-booked`),
+    markEquipmentMaintenance: (id) => api.put(`/api/business/equipments/${id}/mark-maintenance`),
+    markEquipmentFaulty: (id) => api.put(`/api/business/equipments/${id}/mark-faulty`),
     uploadEquipmentImage: (id, imageUrl) => api.put(`/api/business/equipments/${id}/image`, { imageUrl }),
     
     // Student Create/Delete

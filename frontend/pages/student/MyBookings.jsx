@@ -27,12 +27,28 @@ const MyBookings = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const params = {
-        status: activeTab === 'All' ? null : activeTab,
-        page: 0,
-        size: 1000
-      };
-      const res = await studentService.getMyBookings(params);
+      let res;
+      switch (activeTab) {
+        case 'Pending':
+          res = await studentService.getMyBookingsPending();
+          break;
+        case 'Approved':
+          res = await studentService.getMyBookingsApproved();
+          break;
+        case 'Rejected':
+          res = await studentService.getMyBookingsRejected();
+          break;
+        case 'Completed':
+          res = await studentService.getMyBookingsCompleted();
+          break;
+        case 'Cancelled':
+          res = await studentService.getMyBookingsCancelled();
+          break;
+        case 'All':
+        default:
+          res = await studentService.getMyBookingsAll();
+          break;
+      }
       const body = res?.data || res;
       let list = [];
       if (body) {

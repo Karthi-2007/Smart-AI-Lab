@@ -118,7 +118,53 @@ public class BookingController {
     public ResponseEntity<?> getMyBookings(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus(status, page, size);
+    }
+
+    @GetMapping("/my-bookings/all")
+    public ResponseEntity<?> getMyBookingsAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("All", page, size);
+    }
+
+    @GetMapping("/my-bookings/pending")
+    public ResponseEntity<?> getMyBookingsPending(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("Pending", page, size);
+    }
+
+    @GetMapping("/my-bookings/approved")
+    public ResponseEntity<?> getMyBookingsApproved(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("Approved", page, size);
+    }
+
+    @GetMapping("/my-bookings/rejected")
+    public ResponseEntity<?> getMyBookingsRejected(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("Rejected", page, size);
+    }
+
+    @GetMapping("/my-bookings/completed")
+    public ResponseEntity<?> getMyBookingsCompleted(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("Completed", page, size);
+    }
+
+    @GetMapping("/my-bookings/cancelled")
+    public ResponseEntity<?> getMyBookingsCancelled(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return fetchMyBookingsByStatus("Cancelled", page, size);
+    }
+
+    private ResponseEntity<?> fetchMyBookingsByStatus(String status, int page, int size) {
         UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
@@ -143,7 +189,6 @@ public class BookingController {
                     faculty = facultyService.getFacultyByEmail(principal.getEmail());
                 }
                 if (faculty != null && faculty.getDepartmentEntity() != null) {
-                    // Let faculty view bookings they approved or are requested to approve in their department
                     predicates.add(cb.equal(root.get("equipment").get("laboratory").get("department").get("departmentId"), faculty.getDepartmentEntity().getDepartmentId()));
                 } else {
                     predicates.add(cb.equal(root.get("bookingId"), -1L));

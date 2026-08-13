@@ -36,6 +36,10 @@ export const facultyService = {
     getMaintenance: () => api.get('/api/business/maintenance'),
     getBookings: () => api.get('/api/business/bookings'),
     getEquipments: () => api.get('/api/business/equipments'),
+    markEquipmentAvailable: (id) => api.put(`/api/business/equipments/${id}/mark-available`),
+    markEquipmentBooked: (id) => api.put(`/api/business/equipments/${id}/mark-booked`),
+    markEquipmentMaintenance: (id) => api.put(`/api/business/equipments/${id}/mark-maintenance`),
+    markEquipmentFaulty: (id) => api.put(`/api/business/equipments/${id}/mark-faulty`),
     getReportsSummary: () => api.get('/api/business/reports/summary'),
     
     // Notifications

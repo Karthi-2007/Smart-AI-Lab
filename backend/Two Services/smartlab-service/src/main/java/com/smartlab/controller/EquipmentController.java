@@ -242,6 +242,30 @@ public class EquipmentController {
         if (status == null || status.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Status is required"));
         }
+        return setEquipmentStatus(id, status);
+    }
+
+    @PutMapping("/{id}/mark-available")
+    public ResponseEntity<?> markAvailable(@PathVariable Long id) {
+        return setEquipmentStatus(id, "Available");
+    }
+
+    @PutMapping("/{id}/mark-booked")
+    public ResponseEntity<?> markBooked(@PathVariable Long id) {
+        return setEquipmentStatus(id, "Booked");
+    }
+
+    @PutMapping("/{id}/mark-maintenance")
+    public ResponseEntity<?> markMaintenance(@PathVariable Long id) {
+        return setEquipmentStatus(id, "Under Maintenance");
+    }
+
+    @PutMapping("/{id}/mark-faulty")
+    public ResponseEntity<?> markFaulty(@PathVariable Long id) {
+        return setEquipmentStatus(id, "Faulty");
+    }
+
+    private ResponseEntity<?> setEquipmentStatus(Long id, String status) {
         Equipment equipment = equipmentService.getEquipmentById(id);
         if (equipment == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("Equipment not found"));

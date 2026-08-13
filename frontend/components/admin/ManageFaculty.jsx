@@ -193,12 +193,39 @@ const ManageFaculty = () => {
   const fetchFaculty = async () => {
     try {
       setLoading(true);
-      const res = await adminService.getUsers();
-      const allUsers = res?.data || res || [];
-      const facultyOnly = (Array.isArray(allUsers) ? allUsers : []).filter(
-        (u) => u.role === 'FACULTY' || u.role === 'faculty'
-      );
-      setFaculty(facultyOnly);
+      let res;
+      if (search && search.trim()) {
+        res = await adminService.searchFaculty(search.trim());
+      } else if (selectedStatus === "Active" || selectedStatus === "Activated") {
+        res = await adminService.getFacultyActive();
+      } else if (selectedStatus === "Pending") {
+        res = await adminService.getFacultyPending();
+      } else if (selectedDept && selectedDept !== "All Departments") {
+        const codeMap = { "CSE": "cse", "ECE": "ece", "EEE": "eee", "Mechanical": "mechanical", "Civil": "civil" };
+        res = await adminService.getFacultyByDepartment(codeMap[selectedDept] || selectedDept.toLowerCase());
+      } else {
+        res = await adminService.getFacultyAll();
+      }
+
+      const body = res?.data || res;
+      let rawList = [];
+      if (body) {
+        if (body.success && body.data) {
+          rawList = body.data.content || body.data;
+        } else {
+          rawList = body.content || body;
+        }
+      }
+
+      if (!Array.isArray(rawList) || rawList.length === 0) {
+        // Fallback to combined user fetch if dedicated endpoint has no profile entries yet
+        const usersRes = await adminService.getUsers();
+        const allUsers = usersRes?.data || usersRes || [];
+        rawList = (Array.isArray(allUsers) ? allUsers : []).filter(
+          (u) => u.role === 'FACULTY' || u.role === 'faculty'
+        );
+      }
+      setFaculty(Array.isArray(rawList) ? rawList : []);
     } catch (err) {
       toast.error('Failed to load faculty');
     } finally {
@@ -208,7 +235,7 @@ const ManageFaculty = () => {
 
   useEffect(() => {
     fetchFaculty();
-  }, []);
+  }, [selectedDept, selectedStatus, search]);
 
   const handleAddFaculty = async (formData) => {
     try {

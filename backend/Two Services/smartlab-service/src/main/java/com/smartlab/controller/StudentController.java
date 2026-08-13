@@ -92,22 +92,46 @@ public class StudentController {
         return ResponseEntity.ok(ApiResponse.success("Student retrieved successfully", student));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getStudentsAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getStudents(null, null, null, null, page, size);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<?> getStudentsActive(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getStudents(null, null, null, "active", page, size);
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<?> getStudentsPending(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getStudents(null, null, null, "pending", page, size);
+    }
+
+    @GetMapping("/department/{deptCode}")
+    public ResponseEntity<?> getStudentsByDepartmentCode(
+            @PathVariable String deptCode,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getStudents(null, deptCode, null, null, page, size);
+    }
+
+    @GetMapping("/year/{yearNum}")
+    public ResponseEntity<?> getStudentsByYear(
+            @PathVariable Integer yearNum,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getStudents(null, null, yearNum, null, page, size);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchStudents(@RequestParam String q) {
-        return getStudents(q, null, null, null, 0, 100);
-    }
-
-    @GetMapping("/filter")
-    public ResponseEntity<?> filterStudents(
-            @RequestParam(required = false) String department,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) String status) {
-        return getStudents(null, department, year, status, 0, 1000);
-    }
-
-    @GetMapping("/by-department/{departmentCode}")
-    public ResponseEntity<?> getStudentsByDepartment(@PathVariable String departmentCode) {
-        return getStudents(null, departmentCode, null, null, 0, 1000);
+        return getStudents(q, null, null, null, 0, 1000);
     }
 
     @GetMapping("/by-year/{year}")

@@ -96,17 +96,38 @@ public class FacultyController {
         return ResponseEntity.ok(ApiResponse.success("Faculty retrieved successfully", faculty));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<?> searchFaculty(@RequestParam String q) {
-        return getFaculty(q, null, null, null, 0, 100);
+    @GetMapping("/all")
+    public ResponseEntity<?> getFacultyAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getFaculty(null, null, null, null, page, size);
     }
 
-    @GetMapping("/filter")
-    public ResponseEntity<?> filterFaculty(
-            @RequestParam(required = false) String department,
-            @RequestParam(required = false) String designation,
-            @RequestParam(required = false) String status) {
-        return getFaculty(null, department, designation, status, 0, 1000);
+    @GetMapping("/active")
+    public ResponseEntity<?> getFacultyActive(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getFaculty(null, null, null, "active", page, size);
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<?> getFacultyPending(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getFaculty(null, null, null, "pending", page, size);
+    }
+
+    @GetMapping("/department/{deptCode}")
+    public ResponseEntity<?> getFacultyByDepartmentCode(
+            @PathVariable String deptCode,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+        return getFaculty(null, deptCode, null, null, page, size);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchFaculty(@RequestParam String q) {
+        return getFaculty(q, null, null, null, 0, 1000);
     }
 
     @GetMapping("/by-department/{departmentCode}")

@@ -9,6 +9,12 @@ export const studentService = {
         }
         return api.get('/api/business/bookings/my-bookings', { params });
     },
+    getMyBookingsAll: () => api.get('/api/business/bookings/my-bookings/all'),
+    getMyBookingsPending: () => api.get('/api/business/bookings/my-bookings/pending'),
+    getMyBookingsApproved: () => api.get('/api/business/bookings/my-bookings/approved'),
+    getMyBookingsRejected: () => api.get('/api/business/bookings/my-bookings/rejected'),
+    getMyBookingsCompleted: () => api.get('/api/business/bookings/my-bookings/completed'),
+    getMyBookingsCancelled: () => api.get('/api/business/bookings/my-bookings/cancelled'),
     reportFault: (faultData) => api.post('/api/business/faults', faultData),
     getMyFaultReports: (id) => api.get(`/api/business/faults/student/${id}/faults-list`),
     
