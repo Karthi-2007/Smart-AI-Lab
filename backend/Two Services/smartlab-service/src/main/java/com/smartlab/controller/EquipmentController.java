@@ -228,11 +228,6 @@ public class EquipmentController {
         return getEquipment(null, null, null, status, null);
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<?> getAvailableEquipment() {
-        return getEquipment(null, null, null, "Available", null);
-    }
-
     @PostMapping
     public ResponseEntity<?> createEquipment(@RequestBody Equipment equipment) {
         if (!SecurityUtils.isAdmin() && !SecurityUtils.isFaculty()) {
