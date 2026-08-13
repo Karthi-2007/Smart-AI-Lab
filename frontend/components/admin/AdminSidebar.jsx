@@ -110,6 +110,11 @@ const menuSections = [
     title: "System",
     items: [
       {
+        name: "Notifications",
+        path: "/admin/notifications",
+        icon: Bell,
+      },
+      {
         name: "Contact Messages",
         path: "/admin/contact-messages",
         icon: Mail,
