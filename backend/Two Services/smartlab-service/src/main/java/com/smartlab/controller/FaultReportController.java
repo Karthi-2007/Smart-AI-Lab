@@ -137,6 +137,104 @@ public class FaultReportController {
         return getFaults(null, status, priority, departmentId, 0, 1000);
     }
 
+    @GetMapping("/faculty/my-reports")
+    public ResponseEntity<?> getFacultyFaultReports(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) Long laboratoryId,
+            @RequestParam(required = false) Long equipmentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1000") int size) {
+
+        UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+
+        Faculty faculty = facultyService.getFacultyByUserId(principal.getUserId());
+        if (faculty == null) {
+            faculty = facultyService.getFacultyByEmail(principal.getEmail());
+        }
+        if (faculty == null || faculty.getDepartmentEntity() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Faculty department profile not found in database."));
+        }
+
+        Long facDeptId = faculty.getDepartmentEntity().getDepartmentId();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("reportedAt").descending());
+
+        Specification<FaultReport> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            predicates.add(cb.equal(root.get("equipment").get("laboratory").get("department").get("departmentId"), facDeptId));
+
+            if (search != null && !search.trim().isEmpty()) {
+                String likePattern = "%" + search.trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("description")), likePattern),
+                    cb.like(cb.lower(root.get("equipment").get("name")), likePattern),
+                    cb.like(cb.lower(root.get("reportedBy").get("name")), likePattern),
+                    cb.like(cb.lower(root.get("reportedBy").get("registerNumber")), likePattern)
+                ));
+            }
+            if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+                predicates.add(cb.equal(cb.lower(root.get("status")), status.trim().toLowerCase()));
+            }
+            if (priority != null && !priority.trim().isEmpty() && !"ALL".equalsIgnoreCase(priority)) {
+                predicates.add(cb.equal(cb.lower(root.get("priority")), priority.trim().toLowerCase()));
+            }
+            if (laboratoryId != null) {
+                predicates.add(cb.equal(root.get("equipment").get("laboratory").get("laboratoryId"), laboratoryId));
+            }
+            if (equipmentId != null) {
+                predicates.add(cb.equal(root.get("equipment").get("equipmentId"), equipmentId));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        Page<FaultReport> faultPage = faultReportRepository.findAll(spec, pageable);
+        return ResponseEntity.ok(ApiResponse.success("Faculty fault reports retrieved successfully", faultPage));
+    }
+
+    @GetMapping("/faculty/summary")
+    public ResponseEntity<?> getFacultyFaultSummary() {
+        UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+
+        Faculty faculty = facultyService.getFacultyByUserId(principal.getUserId());
+        if (faculty == null) {
+            faculty = facultyService.getFacultyByEmail(principal.getEmail());
+        }
+        if (faculty == null || faculty.getDepartmentEntity() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Faculty department profile not found in database."));
+        }
+
+        Long facDeptId = faculty.getDepartmentEntity().getDepartmentId();
+
+        List<FaultReport> list = faultReportRepository.findAll((root, query, cb) -> 
+            cb.equal(root.get("equipment").get("laboratory").get("department").get("departmentId"), facDeptId)
+        );
+
+        long totalFaults = list.size();
+        long openFaults = list.stream().filter(f -> "Open".equalsIgnoreCase(f.getStatus()) || "Reported".equalsIgnoreCase(f.getStatus())).count();
+        long inProgressFaults = list.stream().filter(f -> "In Progress".equalsIgnoreCase(f.getStatus()) || "Assigned".equalsIgnoreCase(f.getStatus()) || "Under Review".equalsIgnoreCase(f.getStatus())).count();
+        long resolvedFaults = list.stream().filter(f -> "Resolved".equalsIgnoreCase(f.getStatus()) || "Closed".equalsIgnoreCase(f.getStatus()) || "Completed".equalsIgnoreCase(f.getStatus())).count();
+        long criticalHighFaults = list.stream().filter(f -> "Critical".equalsIgnoreCase(f.getPriority()) || "High".equalsIgnoreCase(f.getPriority())).count();
+        long pendingReviewFaults = list.stream().filter(f -> "Reported".equalsIgnoreCase(f.getStatus()) || "Open".equalsIgnoreCase(f.getStatus()) || "Under Review".equalsIgnoreCase(f.getStatus())).count();
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("totalFaults", totalFaults);
+        summary.put("openFaults", openFaults);
+        summary.put("inProgressFaults", inProgressFaults);
+        summary.put("resolvedFaults", resolvedFaults);
+        summary.put("criticalHighFaults", criticalHighFaults);
+        summary.put("pendingReviewFaults", pendingReviewFaults);
+
+        return ResponseEntity.ok(ApiResponse.success("Faculty fault summary retrieved successfully", summary));
+    }
+
     @PostMapping
     public ResponseEntity<?> reportFault(@RequestBody FaultReport faultReport) {
         UserPrincipal principal = SecurityUtils.getCurrentPrincipal();

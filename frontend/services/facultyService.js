@@ -95,7 +95,9 @@ export const facultyService = {
     // Reports
     getReportSummary: () => api.get('/api/business/reports/summary'),
     getEquipmentUsageReport: () => api.get('/api/business/reports/equipment-usage'),
-    getAnalyticsReport: () => api.get('/api/business/reports/analytics')
+    getAnalyticsReport: () => api.get('/api/business/reports/analytics'),
+    getFacultyFaultReports: (params) => api.get('/api/business/faults/faculty/my-reports', { params }),
+    getFacultyFaultSummary: () => api.get('/api/business/faults/faculty/summary')
 };
 
 export default facultyService;
