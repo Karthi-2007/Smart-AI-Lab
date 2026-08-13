@@ -69,9 +69,21 @@ I have successfully built complete, fully functional React frontend modules for 
 - **State & UI:** Utilized `useState`/`useEffect` for data fetching, `react-hot-toast` for real-time notifications, and `lucide-react` for clean iconography.
 - **Responsiveness:** All tables are wrapped in `overflow-x-auto` to ensure they look great on mobile devices.
 - **Design System:** Strictly followed the premium dark theme using `bg-slate-900`, `bg-slate-800`, and `text-orange-500` accents.
+- **Pagination Module:** Integrated the reusable `<Pagination />` component into all lists/tables across all modules (Student, Faculty, and Admin).
+
+## 🛡️ Admin Portal Pagination (Newly Completed)
+We have successfully integrated client-side pagination into all tables in the Admin Portal to support long lists:
+- **Bookings List** ([`BookingTable.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/booking/BookingTable.jsx))
+- **Departments List** ([`DepartmentTable.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/department/DepartmentTable.jsx))
+- **Equipment List** ([`EquipmentTable.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/equipment/EquipmentTable.jsx))
+- **Laboratories List** ([`LaboratoryTable.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/laboratory/LaboratoryTable.jsx))
+- **Maintenance List** ([`MaintenanceTable.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/maintenance/MaintenanceTable.jsx))
+- **Faults List** ([`ManageFaults.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/components/admin/ManageFaults.jsx))
+- **Notifications List** ([`Notifications.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/pages/admin/Notifications.jsx))
+- **Contact Messages List** ([`ContactMessagesPage.jsx`](file:///c:/internship/placement%20training/AI-LAB/frontend/pages/admin/ContactMessagesPage.jsx))
 
 ## Next Steps
 Ensure your Spring Boot backend is running, then run the Vite development server (`npm run dev`). 
 - Navigate to `/login` to log in as a Student or Faculty.
 - Navigate to `/admin/login` to log in as an Admin.
-All 3 portals are now completely built and ready for end-to-end testing!
+All 3 portals are now completely built, paginated, and ready for end-to-end testing!

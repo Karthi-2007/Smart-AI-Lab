@@ -17,8 +17,16 @@ const ManageEquipment = () => {
     try {
       setLoading(true);
       const res = await adminService.getEquipments();
-      const data = res?.data || res || [];
-      setEquipment(Array.isArray(data) ? data : []);
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
+      setEquipment(Array.isArray(list) ? list : []);
     } catch (error) {
       toast.error('Failed to load equipment data');
       console.error(error);

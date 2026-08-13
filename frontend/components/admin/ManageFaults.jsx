@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { adminService } from "../../services/adminService";
 import toast from "react-hot-toast";
+import Pagination from "../common/Pagination";
 
 const STATUS_MAP = {
   open: { label: "Open", cls: "bg-red-500/20 text-red-400" },
@@ -26,12 +27,23 @@ const ManageFaults = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [updatingId, setUpdatingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchFaults = async () => {
     setLoading(true);
     try {
-      const data = await adminService.getFaults();
-      setFaults(Array.isArray(data) ? data : []);
+      const res = await adminService.getFaults();
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data.content || body.data;
+        } else {
+          list = body.content || body;
+        }
+      }
+      setFaults(Array.isArray(list) ? list : []);
     } catch {
       toast.error("Could not load fault reports.");
       setFaults([]);
@@ -41,6 +53,10 @@ const ManageFaults = () => {
   };
 
   useEffect(() => { fetchFaults(); }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
 
   const handleStatusUpdate = async (id, newStatus) => {
     setUpdatingId(id);
@@ -94,6 +110,11 @@ const ManageFaults = () => {
     { label: "In Progress", value: inProgress, icon: Clock, color: "bg-blue-500" },
     { label: "Resolved", value: resolved, icon: CheckCircle, color: "bg-green-500" },
   ];
+
+  const paginatedFaults = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -195,14 +216,14 @@ const ManageFaults = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {filtered.map(fault => {
+                {paginatedFaults.map(fault => {
                   const { label, cls } = statusStyle(fault.status);
                   const isUpdating = updatingId === fault.id;
                   const isResolved = fault.status?.toLowerCase() === "resolved";
 
                   return (
                     <tr key={fault.id} className="hover:bg-slate-800/50 transition">
-                      <td className="px-5 py-4 text-sm text-slate-400">#{fault.id}</td>
+                      <td className="px-5 py-4 text-sm text-slate-400 font-mono">#{fault.id}</td>
                       <td className="px-5 py-4 font-medium">{fault.equipmentName || `Equipment #${fault.equipmentId}`}</td>
                       <td className="px-5 py-4 text-sm text-slate-400">{fault.labName || "—"}</td>
                       <td className="px-5 py-4 text-sm text-slate-300 max-w-[200px] truncate" title={fault.description}>
@@ -248,14 +269,13 @@ const ManageFaults = () => {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filtered.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
-      )}
-
-      {/* Count */}
-      {!loading && filtered.length > 0 && (
-        <p className="text-sm text-slate-500 text-center">
-          Showing {filtered.length} of {faults.length} fault reports
-        </p>
       )}
     </div>
   );

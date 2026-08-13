@@ -37,9 +37,23 @@ public class Booking {
     @Transient
     private String timeSlot;
 
+    @Column(name = "is_urgent")
+    private Boolean isUrgent = false;
+
     @ManyToOne
     @JoinColumn(name = "approved_by")
     private Faculty approvedBy;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
 
     public String getPurpose() {
         return purpose;
@@ -177,5 +191,13 @@ public class Booking {
             this.equipment = new Equipment();
         }
         this.equipment.setEquipmentId(equipmentId);
+    }
+
+    public Boolean getIsUrgent() {
+        return isUrgent;
+    }
+
+    public void setIsUrgent(Boolean isUrgent) {
+        this.isUrgent = isUrgent;
     }
 }

@@ -104,6 +104,7 @@ public class Faculty {
     @com.fasterxml.jackson.annotation.JsonProperty("department")
     public void setDepartment(String departmentName) {
         this.departmentNameInput = departmentName;
+        this.department = null;
     }
 
     public String getDepartmentNameInput() {

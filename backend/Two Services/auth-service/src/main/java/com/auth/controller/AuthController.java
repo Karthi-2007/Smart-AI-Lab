@@ -299,4 +299,57 @@ public class AuthController {
 
         return ResponseEntity.ok("Password changed successfully");
     }
+
+    // ===============================
+    // UPDATE PROFILE (Authenticated)
+    // ===============================
+    @PostMapping("/update-profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> req) {
+        String currentEmail = normalize(req.get("currentEmail"));
+        String newEmail = normalize(req.get("newEmail"));
+        String name = req.get("name");
+
+        if (currentEmail == null || newEmail == null || name == null) {
+            return ResponseEntity.badRequest().body("currentEmail, newEmail and name are required");
+        }
+
+        Optional<AppUser> optional = appUserRepository.findByEmail(currentEmail);
+        if (optional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
+        AppUser user = optional.get();
+
+        if (!currentEmail.equalsIgnoreCase(newEmail)) {
+            Optional<AppUser> collision = appUserRepository.findByEmail(newEmail);
+            if (collision.isPresent()) {
+                return ResponseEntity.badRequest().body("Email address is already in use by another account");
+            }
+            user.setEmail(newEmail);
+        }
+
+        user.setName(name);
+        AppUser savedUser = appUserRepository.save(user);
+
+        // Sync with smartlab-service
+        try {
+            userSyncService.syncUser(savedUser);
+        } catch (Exception e) {
+            log.error("Failed to sync updated user profiles: {}", e.getMessage());
+        }
+
+        return ResponseEntity.ok(Map.of(
+            "name", savedUser.getName(),
+            "email", savedUser.getEmail()
+        ));
+    }
+
+    // ===============================
+    // LOGOUT
+    // ===============================
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
 }

@@ -8,6 +8,7 @@ import com.auth.entity.Student;
 import com.auth.entity.Faculty;
 import com.auth.entity.Admin;
 import com.auth.entity.Role;
+import com.auth.dto.ApiResponse;
 import com.auth.repository.AppUserRepository;
 import com.auth.repository.StudentRepository;
 import com.auth.repository.FacultyRepository;
@@ -144,7 +145,9 @@ public class AdminController {
             studentRepository.save(student);
 
         } else if (user.getRole() == Role.FACULTY) {
-            if (payload.containsKey("facultyId")) user.setFacultyId((String) payload.get("facultyId"));
+            if (payload.containsKey("facultyId") && payload.get("facultyId") != null) {
+                user.setFacultyId(payload.get("facultyId").toString());
+            }
             if (payload.containsKey("dob") && payload.get("dob") != null) {
                 user.setDob(java.time.LocalDate.parse((String) payload.get("dob")));
             }
@@ -178,6 +181,48 @@ public class AdminController {
         }
         appUserRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Activate user
+    @PatchMapping("/users/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> activateUser(@PathVariable Long id) {
+        Optional<AppUser> optional = appUserRepository.findById(id);
+        if (optional.isEmpty()) return ResponseEntity.notFound().build();
+        AppUser user = optional.get();
+        user.setStatus("ACTIVE");
+        appUserRepository.save(user);
+        userSyncService.syncUser(user);
+        return ResponseEntity.ok(ApiResponse.success("User activated successfully"));
+    }
+
+    // Deactivate user
+    @PatchMapping("/users/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deactivateUser(@PathVariable Long id) {
+        Optional<AppUser> optional = appUserRepository.findById(id);
+        if (optional.isEmpty()) return ResponseEntity.notFound().build();
+        AppUser user = optional.get();
+        user.setStatus("INACTIVE");
+        appUserRepository.save(user);
+        userSyncService.syncUser(user);
+        return ResponseEntity.ok(ApiResponse.success("User deactivated successfully"));
+    }
+
+    // Reset password
+    @PostMapping("/users/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        Optional<AppUser> optional = appUserRepository.findById(id);
+        if (optional.isEmpty()) return ResponseEntity.notFound().build();
+        AppUser user = optional.get();
+        String newPassword = body != null ? body.get("newPassword") : null;
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            newPassword = "Password123!";
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        appUserRepository.save(user);
+        return ResponseEntity.ok(ApiResponse.success("User password reset successfully"));
     }
 
     // Create admin

@@ -30,7 +30,15 @@ const ManageMaintenance = () => {
           adminService.getUsers()
         ]);
         
-        const eqList = eqRes?.data || eqRes || [];
+        const eqBody = eqRes?.data || eqRes;
+        let eqList = [];
+        if (eqBody) {
+          if (eqBody.success && eqBody.data) {
+            eqList = eqBody.data;
+          } else {
+            eqList = eqBody;
+          }
+        }
         const sortedEq = Array.isArray(eqList) ? eqList : [];
         setEquipments(sortedEq);
         if (sortedEq.length > 0) {

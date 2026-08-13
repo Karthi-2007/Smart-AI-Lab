@@ -44,74 +44,65 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Checking Auth Service seed users...");
 
-        // Admin User — always ensure correct password is set on startup
-        AppUser admin;
-        if (!userRepository.existsByEmail("admin@smartlab.com")) {
-            admin = new AppUser();
-            admin.setName("System Admin");
-            admin.setEmail("admin@smartlab.com");
-            admin.setRole(Role.ADMIN);
-            admin.setStatus("ACTIVE");
-            admin.setDob(LocalDate.of(1990, 1, 1));
-            admin = userRepository.save(admin);
-
-            Admin profile = new Admin();
-            profile.setUser(admin);
-            adminRepository.save(profile);
-
-            log.info("Created seed user: admin@smartlab.com / admin123");
-        } else {
-            admin = userRepository.findByEmail("admin@smartlab.com").orElse(null);
-        }
-        // Always sync admin password to ensure it matches admin123
-        if (admin != null) {
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            userRepository.save(admin);
-            log.info("Admin password synchronized: admin@smartlab.com / admin123");
+        // If any user exists in the system (e.g. database is not empty), we DO NOT seed anything
+        if (userRepository.count() > 0) {
+            log.info("Users already exist in database. Skipping startup seeding.");
+            return;
         }
 
+        // Admin User
+        AppUser admin = new AppUser();
+        admin.setName("System Admin");
+        admin.setEmail("admin@smartlab.com");
+        admin.setRole(Role.ADMIN);
+        admin.setStatus("ACTIVE");
+        admin.setDob(LocalDate.of(1990, 1, 1));
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin = userRepository.save(admin);
+
+        Admin profile = new Admin();
+        profile.setUser(admin);
+        adminRepository.save(profile);
+
+        log.info("Created seed user: admin@smartlab.com / admin123");
 
         // Faculty User (Default Active)
-        if (!userRepository.existsByEmail("faculty@smartlab.com")) {
-            AppUser faculty = new AppUser();
-            faculty.setName("Dr. Anitha Raman");
-            faculty.setEmail("faculty@smartlab.com");
-            faculty.setPassword(passwordEncoder.encode("faculty123"));
-            faculty.setRole(Role.FACULTY);
-            faculty.setStatus("ACTIVE");
-            faculty.setFacultyId("FAC-101");
-            faculty.setDob(LocalDate.of(1985, 5, 15));
-            AppUser savedFaculty = userRepository.save(faculty);
+        AppUser faculty = new AppUser();
+        faculty.setName("Dr. Anitha Raman");
+        faculty.setEmail("faculty@smartlab.com");
+        faculty.setPassword(passwordEncoder.encode("faculty123"));
+        faculty.setRole(Role.FACULTY);
+        faculty.setStatus("ACTIVE");
+        faculty.setFacultyId("FAC-101");
+        faculty.setDob(LocalDate.of(1985, 5, 15));
+        AppUser savedFaculty = userRepository.save(faculty);
 
-            Faculty profile = new Faculty();
-            profile.setUser(savedFaculty);
-            profile.setFacultyCode("FAC-101");
-            profile.setDob(LocalDate.of(1985, 5, 15));
-            facultyRepository.save(profile);
+        Faculty facultyProfile = new Faculty();
+        facultyProfile.setUser(savedFaculty);
+        facultyProfile.setFacultyCode("FAC-101");
+        facultyProfile.setDob(LocalDate.of(1985, 5, 15));
+        facultyRepository.save(facultyProfile);
 
-            log.info("Created seed user: faculty@smartlab.com / faculty123");
-        }
+        log.info("Created seed user: faculty@smartlab.com / faculty123");
 
         // Student User (Default Active)
-        if (!userRepository.existsByEmail("student@smartlab.com")) {
-            AppUser student = new AppUser();
-            student.setName("Karthikeyan S");
-            student.setEmail("student@smartlab.com");
-            student.setPassword(passwordEncoder.encode("student123"));
-            student.setRole(Role.STUDENT);
-            student.setStatus("ACTIVE");
-            student.setRegNo("21CS101");
-            student.setDob(LocalDate.of(2002, 8, 20));
-            AppUser savedStudent = userRepository.save(student);
+        AppUser student = new AppUser();
+        student.setName("Karthikeyan S");
+        student.setEmail("student@smartlab.com");
+        student.setPassword(passwordEncoder.encode("student123"));
+        student.setRole(Role.STUDENT);
+        student.setStatus("ACTIVE");
+        student.setRegNo("21CS101");
+        student.setDob(LocalDate.of(2002, 8, 20));
+        AppUser savedStudent = userRepository.save(student);
 
-            Student profile = new Student();
-            profile.setUser(savedStudent);
-            profile.setRegNo("21CS101");
-            profile.setDob(LocalDate.of(2002, 8, 20));
-            studentRepository.save(profile);
+        Student studentProfile = new Student();
+        studentProfile.setUser(savedStudent);
+        studentProfile.setRegNo("21CS101");
+        studentProfile.setDob(LocalDate.of(2002, 8, 20));
+        studentRepository.save(studentProfile);
 
-            log.info("Created seed user: student@smartlab.com / student123");
-        }
+        log.info("Created seed user: student@smartlab.com / student123");
 
         // --- SEED EXPANDED EEE DEPARTMENT ---
         seedActiveFaculty("Dr. Sunita Williams", "faculty.eee@kce.ac.in", "FAC-EEE-110", LocalDate.of(1980, 5, 12));
@@ -142,6 +133,13 @@ public class DataInitializer implements CommandLineRunner {
         seedActiveStudent("Student 250", "717824f250@kce.ac.in", "717824F250", LocalDate.of(2004, 5, 12));
         seedActiveStudent("Student 256", "717824f256@kce.ac.in", "717824F256", LocalDate.of(2004, 6, 18));
         seedActiveStudent("Student 251", "717824f251@kce.ac.in", "717824F251", LocalDate.of(2004, 7, 22));
+
+        // --- SEED EXPANDED ECE DEPARTMENT ---
+        seedActiveStudent("Aditya ECE 1", "student.ece1@kce.ac.in", "7178ECE001", LocalDate.of(2004, 3, 10));
+        seedActiveStudent("Bhavana ECE 2", "student.ece2@kce.ac.in", "7178ECE002", LocalDate.of(2003, 11, 15));
+        seedActiveStudent("Chaitanya ECE 3", "student.ece3@kce.ac.in", "7178ECE003", LocalDate.of(2004, 4, 18));
+        seedActiveStudent("Divya ECE 4", "student.ece4@kce.ac.in", "7178ECE004", LocalDate.of(2003, 8, 25));
+        seedActiveStudent("Eshwar ECE 5", "student.ece5@kce.ac.in", "7178ECE005", LocalDate.of(2004, 1, 12));
 
         // --- SEED CIVIL, IT, AND AIDS DEPARTMENTS (FOR 6 DEPARTMENTS REQUIREMENT) ---
         seedActiveFaculty("Dr. Alan Turing", "faculty.it@kce.ac.in", "FAC-IT-140", LocalDate.of(1980, 6, 23));

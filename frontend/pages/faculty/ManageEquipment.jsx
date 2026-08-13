@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { facultyService } from '../../services/facultyService';
+import Pagination from '../../components/common/Pagination';
 
 /* ─── Add/Edit Modal ─────────────────────────────────────────── */
 function EquipmentModal({ mode, equipment, labs, onClose, onSave }) {
@@ -196,16 +197,41 @@ export default function ManageEquipment() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [eqRes, labRes] = await Promise.all([
         facultyService.getAllEquipments(),
-        facultyService.getLabs()
+        facultyService.getMyLabs()
       ]);
-      setEquipments(eqRes?.data || []);
-      setLabs(labRes?.data || []);
+      const eqBody = eqRes?.data || eqRes;
+      let eqList = [];
+      if (eqBody) {
+        if (eqBody.success && eqBody.data) {
+          eqList = eqBody.data;
+        } else {
+          eqList = eqBody;
+        }
+      }
+      setEquipments(Array.isArray(eqList) ? eqList : []);
+
+      const labBody = labRes?.data || labRes;
+      let labList = [];
+      if (labBody) {
+        if (labBody.success && labBody.data) {
+          labList = labBody.data;
+        } else {
+          labList = labBody;
+        }
+      }
+      setLabs(Array.isArray(labList) ? labList : []);
     } catch (err) {
       toast.error('Failed to load equipment data');
       console.error(err);
@@ -235,6 +261,11 @@ export default function ManageEquipment() {
       return matchesSearch && matchesStatus;
     });
   }, [equipments, search, statusFilter]);
+
+  const paginatedEquipments = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredEquipments.slice(start, start + itemsPerPage);
+  }, [filteredEquipments, currentPage]);
 
   const handleAdd = async (payload) => {
     try {
@@ -387,7 +418,7 @@ export default function ManageEquipment() {
                     </td>
                   </tr>
                 ) : (
-                  filteredEquipments.map((item, idx) => (
+                  paginatedEquipments.map((item, idx) => (
                     <tr key={item.equipmentId || item.id || `eq-${idx}`} className="hover:bg-slate-800/30 transition-colors text-slate-300">
                       <td className="px-6 py-4 font-mono text-xs text-slate-400">#{item.equipmentId}</td>
                       <td className="px-6 py-4 font-medium text-white flex items-center gap-3">
@@ -434,6 +465,12 @@ export default function ManageEquipment() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredEquipments.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 

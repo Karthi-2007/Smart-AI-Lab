@@ -3,10 +3,13 @@ package com.smartlab.service;
 import com.smartlab.entity.Booking;
 import com.smartlab.entity.Equipment;
 import com.smartlab.entity.Student;
+import com.smartlab.entity.Faculty;
 import com.smartlab.repository.BookingRepository;
 import com.smartlab.repository.EquipmentRepository;
 import com.smartlab.repository.StudentRepository;
 import com.smartlab.repository.FacultyRepository;
+import com.smartlab.security.SecurityUtils;
+import com.smartlab.security.UserPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -19,17 +22,24 @@ public class BookingService {
     private final EquipmentRepository equipmentRepository;
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final SmsService smsService;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BookingService.class);
 
     public BookingService(BookingRepository bookingRepository,
                           StudentRepository studentRepository,
                           EquipmentRepository equipmentRepository,
                           FacultyRepository facultyRepository,
-                          NotificationService notificationService) {
+                          NotificationService notificationService,
+                          EmailService emailService,
+                          SmsService smsService) {
         this.bookingRepository = bookingRepository;
         this.studentRepository = studentRepository;
         this.equipmentRepository = equipmentRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
+        this.emailService = emailService;
+        this.smsService = smsService;
     }
 
     public List<Booking> getAllBookings() {
@@ -188,6 +198,27 @@ public class BookingService {
                         if (fUserId != null) {
                             notificationService.createNotification(fUserId, "FACULTY", "New Booking Request", studentName + " requested " + eqName + ".", "Booking");
                         }
+                        // Send Email
+                        if (f.getEmail() != null && !f.getEmail().trim().isEmpty()) {
+                            try {
+                                String details = "<tr><td class='label'>Student:</td><td class='value'>" + studentName + "</td></tr>" +
+                                                 "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                                 "<tr><td class='label'>Date:</td><td class='value'>" + saved.getDate() + "</td></tr>" +
+                                                 "<tr><td class='label'>Time Slot:</td><td class='value'>" + saved.getTimeSlot() + "</td></tr>";
+                                String html = emailService.buildTemplate("New Booking Request", "New Booking Request", "A student has submitted a new equipment booking request for your approval.", details);
+                                emailService.sendEmail(f.getEmail(), "SmartLab AI - New Booking Request: " + eqName, html);
+                            } catch (Exception e) {
+                                log.warn("Failed to send booking email to faculty: {}", e.getMessage());
+                            }
+                        }
+                        // Send SMS
+                        if (f.getPhone() != null && !f.getPhone().trim().isEmpty()) {
+                            try {
+                                smsService.sendSms(f.getPhone(), "SmartLab AI: New booking request from " + studentName + " for " + eqName + " on " + saved.getDate() + ".");
+                            } catch (Exception e) {
+                                log.warn("Failed to send booking SMS to faculty: {}", e.getMessage());
+                            }
+                        }
                     });
             }
         } catch (Exception e) {
@@ -201,31 +232,102 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id).orElse(null);
         if (booking != null) {
             booking.setStatus("Approved");
+            
+            // Resolve current faculty member
+            Faculty approver = null;
+            try {
+                UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+                if (principal != null) {
+                    approver = facultyRepository.findByUserId(principal.getUserId());
+                    if (approver == null) {
+                        approver = facultyRepository.findByEmailIgnoreCase(principal.getEmail());
+                    }
+                }
+            } catch (Exception e) {}
+            if (approver != null) {
+                booking.setApprovedBy(approver);
+            }
+
             Booking saved = bookingRepository.save(booking);
             try {
                 String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
                 Long notifUserId = saved.getStudent() != null ? (saved.getStudent().getUserId() != null ? saved.getStudent().getUserId() : saved.getStudent().getStudentId()) : null;
+                String approverName = (saved.getApprovedBy() != null) ? saved.getApprovedBy().getName() : "Faculty";
                 if (notifUserId != null) {
-                    notificationService.createNotification(notifUserId, "STUDENT", "Booking Approved", "Your booking request for " + eqName + " has been approved.", "Booking");
+                    notificationService.createNotification(notifUserId, "STUDENT", "Booking Approved", "Your booking request for " + eqName + " has been approved by " + approverName + ".", "Booking");
                 }
-            } catch (Exception e) {}
+                
+                // Email student
+                if (saved.getStudent() != null && saved.getStudent().getEmail() != null && !saved.getStudent().getEmail().trim().isEmpty()) {
+                    String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                     "<tr><td class='label'>Date:</td><td class='value'>" + saved.getDate() + "</td></tr>" +
+                                     "<tr><td class='label'>Time Slot:</td><td class='value'>" + saved.getTimeSlot() + "</td></tr>" +
+                                     "<tr><td class='label'>Status:</td><td class='value' style='color: green; font-weight: bold;'>Approved</td></tr>";
+                    String html = emailService.buildTemplate("Booking Approved", "Your booking request is approved!", "Good news! Your equipment booking request has been approved by " + approverName + ".", details);
+                    emailService.sendEmail(saved.getStudent().getEmail(), "SmartLab AI - Booking Approved: " + eqName, html);
+                }
+
+                // SMS student
+                if (saved.getStudent() != null && saved.getStudent().getPhone() != null && !saved.getStudent().getPhone().trim().isEmpty()) {
+                    smsService.sendSms(saved.getStudent().getPhone(), "SmartLab AI: Your booking request for " + eqName + " has been approved by " + approverName + ".");
+                }
+            } catch (Exception e) {
+                log.warn("Failed to notify student of approval: {}", e.getMessage());
+            }
             return saved;
         }
         return null;
     }
 
-    public Booking rejectBooking(Long id) {
+    public Booking rejectBooking(Long id, String reason) {
         Booking booking = bookingRepository.findById(id).orElse(null);
         if (booking != null) {
             booking.setStatus("Rejected");
+            booking.setRejectionReason(reason);
+
+            // Resolve current faculty member
+            Faculty rejecter = null;
+            try {
+                UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+                if (principal != null) {
+                    rejecter = facultyRepository.findByUserId(principal.getUserId());
+                    if (rejecter == null) {
+                        rejecter = facultyRepository.findByEmailIgnoreCase(principal.getEmail());
+                    }
+                }
+            } catch (Exception e) {}
+            if (rejecter != null) {
+                booking.setApprovedBy(rejecter);
+            }
+
             Booking saved = bookingRepository.save(booking);
             try {
                 String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
                 Long notifUserId = saved.getStudent() != null ? (saved.getStudent().getUserId() != null ? saved.getStudent().getUserId() : saved.getStudent().getStudentId()) : null;
+                String displayReason = reason != null && !reason.trim().isEmpty() ? reason : "No reason specified";
+                String rejecterName = (saved.getApprovedBy() != null) ? saved.getApprovedBy().getName() : "Faculty";
                 if (notifUserId != null) {
-                    notificationService.createNotification(notifUserId, "STUDENT", "Booking Rejected", "Your booking request for " + eqName + " was rejected.", "Booking");
+                    notificationService.createNotification(notifUserId, "STUDENT", "Booking Rejected", "Your booking request for " + eqName + " was rejected by " + rejecterName + ". Reason: " + displayReason, "Booking");
                 }
-            } catch (Exception e) {}
+                
+                // Email student
+                if (saved.getStudent() != null && saved.getStudent().getEmail() != null && !saved.getStudent().getEmail().trim().isEmpty()) {
+                    String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                     "<tr><td class='label'>Date:</td><td class='value'>" + saved.getDate() + "</td></tr>" +
+                                     "<tr><td class='label'>Time Slot:</td><td class='value'>" + saved.getTimeSlot() + "</td></tr>" +
+                                     "<tr><td class='label'>Status:</td><td class='value' style='color: red; font-weight: bold;'>Rejected</td></tr>" +
+                                     "<tr><td class='label'>Rejection Reason:</td><td class='value' style='font-style: italic; color: #718096;'>" + displayReason + "</td></tr>";
+                    String html = emailService.buildTemplate("Booking Rejected", "Your booking request was rejected by " + rejecterName + ".", "We regret to inform you that your equipment booking request has been rejected.", details);
+                    emailService.sendEmail(saved.getStudent().getEmail(), "SmartLab AI - Booking Rejected: " + eqName, html);
+                }
+
+                // SMS student
+                if (saved.getStudent() != null && saved.getStudent().getPhone() != null && !saved.getStudent().getPhone().trim().isEmpty()) {
+                    smsService.sendSms(saved.getStudent().getPhone(), "SmartLab AI: Your booking request for " + eqName + " was rejected by " + rejecterName + ". Reason: " + displayReason);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to notify student of rejection: {}", e.getMessage());
+            }
             return saved;
         }
         return null;
@@ -277,5 +379,22 @@ public class BookingService {
 
     public void deleteBooking(Long id) {
         bookingRepository.deleteById(id);
+    }
+
+    public Booking cancelBooking(Long id) {
+        Booking booking = bookingRepository.findById(id).orElse(null);
+        if (booking != null) {
+            booking.setStatus("Cancelled");
+            Booking saved = bookingRepository.save(booking);
+            try {
+                String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
+                Long notifUserId = saved.getStudent() != null ? (saved.getStudent().getUserId() != null ? saved.getStudent().getUserId() : saved.getStudent().getStudentId()) : null;
+                if (notifUserId != null) {
+                    notificationService.createNotification(notifUserId, "STUDENT", "Booking Cancelled", "Your booking request for " + eqName + " has been cancelled.", "Booking");
+                }
+            } catch (Exception e) {}
+            return saved;
+        }
+        return null;
     }
 }

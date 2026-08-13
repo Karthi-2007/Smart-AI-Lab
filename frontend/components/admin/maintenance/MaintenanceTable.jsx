@@ -2,21 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { Wrench, CheckCircle, Trash2, Eye, X } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
+import Pagination from '../../common/Pagination';
 
 const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
   const [maintenance, setMaintenance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailMaintenance, setDetailMaintenance] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchMaintenance();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const fetchMaintenance = async () => {
     setLoading(true);
     try {
       const res = await adminService.getMaintenance();
-      const list = res?.data || res || [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data.content || body.data;
+        } else {
+          list = body.content || body;
+        }
+      }
       const dataArray = Array.isArray(list) ? list : [];
       setMaintenance(dataArray);
       if (onMaintenanceLoaded) onMaintenanceLoaded(dataArray);
@@ -95,6 +110,11 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
     );
   }
 
+  const paginated = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -111,7 +131,7 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {filtered.map((item, idx) => {
+            {paginated.map((item, idx) => {
               const mId = item.maintenanceId || idx;
               const eqName = typeof item.equipment === 'object' ? item.equipment?.name : (item.equipment || 'N/A');
               return (
@@ -143,6 +163,13 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filtered.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Maintenance Details Modal */}
       {detailMaintenance && (

@@ -46,8 +46,28 @@ const AdminTopbar = ({ onMenuClick }) => {
         ]);
 
         const usersList = Array.isArray(usersRes) ? usersRes : (usersRes?.data || []);
-        const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-        const labList = Array.isArray(labRes?.data || labRes) ? (labRes?.data || labRes) : [];
+        
+        const eqBody = eqRes?.data || eqRes;
+        let eqItems = [];
+        if (eqBody) {
+          if (eqBody.success && eqBody.data) {
+            eqItems = eqBody.data;
+          } else {
+            eqItems = eqBody;
+          }
+        }
+        const eqList = Array.isArray(eqItems) ? eqItems : [];
+
+        const labBody = labRes?.data || labRes;
+        let labItems = [];
+        if (labBody) {
+          if (labBody.success && labBody.data) {
+            labItems = labBody.data;
+          } else {
+            labItems = labBody;
+          }
+        }
+        const labList = Array.isArray(labItems) ? labItems : [];
         const term = searchQuery.toLowerCase().trim();
 
         const userMatches = usersList
@@ -123,72 +143,6 @@ const AdminTopbar = ({ onMenuClick }) => {
         >
           <Menu size={20} />
         </button>
-
-        {/* Functional Search Bar */}
-        <div ref={searchContainerRef} className="relative hidden sm:block w-full max-w-xs md:max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Search users, labs, equipment... (Press Enter)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearchSubmit}
-            onFocus={() => searchQuery.trim() && setShowDropdown(true)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-2xl pl-11 pr-9 py-2.5 focus:outline-none focus:border-orange-500 text-sm text-white placeholder-slate-400 transition"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => { setSearchQuery(""); setShowDropdown(false); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-            >
-              <X size={16} />
-            </button>
-          )}
-
-          {/* Auto-suggest Search Dropdown */}
-          {showDropdown && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="p-2 border-b border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                System Matches ({suggestions.length})
-              </div>
-              {isSearching ? (
-                <div className="p-4 text-xs text-slate-400 text-center animate-pulse">Searching system records...</div>
-              ) : suggestions.length === 0 ? (
-                <div className="p-4 text-xs text-slate-400 text-center">
-                  No system records match "{searchQuery}"
-                </div>
-              ) : (
-                <div className="divide-y divide-slate-800/60 max-h-60 overflow-y-auto">
-                  {suggestions.map((item, idx) => {
-                    const Icon = getIconForType(item.type);
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => handleSelectSuggestion(item)}
-                        className="p-3 hover:bg-slate-800 cursor-pointer flex items-center justify-between transition group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
-                            <Icon size={16} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-white group-hover:text-orange-400 transition">
-                              {item.label}
-                            </p>
-                            <p className="text-xs text-slate-400">{item.subtitle}</p>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                          {item.type}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Right */}

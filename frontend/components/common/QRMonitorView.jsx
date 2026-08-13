@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import api from "../../services/api";
 import QRCodeCard from "../booking/QRCodeCard";
 import QRScannerModal from "./QRScannerModal";
+import Pagination from "./Pagination";
 
 const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
   const [bookings, setBookings] = useState([]);
@@ -12,16 +13,32 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedPass, setSelectedPass] = useState(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchPassData();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
   const fetchPassData = async () => {
     try {
       setLoading(true);
       const res = await api.get("/api/business/bookings").catch(() => ({ data: [] }));
-      const list = Array.isArray(res?.data || res) ? (res?.data || res) : [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          // Paginated: body.data.content, or flat list: body.data
+          const d = body.data;
+          list = Array.isArray(d) ? d : (Array.isArray(d?.content) ? d.content : []);
+        } else if (Array.isArray(body)) {
+          list = body;
+        }
+      }
       setBookings(list);
     } catch (err) {
       toast.error("Failed to load pass monitor data");
@@ -47,6 +64,11 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
 
     return matchesSearch && matchesFilter;
   });
+
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalPasses = bookings.length;
   const approvedPasses = bookings.filter((b) => (b.status || "").toLowerCase() === "approved").length;
@@ -221,7 +243,7 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
                   </td>
                 </tr>
               ) : (
-                filteredBookings.map((booking) => {
+                paginatedBookings.map((booking) => {
                   const bId = booking.bookingId || booking.id;
                   const passCode = `SMARTLAB-BOOKING-${bId}`;
                   const sName =
@@ -280,6 +302,12 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredBookings.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Inspect QR Pass Modal */}

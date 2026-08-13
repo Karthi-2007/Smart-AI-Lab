@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../services/api";
+import Pagination from "../../components/common/Pagination";
 
 const ContactMessagesPage = () => {
   const [messages, setMessages] = useState([]);
@@ -30,17 +31,31 @@ const ContactMessagesPage = () => {
   const [selectedMsg, setSelectedMsg] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchMessages();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, categoryFilter]);
+
   const fetchMessages = async () => {
     try {
       setLoading(true);
       const res = await api.get("/api/business/contact-messages").catch(() => ({ data: [] }));
-      const list = Array.isArray(res?.data || res) ? (res?.data || res) : [];
-      setMessages(list);
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
+      setMessages(Array.isArray(list) ? list : []);
     } catch (err) {
       toast.error("Failed to load contact messages");
     } finally {
@@ -164,6 +179,11 @@ const ContactMessagesPage = () => {
     document.body.removeChild(link);
     toast.success("Contact inquiries exported as CSV!");
   };
+
+  const paginatedMessages = filteredMessages.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -293,7 +313,7 @@ const ContactMessagesPage = () => {
                   <p className="text-xs text-slate-500 mt-1">No contact inquiries match your active search filters.</p>
                 </div>
               ) : (
-                filteredMessages.map((msg) => {
+                paginatedMessages.map((msg) => {
                   const mId = msg.messageId || msg.id;
                   const isSelected = selectedMsg && (selectedMsg.messageId || selectedMsg.id) === mId;
                   const isUnread = (msg.status || "UNREAD").toUpperCase() === "UNREAD";
@@ -374,6 +394,12 @@ const ContactMessagesPage = () => {
                 })
               )}
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredMessages.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
 

@@ -29,20 +29,73 @@ const AIAnalytics = () => {
         adminService.getUsers().catch(() => ({ data: [] }))
       ]);
 
-      const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-      const bookList = Array.isArray(bookRes?.data || bookRes) ? (bookRes?.data || bookRes) : [];
-      const faultList = Array.isArray(faultRes?.data || faultRes) ? (faultRes?.data || faultRes) : [];
-      const maintList = Array.isArray(maintRes?.data || maintRes) ? (maintRes?.data || maintRes) : [];
-      const labList = Array.isArray(labRes?.data || labRes) ? (labRes?.data || labRes) : [];
-      const usersList = Array.isArray(usersRes?.data || usersRes) ? (usersRes?.data || usersRes) : [];
+      const eqBody = eqRes?.data || eqRes;
+      let eqList = [];
+      if (eqBody) {
+        if (eqBody.success && eqBody.data) {
+          eqList = eqBody.data;
+        } else {
+          eqList = eqBody;
+        }
+      }
+
+      const bookBody = bookRes?.data || bookRes;
+      let bookList = [];
+      if (bookBody) {
+        if (bookBody.success && bookBody.data) {
+          bookList = bookBody.data.content || bookBody.data;
+        } else {
+          bookList = bookBody.content || bookBody;
+        }
+      }
+
+      const faultBody = faultRes?.data || faultRes;
+      let faultList = [];
+      if (faultBody) {
+        if (faultBody.success && faultBody.data) {
+          faultList = faultBody.data.content || faultBody.data;
+        } else {
+          faultList = faultBody.content || faultBody;
+        }
+      }
+
+      const maintBody = maintRes?.data || maintRes;
+      let maintList = [];
+      if (maintBody) {
+        if (maintBody.success && maintBody.data) {
+          maintList = maintBody.data.content || maintBody.data;
+        } else {
+          maintList = maintBody.content || maintBody;
+        }
+      }
+
+      const labBody = labRes?.data || labRes;
+      let labList = [];
+      if (labBody) {
+        if (labBody.success && labBody.data) {
+          labList = labBody.data;
+        } else {
+          labList = labBody;
+        }
+      }
+
+      const usersBody = usersRes?.data || usersRes;
+      let usersList = [];
+      if (usersBody) {
+        if (usersBody.success && usersBody.data) {
+          usersList = usersBody.data;
+        } else {
+          usersList = usersBody;
+        }
+      }
 
       setData({
-        equipments: eqList,
-        bookings: bookList,
-        faults: faultList,
-        maintenance: maintList,
-        laboratories: labList,
-        users: usersList
+        equipments: Array.isArray(eqList) ? eqList : [],
+        bookings: Array.isArray(bookList) ? bookList : [],
+        faults: Array.isArray(faultList) ? faultList : [],
+        maintenance: Array.isArray(maintList) ? maintList : [],
+        laboratories: Array.isArray(labList) ? labList : [],
+        users: Array.isArray(usersList) ? usersList : []
       });
 
     } catch (error) {
@@ -58,28 +111,44 @@ const AIAnalytics = () => {
 
   // Dynamic AI Computed Metrics derived from current DB data
   const totalEquipments = data.equipments.length;
-  const activeFaultsCount = data.faults.filter(f => f.status !== 'Resolved').length;
-  const maintenanceCount = data.maintenance.filter(m => m.status !== 'Completed').length;
-  const faultyDeviceCount = activeFaultsCount + maintenanceCount;
-  
+  const activeFaultsCount = data.faults.filter(f => f.status && f.status.toLowerCase() !== 'resolved').length;
+  const maintenanceCount = data.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').length;
+
+  // Resolve unique equipment IDs that are actually faulty or in maintenance to prevent double counting
+  const faultyEquipmentIds = new Set([
+    ...data.faults.filter(f => f.status && f.status.toLowerCase() !== 'resolved').map(f => f.equipment?.equipmentId || f.equipmentId || (f.equipment && f.equipment.id)),
+    ...data.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').map(m => m.equipment?.equipmentId || m.equipmentId || (m.equipment && m.equipment.id))
+  ].filter(Boolean));
+
+  const faultyDeviceCount = faultyEquipmentIds.size;
   const healthyCount = Math.max(0, totalEquipments - faultyDeviceCount);
   const healthyPct = totalEquipments > 0 ? Math.round((healthyCount / totalEquipments) * 100) : 100;
   
-  const usagePct = totalEquipments > 0 
-    ? Math.min(98, Math.round(((data.bookings.length * 3 + data.equipments.filter(e => e.status === 'In Use').length) / Math.max(1, totalEquipments)) * 100)) 
-    : 0;
+  // Calculate equipment usage rate based on unique booked devices and active check-ins
+  const uniqueBookedEquipmentIds = new Set(data.bookings.map(b => b.equipment?.equipmentId || b.equipmentId).filter(Boolean));
+  const activeUsageRate = totalEquipments > 0 ? Math.round((uniqueBookedEquipmentIds.size / totalEquipments) * 100) : 0;
+  const usagePct = Math.min(100, Math.max(12, activeUsageRate + Math.round((data.bookings.filter(b => b.status === 'Approved').length / Math.max(1, totalEquipments)) * 20)));
 
-  const confidenceScore = totalEquipments > 0 ? (94.2 + (totalEquipments % 5) * 0.8).toFixed(1) : 96.0;
+  // Calculate dynamic AI Confidence Score based on data density and active faults penalty
+  const confidenceScore = Math.max(90.0, Math.min(99.8, (95.2 + (data.bookings.length * 0.1) - (activeFaultsCount * 0.25)))).toFixed(1);
 
   // Equipment Usage Distribution
   const equipmentUsageList = data.equipments.map(eq => {
+    const eqId = eq.equipmentId || eq.id;
     const eqBookings = data.bookings.filter(b => {
-      const bName = typeof b.equipment === 'object' ? b.equipment?.name : b.equipment;
-      return bName === eq.name;
+      const bEqId = b.equipment?.equipmentId || b.equipmentId || (b.equipment && b.equipment.id);
+      return bEqId === eqId;
     }).length;
+    
+    // Scale usage base on bookings count and current status
+    const baseUsage = Math.min(100, (eqBookings * 15) + (eq.status === 'In Use' ? 40 : 12));
+    // Degrade usage load representation if equipment is currently marked as faulty
+    const isFaulty = faultyEquipmentIds.has(eqId);
+    const usage = isFaulty ? Math.round(baseUsage * 0.15) : baseUsage;
+
     return {
       name: eq.name,
-      usage: Math.min(100, (eqBookings * 20) + (eq.status === 'In Use' ? 40 : 15)),
+      usage: Math.max(5, usage),
       status: eq.status || 'Available',
       lab: typeof eq.laboratory === 'object' ? eq.laboratory?.name : (eq.laboratory || eq.lab || 'Main Lab')
     };
@@ -88,10 +157,17 @@ const AIAnalytics = () => {
   // Weekday Demand Calculation
   const weekdayCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
   data.bookings.forEach(b => {
-    const dateStr = b.date || b.bookedAt;
+    const dateStr = b.bookingDate || b.date || b.bookedAt;
     if (dateStr) {
-      const day = new Date(dateStr).toLocaleString('default', { weekday: 'short' });
-      if (weekdayCounts[day] !== undefined) weekdayCounts[day]++;
+      try {
+        const dateObj = new Date(dateStr);
+        if (!isNaN(dateObj.getTime())) {
+          const day = dateObj.toLocaleString('en-US', { weekday: 'short' });
+          if (weekdayCounts[day] !== undefined) weekdayCounts[day]++;
+        }
+      } catch (e) {
+        // ignore invalid dates
+      }
     }
   });
   const maxDayBooking = Math.max(...Object.values(weekdayCounts), 1);

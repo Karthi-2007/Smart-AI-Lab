@@ -24,19 +24,21 @@ public class FaultReport {
     private String description;
     private String status;
     private Date reportedAt;
+    private String priority = "Low";
 
     @Column(name = "resolved_at")
     private java.time.LocalDateTime resolvedAt;
 
     public FaultReport() {}
 
-    public FaultReport(Long faultId, Equipment equipment, Student reportedBy, String description, String status, Date reportedAt) {
+    public FaultReport(Long faultId, Equipment equipment, Student reportedBy, String description, String status, Date reportedAt, String priority) {
         this.faultId = faultId;
         this.equipment = equipment;
         this.reportedBy = reportedBy;
         this.description = description;
         this.status = status;
         this.reportedAt = reportedAt;
+        this.priority = priority;
     }
 
     public Long getFaultId() {
@@ -123,5 +125,13 @@ public class FaultReport {
 
     public void setResolvedAt(java.time.LocalDateTime resolvedAt) {
         this.resolvedAt = resolvedAt;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

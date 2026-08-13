@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, Save, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import authService from "../../../services/authService";
 
 const ProfileSettings = () => {
   const [name, setName] = useState("");
@@ -26,25 +27,28 @@ const ProfileSettings = () => {
     }
   }, []);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
-      try {
-        const stored = localStorage.getItem("user");
-        const u = stored ? JSON.parse(stored) : {};
-        u.name = name;
-        u.email = email;
-        u.phone = phone;
-        u.designation = designation;
-        localStorage.setItem("user", JSON.stringify(u));
-        toast.success("Admin Profile saved successfully!");
-      } catch (err) {
-        toast.error("Failed to save profile.");
-      } finally {
-        setSaving(false);
-      }
-    }, 400);
+    try {
+      const stored = localStorage.getItem("user");
+      const u = stored ? JSON.parse(stored) : {};
+      const currentEmail = u.email || "admin@smartlab.com";
+
+      // Call backend API
+      const res = await authService.updateProfile(currentEmail, email, name, phone, designation);
+      
+      u.name = name;
+      u.email = email;
+      u.phone = phone;
+      u.designation = designation;
+      localStorage.setItem("user", JSON.stringify(u));
+      toast.success("Admin Profile saved successfully!");
+    } catch (err) {
+      toast.error(err.response?.data || "Failed to save profile.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

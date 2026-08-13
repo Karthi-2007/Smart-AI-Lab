@@ -185,6 +185,9 @@ const ManageFaculty = () => {
   const [loading, setLoading] = useState(true);
   const [formMode, setFormMode] = useState('add');
   const [editingFaculty, setEditingFaculty] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedDept, setSelectedDept] = useState("All Departments");
+  const [selectedStatus, setSelectedStatus] = useState("Status");
   const fileInputRef = useRef(null);
 
   const fetchFaculty = async () => {
@@ -364,15 +367,49 @@ const ManageFaculty = () => {
             className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-slate-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition"
           />
         </div>
-        <button className="px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 hover:bg-slate-800 transition flex items-center gap-2 whitespace-nowrap">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`px-4 py-3 border rounded-xl text-slate-300 transition flex items-center gap-2 whitespace-nowrap ${showFilters ? 'bg-orange-500/10 border-orange-500 text-orange-500' : 'bg-slate-900 border-slate-800 hover:bg-slate-800'}`}
+        >
           <Filter className="w-5 h-5" /> Filters
         </button>
       </div>
+
+      {showFilters && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 animate-in slide-in-from-top-2 duration-200">
+          <div className="grid md:grid-cols-2 gap-5">
+            <select
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+              className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
+            >
+              <option>All Departments</option>
+              <option>CSE</option>
+              <option>ECE</option>
+              <option>EEE</option>
+              <option>Mechanical</option>
+              <option>Civil</option>
+            </select>
+
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-orange-500"
+            >
+              <option>Status</option>
+              <option>Active</option>
+              <option>Inactive</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       <FacultyTable 
         search={search} 
         faculty={faculty}
         loading={loading}
+        selectedDept={selectedDept}
+        selectedStatus={selectedStatus}
         onEdit={handleEdit}
         onDeleteSuccess={fetchFaculty}
       />

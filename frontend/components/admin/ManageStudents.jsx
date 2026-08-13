@@ -14,6 +14,9 @@ const ManageStudents = () => {
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDept, setSelectedDept] = useState("All Departments");
+  const [selectedYear, setSelectedYear] = useState("All Years");
+  const [selectedStatus, setSelectedStatus] = useState("Status");
   const fileInputRef = useRef(null);
 
   const fetchStudents = async () => {
@@ -201,12 +204,22 @@ const ManageStudents = () => {
       <StudentSearch search={search} setSearch={setSearch} />
 
       {/* Filters */}
-      <StudentFilters />
+      <StudentFilters
+        selectedDept={selectedDept}
+        setSelectedDept={setSelectedDept}
+        selectedYear={selectedYear}
+        setSelectedYear={setSelectedYear}
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+      />
 
       <StudentTable
         search={search}
         students={students}
         loading={loading}
+        selectedDept={selectedDept}
+        selectedYear={selectedYear}
+        selectedStatus={selectedStatus}
         onDeleteSuccess={fetchStudents}
         onUpdateSuccess={fetchStudents}
       />

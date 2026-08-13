@@ -28,6 +28,10 @@ public class NotificationService {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public List<Notification> getAllNotifications() {
+        return notificationRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+    }
+
     public List<Notification> getNotificationsByUserIdAndRole(Long userId, String userRole) {
         return notificationRepository.findByUserIdAndUserRoleOrderByCreatedAtDesc(userId, userRole);
     }

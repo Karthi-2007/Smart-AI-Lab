@@ -29,7 +29,7 @@ public class Student {
 
     private int year;
     private String section;
-    private String status;
+    private String status;//Enum
 
     @Column(name = "reg_no", unique = true, nullable = false)
     private String regNo;
@@ -104,6 +104,7 @@ public class Student {
     @com.fasterxml.jackson.annotation.JsonProperty("department")
     public void setDepartment(String departmentName) {
         this.departmentNameInput = departmentName;
+        this.department = null;
     }
 
     public String getDepartmentNameInput() {

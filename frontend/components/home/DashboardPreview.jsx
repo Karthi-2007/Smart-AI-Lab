@@ -23,23 +23,13 @@ const DashboardPreview = () => {
   useEffect(() => {
     const fetchLiveMetrics = async () => {
       try {
-        const [eqRes, bookRes, faultRes] = await Promise.all([
-          api.get("/api/business/equipments").catch(() => ({ data: [] })),
-          api.get("/api/business/bookings").catch(() => ({ data: [] })),
-          api.get("/api/business/faults").catch(() => ({ data: [] }))
-        ]);
-
-        const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-        const bookList = Array.isArray(bookRes?.data || bookRes) ? (bookRes?.data || bookRes) : [];
-        const faultList = Array.isArray(faultRes?.data || faultRes) ? (faultRes?.data || faultRes) : [];
-
-        const pendingOrApproved = bookList.filter(b => b.status === "Approved" || b.status === "Pending").length;
-        const activeFaults = faultList.filter(f => f.status !== "Resolved").length;
+        const res = await api.get("/api/business/dashboard/public/statistics");
+        const data = res?.data?.data || res?.data || {};
 
         setMetrics({
-          equipments: eqList.length ? `${eqList.length}+` : "120+",
-          activeBookings: bookList.length ? `${pendingOrApproved}` : "42",
-          faultReports: faultList.length ? `${activeFaults}` : "3"
+          equipments: data.equipmentsCount ? `${data.equipmentsCount}+` : "120+",
+          activeBookings: data.activeBookingsCount !== undefined ? `${data.activeBookingsCount}` : "42",
+          faultReports: data.openFaultsCount !== undefined ? `${data.openFaultsCount}` : "3"
         });
       } catch (err) {
         console.warn("Using default preview metrics", err);

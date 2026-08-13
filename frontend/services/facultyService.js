@@ -1,32 +1,76 @@
 import api from './api';
 
 export const facultyService = {
-    approveBooking: (id) => api.put(`/api/business/bookings/${id}/approve`),
-    rejectBooking: (id) => api.put(`/api/business/bookings/${id}/reject`),
-    updateFaultStatus: (id, status) => api.put(`/api/business/faults/${id}/status`, { status }),
+    approveBooking: (id) => api.post(`/api/business/bookings/${id}/approve`),
+    rejectBooking: (id, payload) => api.post(`/api/business/bookings/${id}/reject`, payload),
+    updateFaultStatus: (id, status) => api.patch(`/api/business/faults/${id}/status`, { status }),
+    
+    // Detailed POST mapping events
+    approveBookingPost: (id) => api.post(`/api/business/bookings/${id}/approve`),
+    rejectBookingPost: (id, reason) => api.post(`/api/business/bookings/${id}/reject`, { reason }),
+    issueBookingPost: (id) => api.post(`/api/business/bookings/${id}/issue`),
+    completeBookingPost: (id) => api.post(`/api/business/bookings/${id}/complete`),
+    cancelBookingPost: (id) => api.post(`/api/business/bookings/${id}/cancel`),
+    
+    // Fault events
+    assignFaultTechnician: (id, assignee) => api.post(`/api/business/faults/${id}/assign`, { assignee }),
+    resolveFaultPost: (id) => api.post(`/api/business/faults/${id}/resolve`),
+    rejectFaultPost: (id, reason) => api.post(`/api/business/faults/${id}/reject`, { reason }),
+    cancelFaultPost: (id) => api.post(`/api/business/faults/${id}/cancel`),
+    
+    // Maintenance events
+    rescheduleMaintenancePost: (id, date) => api.post(`/api/business/maintenance/${id}/schedule`, { scheduledDate: date }),
+    startMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/start`),
+    completeMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/complete`),
+    cancelMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/cancel`),
+    assignMaintenanceTechnician: (id, tech) => api.post(`/api/business/maintenance/${id}/assign`, { technician: tech }),
+    
+    // Dashboard & Details
+    getDashboard: () => api.get('/api/business/dashboard/faculty'),
+    getDashboardFacultySummary: () => api.get('/api/business/dashboard/faculty/summary'),
+    getDashboardFacultyBookings: () => api.get('/api/business/dashboard/faculty/bookings'),
+    getDashboardFacultyEquipment: () => api.get('/api/business/dashboard/faculty/equipment'),
+    getDashboardFacultyFaults: () => api.get('/api/business/dashboard/faculty/faults'),
+    getDashboardFacultyMaintenance: () => api.get('/api/business/dashboard/faculty/maintenance'),
+    
     getMaintenance: () => api.get('/api/business/maintenance'),
-    getDashboard: (id) => api.get(`/api/business/dashboard/faculty/${id}`),
     getBookings: () => api.get('/api/business/bookings'),
     getEquipments: () => api.get('/api/business/equipments'),
     getReportsSummary: () => api.get('/api/business/reports/summary'),
-    getNotifications: (id) => api.get(`/api/business/notifications/user/${id}?role=FACULTY`),
-    markNotificationRead: (id) => api.put(`/api/business/notifications/${id}/read`),
+    
+    // Notifications
+    getNotifications: (id) => api.get(`/api/business/notifications/user/${id}/notifications-list`),
+    getUnreadNotifications: () => api.get('/api/business/notifications/unread'),
+    getUnreadCount: () => api.get('/api/business/notifications/count'),
+    markNotificationRead: (id) => api.patch(`/api/business/notifications/${id}/read`),
+    markAllNotificationsRead: () => api.patch('/api/business/notifications/read-all'),
+    clearAllNotifications: () => api.delete('/api/business/notifications/clear-all'),
+    deleteNotification: (id) => api.delete(`/api/business/notifications/${id}`),
+    
     getProfile: (id) => api.get(`/api/business/faculty/${id}`),
     updateProfile: (id, data) => api.put(`/api/business/faculty/${id}`, data),
+    
+    // Labs CRUD
     getLabs: () => api.get('/api/business/laboratories'),
+    getMyLabs: (search) => api.get('/api/business/laboratories/my-labs', { params: search ? { search } : {} }),
     createLab: (data) => api.post('/api/business/laboratories', data),
     updateLab: (id, data) => api.put(`/api/business/laboratories/${id}`, data),
     deleteLab: (id) => api.delete(`/api/business/laboratories/${id}`),
-    // Equipment
+    
+    // Equipment CRUD
     getAllEquipments: () => api.get('/api/business/equipments'),
     createEquipment: (data) => api.post('/api/business/equipments', data),
     updateEquipment: (id, data) => api.put(`/api/business/equipments/${id}`, data),
     deleteEquipment: (id) => api.delete(`/api/business/equipments/${id}`),
-    // Maintenance
+    changeEquipmentStatus: (id, status) => api.patch(`/api/business/equipments/${id}/status`, { status }),
+    uploadEquipmentImage: (id, imageUrl) => api.put(`/api/business/equipments/${id}/image`, { imageUrl }),
+    
+    // Maintenance CRUD
     getAllMaintenance: () => api.get('/api/business/maintenance'),
     createMaintenance: (data) => api.post('/api/business/maintenance', data),
     updateMaintenance: (id, data) => api.put(`/api/business/maintenance/${id}`, data),
-    completeMaintenance: (id) => api.put(`/api/business/maintenance/${id}/complete`),
+    completeMaintenance: (id) => api.post(`/api/business/maintenance/${id}/complete`),
+    
     // Reports
     getReportSummary: () => api.get('/api/business/reports/summary'),
     getEquipmentUsageReport: () => api.get('/api/business/reports/equipment-usage'),

@@ -2,6 +2,7 @@ import api from './api';
 
 export const adminService = {
     getDashboard: () => api.get('/api/business/dashboard/admin'),
+    getDashboardAdminSummary: () => api.get('/api/business/dashboard/admin/summary'),
     
     getUsers: async () => {
         try {
@@ -20,11 +21,10 @@ export const adminService = {
                 })
             ]);
             
-            const authUsers = authRes?.data || authRes || [];
-            const students = studentsRes?.data || studentsRes || [];
-            const faculty = facultyRes?.data || facultyRes || [];
+            const authUsers = authRes?.data?.data || authRes?.data || authRes || [];
+            const students = studentsRes?.data?.data?.content || studentsRes?.data?.data || studentsRes?.data || studentsRes || [];
+            const faculty = facultyRes?.data?.data?.content || facultyRes?.data?.data || facultyRes?.data || facultyRes || [];
 
-            // If authUsers is empty (e.g. non-admin or auth service endpoint issue), fallback to combining business students and faculty
             if (Array.isArray(authUsers) && authUsers.length === 0) {
                 const combined = [
                     ...students.map(s => ({ ...s, id: s.studentId, role: 'STUDENT', status: s.status || 'Active' })),
@@ -72,36 +72,74 @@ export const adminService = {
         }
     },
     
+    getStudents: (params) => api.get('/api/business/students', { params }),
+    getFaculty: (params) => api.get('/api/business/faculty', { params }),
+    
+    activateStudent: (id) => api.patch(`/api/business/students/${id}/activate`),
+    deactivateStudent: (id) => api.patch(`/api/business/students/${id}/deactivate`),
+    
+    activateFaculty: (id) => api.patch(`/api/business/faculty/${id}/activate`),
+    deactivateFaculty: (id) => api.patch(`/api/business/faculty/${id}/deactivate`),
+    
+    assignLabToFaculty: (facultyId, labId) => api.post(`/api/business/faculty/${facultyId}/laboratories`, { labId }),
+    removeLabFromFaculty: (facultyId, labId) => api.delete(`/api/business/faculty/${facultyId}/laboratories/${labId}`),
+
     getReports: (reportType = '') => api.get(`/api/business/reports/${reportType}`),
     
     // Bookings
     getBookings: () => api.get('/api/business/bookings'),
-    approveBooking: (id) => api.put(`/api/business/bookings/${id}/approve`),
-    rejectBooking: (id) => api.put(`/api/business/bookings/${id}/reject`),
+    approveBooking: (id) => api.post(`/api/business/bookings/${id}/approve`),
+    rejectBooking: (id, payload) => api.post(`/api/business/bookings/${id}/reject`, payload),
+    approveBookingPost: (id) => api.post(`/api/business/bookings/${id}/approve`),
+    rejectBookingPost: (id, reason) => api.post(`/api/business/bookings/${id}/reject`, { reason }),
+    cancelBookingPost: (id) => api.post(`/api/business/bookings/${id}/cancel`),
+    issueBookingPost: (id) => api.post(`/api/business/bookings/${id}/issue`),
+    completeBookingPost: (id) => api.post(`/api/business/bookings/${id}/complete`),
     
     // Laboratories & Departments
     getLaboratories: () => api.get('/api/business/laboratories'),
     createLaboratory: (data) => api.post('/api/business/laboratories', data),
     updateLaboratory: (id, data) => api.put(`/api/business/laboratories/${id}`, data),
     deleteLaboratory: (id) => api.delete(`/api/business/laboratories/${id}`),
+    activateLaboratory: (id) => api.patch(`/api/business/laboratories/${id}/activate`),
+    deactivateLaboratory: (id) => api.patch(`/api/business/laboratories/${id}/deactivate`),
 
     getDepartments: () => api.get('/api/business/departments'),
     createDepartment: (data) => api.post('/api/business/departments', data),
     updateDepartment: (id, data) => api.put(`/api/business/departments/${id}`, data),
     deleteDepartment: (id) => api.delete(`/api/business/departments/${id}`),
+    activateDepartment: (id) => api.patch(`/api/business/departments/${id}/activate`),
+    deactivateDepartment: (id) => api.patch(`/api/business/departments/${id}/deactivate`),
+    assignHOD: (deptId, hod) => api.patch(`/api/business/departments/${deptId}/hod`, { hod }),
+    removeHOD: (deptId) => api.delete(`/api/business/departments/${deptId}/hod`),
     
     // Maintenance & Faults
     getMaintenance: () => api.get('/api/business/maintenance'),
     scheduleMaintenance: (data) => api.post('/api/business/maintenance', data),
     updateMaintenance: (id, data) => api.put(`/api/business/maintenance/${id}`, data),
-    completeMaintenance: (id) => api.put(`/api/business/maintenance/${id}/complete`),
+    completeMaintenance: (id) => api.post(`/api/business/maintenance/${id}/complete`),
     deleteMaintenance: (id) => api.delete(`/api/business/maintenance/${id}`),
+    rescheduleMaintenancePost: (id, date) => api.post(`/api/business/maintenance/${id}/schedule`, { scheduledDate: date }),
+    startMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/start`),
+    completeMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/complete`),
+    cancelMaintenancePost: (id) => api.post(`/api/business/maintenance/${id}/cancel`),
+    assignMaintenanceTechnician: (id, tech) => api.post(`/api/business/maintenance/${id}/assign`, { technician: tech }),
+
     getFaults: () => api.get('/api/business/faults'),
+    assignFaultTechnician: (id, assignee) => api.post(`/api/business/faults/${id}/assign`, { assignee }),
+    resolveFaultPost: (id) => api.post(`/api/business/faults/${id}/resolve`),
+    resolveFault: (id) => api.post(`/api/business/faults/${id}/resolve`),
+    rejectFaultPost: (id, reason) => api.post(`/api/business/faults/${id}/reject`, { reason }),
+    cancelFaultPost: (id) => api.post(`/api/business/faults/${id}/cancel`),
+    updateFaultStatus: (id, status) => api.post(`/api/business/faults/${id}/status`, { status }),
     
     // Notifications
     getNotifications: () => api.get('/api/business/notifications'),
     createNotification: (data) => api.post('/api/business/notifications', data),
-    markNotificationAsRead: (id) => api.put(`/api/business/notifications/${id}/read`),
+    markNotificationAsRead: (id) => api.patch(`/api/business/notifications/${id}/read`),
+    markNotificationRead: (id) => api.patch(`/api/business/notifications/${id}/read`), // alias
+    markAllNotificationsRead: () => api.patch('/api/business/notifications/read-all'),
+    clearAllNotifications: () => api.delete('/api/business/notifications/clear-all'),
     deleteNotification: (id) => api.delete(`/api/business/notifications/${id}`),
     
     // Equipment
@@ -109,8 +147,10 @@ export const adminService = {
     createEquipment: (data) => api.post('/api/business/equipments', data),
     updateEquipment: (id, data) => api.put(`/api/business/equipments/${id}`, data),
     deleteEquipment: (id) => api.delete(`/api/business/equipments/${id}`),
+    changeEquipmentStatus: (id, status) => api.patch(`/api/business/equipments/${id}/status`, { status }),
+    uploadEquipmentImage: (id, imageUrl) => api.put(`/api/business/equipments/${id}/image`, { imageUrl }),
     
-    // Student
+    // Student Create/Delete
     createStudent: async (data) => {
         const authRes = await api.post('/api/auth/admin/student', {
             name: data.name,
@@ -144,7 +184,7 @@ export const adminService = {
         await Promise.all(promises);
     },
     
-    // Faculty
+    // Faculty Create/Delete
     createFaculty: async (data) => {
         const authRes = await api.post('/api/auth/admin/faculty', {
             name: data.name,
@@ -222,7 +262,20 @@ export const adminService = {
             promises.push(api.delete(`/api/business/faculty/${user.facultyId}`));
         }
         await Promise.all(promises);
-    }
+    },
+    
+    // Auth account control
+    activateUser: (id) => api.patch(`/api/auth/admin/users/${id}/activate`),
+    deactivateUser: (id) => api.patch(`/api/auth/admin/users/${id}/deactivate`),
+    resetUserPassword: (id, newPassword) => api.post(`/api/auth/admin/users/${id}/reset-password`, { newPassword }),
+    
+    // CSV Imports/Exports
+    exportStudents: () => api.get('/api/business/students/export'),
+    importStudents: (data) => api.post('/api/business/students/import', data),
+    exportFaculty: () => api.get('/api/business/faculty/export'),
+    importFaculty: (data) => api.post('/api/business/faculty/import', data),
+    exportEquipment: () => api.get('/api/business/equipments/export'),
+    importEquipment: (data) => api.post('/api/business/equipments/import', data)
 };
 
 export default adminService;

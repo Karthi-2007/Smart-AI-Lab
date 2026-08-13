@@ -3,12 +3,13 @@ USE smartlab;
 
 -- 1. DEPARTMENTS
 INSERT IGNORE INTO DEPARTMENTS (DEPARTMENT_ID, NAME, CODE, HOD, STATUS) VALUES
-(1, 'Computer Science & Technology / ECE', 'CSE-ECE', 'Dr. S. Ramanujan', 'ACTIVE'),
+(1, 'Computer Science & Technology', 'CSE', 'Dr. S. Ramanujan', 'ACTIVE'),
 (2, 'Electrical & Electronics Engineering (EEE)', 'EEE', 'Dr. Sunita Williams', 'ACTIVE'),
 (3, 'Mechanical Engineering', 'MECH', 'Dr. Vikram Sarabhai', 'ACTIVE'),
 (4, 'Civil Engineering', 'CIVIL', 'Dr. Anitha Raman', 'ACTIVE'),
 (5, 'Information Technology', 'IT', 'Dr. Alan Turing', 'ACTIVE'),
-(6, 'Artificial Intelligence & Data Science', 'AIDS', 'Dr. Grace Hopper', 'ACTIVE');
+(6, 'Artificial Intelligence & Data Science', 'AIDS', 'Dr. Grace Hopper', 'ACTIVE'),
+(7, 'Electronics & Communication Engineering', 'ECE', 'Dr. Anitha Raman', 'ACTIVE');
 
 -- 2. LABORATORIES
 INSERT IGNORE INTO LABORATORIES (LAB_ID, NAME, DEPARTMENT_ID, LOCATION, CAPACITY, STATUS) VALUES
@@ -26,10 +27,15 @@ INSERT IGNORE INTO LABORATORIES (LAB_ID, NAME, DEPARTMENT_ID, LOCATION, CAPACITY
 (24, '3D Printing Lab & Specialized Centre', 3, 'Innovation Centre - Bay 1', 15, 'Active'),
 (25, 'Fabrication Lab & Centre of Composites', 3, 'Innovation Centre - Bay 2', 20, 'Active'),
 
--- Computer Science & Technology / ECE Labs (Dept ID: 1)
-(30, 'Electronic Devices & Circuits Labs', 1, 'ECE Wing - Room 301', 30, 'Active'),
-(31, 'VLSI & DSP Labs', 1, 'ECE Wing - Room 304', 25, 'Active'),
-(32, 'Microprocessors & Microcontrollers Lab', 1, 'ECE Wing - Room 308', 35, 'Active'),
+-- ECE Labs (Dept ID: 7)
+(30, 'Electronic Devices & Circuits Labs', 7, 'ECE Wing - Room 301', 30, 'Active'),
+(31, 'VLSI & DSP Labs', 7, 'ECE Wing - Room 304', 25, 'Active'),
+(32, 'Microprocessors & Microcontrollers Lab', 7, 'ECE Wing - Room 308', 35, 'Active'),
+
+-- CSE Labs (Dept ID: 1)
+(33, 'Computer Networks & Operating Systems Lab', 1, 'CSE Wing - Room 310', 30, 'Active'),
+(34, 'Database Management Systems Lab', 1, 'CSE Wing - Room 312', 30, 'Active'),
+(35, 'Software Engineering & OOP Lab', 1, 'CSE Wing - Room 315', 30, 'Active'),
 
 -- Civil Labs (Dept ID: 4)
 (40, 'Structural Engineering Lab', 4, 'Civil Block - Room 105', 30, 'Active'),
@@ -62,6 +68,9 @@ INSERT IGNORE INTO EQUIPMENT (EQUIPMENT_ID, NAME, LAB_ID, STATUS, DESCRIPTION, A
 (301, 'Arbitrary Function Generator Keysight', 30, 'Available', 'Generates standard sine, square, triangle, and custom arbitrary waveforms.', 'EQ-ECE-002', 'Measurement', '2023-04-12', 'https://images.unsplash.com/photo-1581093196867-9f6c5e57a8a6?w=600&auto=format&fit=crop'),
 (302, 'FPGA Spartan 6 Development Board', 31, 'Available', 'Programmable logic array trainer for digital design synthesis.', 'EQ-ECE-003', 'VLSI', '2022-09-08', 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop'),
 (308, 'Desktop Computer Dell OptiPlex', 31, 'Available', 'Workstation for software and simulation experiments.', 'EQ-CSE-003', 'Workstation', '2022-09-12', 'https://images.unsplash.com/photo-1547082299-de196ea013d6?w=600&auto=format&fit=crop'),
+(303, 'High Performance Server Dell PowerEdge', 33, 'Available', 'Workstation for networking and OS virtualization.', 'EQ-CSE-001', 'Server', '2023-02-28', 'https://images.unsplash.com/photo-1547082299-de196ea013d6?w=600&auto=format&fit=crop'),
+(304, 'Oracle Database Server Machine', 34, 'Available', 'Dedicated database engine for DBMS indexing and query profiling.', 'EQ-CSE-002', 'Server', '2023-04-12', 'https://images.unsplash.com/photo-1600132806370-bf17e65e942f?w=600&auto=format&fit=crop'),
+(305, 'Object Oriented Paradigm Lab Workstation', 35, 'Available', 'Workstation configured with OOP compilers and modelling software.', 'EQ-CSE-004', 'Workstation', '2023-05-10', 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop'),
 
 -- Civil Engineering Equipments (400, 406)
 (400, 'Compression Testing Machine 2000kN', 40, 'Available', 'Tests compressive strength of concrete cylinders and cubes.', 'EQ-CIV-001', 'Testing', '2022-04-10', 'https://images.unsplash.com/photo-1581092226825-a6a2a5aee158?w=600&auto=format&fit=crop'),
@@ -77,7 +86,7 @@ INSERT IGNORE INTO EQUIPMENT (EQUIPMENT_ID, NAME, LAB_ID, STATUS, DESCRIPTION, A
 -- 4. STUDENT_PROFILES (20+ records)
 INSERT IGNORE INTO STUDENT_PROFILES (STUDENT_ID, USER_ID, NAME, EMAIL, DEPARTMENT_ID, YEAR, SECTION, STATUS, PHONE, REG_NO) VALUES
 -- Default fallback
-(3, 3, 'Karthikeyan S', 'student@smartlab.com', 1, 3, 'A', 'Active', '9360536215', '21CS101'),
+(3, 3, 'Karthikeyan S', 'student@smartlab.com', 1, 4, 'A', 'Active', '9360536215', '21CS101'),
 
 -- EEE Students (5 students)
 (24, 24, 'Aditya EEE 1', 'student.eee1@kce.ac.in', 2, 3, 'A', 'Active', NULL, '7178EEE001'),
@@ -94,13 +103,20 @@ INSERT IGNORE INTO STUDENT_PROFILES (STUDENT_ID, USER_ID, NAME, EMAIL, DEPARTMEN
 (35, 35, 'Rahul MECH 5', 'student.mech5@kce.ac.in', 3, 3, 'B', 'Active', NULL, '7178MECH005'),
 
 -- CSE Students (7 students)
-(12, 12, 'Student 226', '717824f226@kce.ac.in', 1, 3, 'B', 'Active', NULL, '717824F226'),
-(13, 13, 'Student 220', '717824f220@kce.ac.in', 1, 3, 'B', 'Active', NULL, '717824F220'),
-(14, 14, 'Student 242', '717824f242@kce.ac.in', 1, 3, 'C', 'Active', NULL, '717824F242'),
-(15, 15, 'Karthikeyan RKS', 'karthikeyanrks2007@gmail.com', 1, 3, 'C', 'Active', '9360536215', '717824F207'),
-(16, 16, 'Student 250', '717824f250@kce.ac.in', 1, 3, 'C', 'Active', NULL, '717824F250'),
-(17, 17, 'Student 256', '717824f256@kce.ac.in', 1, 3, 'C', 'Active', NULL, '717824F256'),
-(18, 18, 'Student 251', '717824f251@kce.ac.in', 1, 3, 'C', 'Active', NULL, '717824F251'),
+(12, 12, 'Student 226', '717824f226@kce.ac.in', 1, 2, 'B', 'Active', NULL, '717824F226'),
+(13, 13, 'Student 220', '717824f220@kce.ac.in', 1, 2, 'B', 'Active', NULL, '717824F220'),
+(14, 14, 'Student 242', '717824f242@kce.ac.in', 1, 2, 'C', 'Active', NULL, '717824F242'),
+(15, 15, 'Karthikeyan RKS', 'karthikeyanrks2007@gmail.com', 1, 2, 'C', 'Active', '9360536215', '717824F207'),
+(16, 16, 'Student 250', '717824f250@kce.ac.in', 1, 2, 'C', 'Active', NULL, '717824F250'),
+(17, 17, 'Student 256', '717824f256@kce.ac.in', 1, 2, 'C', 'Active', NULL, '717824F256'),
+(18, 18, 'Student 251', '717824f251@kce.ac.in', 1, 2, 'C', 'Active', NULL, '717824F251'),
+
+-- ECE Students (5 students)
+(701, 701, 'Aditya ECE 1', 'student.ece1@kce.ac.in', 7, 3, 'A', 'Active', NULL, '7178ECE001'),
+(702, 702, 'Bhavana ECE 2', 'student.ece2@kce.ac.in', 7, 3, 'A', 'Active', NULL, '7178ECE002'),
+(703, 703, 'Chaitanya ECE 3', 'student.ece3@kce.ac.in', 7, 3, 'A', 'Active', NULL, '7178ECE003'),
+(704, 704, 'Divya ECE 4', 'student.ece4@kce.ac.in', 7, 3, 'B', 'Active', NULL, '7178ECE004'),
+(705, 705, 'Eshwar ECE 5', 'student.ece5@kce.ac.in', 7, 3, 'B', 'Active', NULL, '7178ECE005'),
 
 -- CIVIL Students (2 students)
 (601, 601, 'Student Civil 1', 'student.civil1@kce.ac.in', 4, 3, 'A', 'Active', NULL, '7178CIVIL01'),
@@ -115,8 +131,8 @@ INSERT IGNORE INTO STUDENT_PROFILES (STUDENT_ID, USER_ID, NAME, EMAIL, DEPARTMEN
 -- 5. FACULTY_PROFILES (5+ records)
 INSERT IGNORE INTO FACULTY_PROFILES (FACULTY_ID, USER_ID, NAME, EMAIL, DEPARTMENT_ID, DESIGNATION, PHONE, STATUS, LAB) VALUES
 -- Default fallback HODs/Coordinators
-(19, 19, 'Dr. Anitha Raman', 'faculty@smartlab.com', 1, 'Associate Professor', NULL, 'ACTIVE', 'Electronic Devices & Circuits Labs'),
-(2, 2, 'Dr. Anitha Raman', '717824f218@kce.ac.in', 1, 'Associate Professor', NULL, 'ACTIVE', 'VLSI & DSP Labs'),
+(19, 19, 'Dr. Anitha Raman', 'faculty@smartlab.com', 7, 'Associate Professor', NULL, 'ACTIVE', 'Electronic Devices & Circuits Labs'),
+(2, 2, 'Dr. Anitha Raman', '717824f218@kce.ac.in', 7, 'Associate Professor', NULL, 'ACTIVE', 'VLSI & DSP Labs'),
 
 -- EEE Faculty & Lab Assistant
 (22, 4, 'Dr. Sunita Williams', 'faculty.eee@kce.ac.in', 2, 'Associate Professor & HOD', NULL, 'ACTIVE', 'Electrical Machines Lab-I & II'),
@@ -127,8 +143,8 @@ INSERT IGNORE INTO FACULTY_PROFILES (FACULTY_ID, USER_ID, NAME, EMAIL, DEPARTMEN
 (30, 30, 'MECH Assistant Krish', 'assistant.mech@kce.ac.in', 3, 'Lab Assistant', NULL, 'ACTIVE', 'Strength of Materials Lab'),
 
 -- CSE Faculty & Lab Assistant
-(36, 36, 'Dr. S. Ramanujan', 'faculty.cse@kce.ac.in', 1, 'Professor & HOD', NULL, 'ACTIVE', 'Electronic Devices & Circuits Labs'),
-(37, 37, 'CSE Assistant Shyam', 'assistant.cse@kce.ac.in', 1, 'Lab Assistant', NULL, 'ACTIVE', 'Microprocessors & Microcontrollers Lab'),
+(36, 36, 'Dr. S. Ramanujan', 'faculty.cse@kce.ac.in', 1, 'Professor & HOD', NULL, 'ACTIVE', 'Computer Networks & Operating Systems Lab'),
+(37, 37, 'CSE Assistant Shyam', 'assistant.cse@kce.ac.in', 1, 'Lab Assistant', NULL, 'ACTIVE', 'Database Management Systems Lab'),
 
 -- IT & AIDS Faculty
 (500, 500, 'Dr. Alan Turing', 'faculty.it@kce.ac.in', 5, 'Associate Professor', NULL, 'ACTIVE', 'Software Engineering Lab'),

@@ -11,7 +11,6 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -47,16 +46,8 @@ const LoginForm = () => {
         localStorage.removeItem("remembered_email");
       }
 
-      // Validate returned role matches selected role
+      // Automatically route according to returned role
       const returnedRole = data.role?.toUpperCase();
-      if (role === "student" && returnedRole !== "STUDENT") {
-        toast.error("This account is not a student account.");
-        return;
-      }
-      if (role === "faculty" && returnedRole !== "FACULTY") {
-        toast.error("This account is not a faculty account.");
-        return;
-      }
 
       toast.success(`Welcome back, ${data.name}!`);
 
@@ -80,35 +71,6 @@ const LoginForm = () => {
       <h2 className="text-4xl font-bold text-white">Welcome Back</h2>
       <p className="text-slate-400 mt-2">Login to continue to SmartLab AI</p>
 
-      {/* Role Selection */}
-      <div className="grid grid-cols-2 gap-4 mt-8">
-        <button
-          type="button"
-          onClick={() => setRole("student")}
-          className={`rounded-xl border p-4 transition-all duration-300 ${
-            role === "student"
-              ? "bg-orange-500 border-orange-500 text-white"
-              : "bg-slate-800 border-slate-700 hover:border-orange-400"
-          }`}
-        >
-          <GraduationCap className="mx-auto mb-2" size={28} />
-          Student
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setRole("faculty")}
-          className={`rounded-xl border p-4 transition-all duration-300 ${
-            role === "faculty"
-              ? "bg-orange-500 border-orange-500 text-white"
-              : "bg-slate-800 border-slate-700 hover:border-orange-400"
-          }`}
-        >
-          <UserCog className="mx-auto mb-2" size={28} />
-          Faculty
-        </button>
-      </div>
-
       <form onSubmit={handleLogin} className="space-y-6 mt-8">
         {/* Email */}
         <div>
@@ -117,11 +79,7 @@ const LoginForm = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={
-              role === "student"
-                ? "717824f226@kce.ac.in"
-                : "faculty@smartlab.com"
-            }
+            placeholder="e.g. name@kce.ac.in"
             required
             className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition"
           />

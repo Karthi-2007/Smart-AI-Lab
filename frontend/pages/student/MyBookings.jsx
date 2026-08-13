@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, FileText, CheckCircle, XCircle, Clock4, CheckCircle2, AlertCircle, QrCode, X, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { studentService } from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 import QRCodeCard from '../../components/booking/QRCodeCard';
+import Pagination from '../../components/common/Pagination';
 
 const STATUS_FILTERS = ['All', 'Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'];
 
@@ -14,19 +15,34 @@ const MyBookings = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [cancellingId, setCancellingId] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     if (user?.id || user?._id) {
       fetchBookings();
     }
-  }, [user]);
+  }, [user, activeTab]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const res = await studentService.getMyBookings(user?.id);
-      const data = res?.data || res || [];
-      setBookings(Array.isArray(data) ? data : []);
+      const params = {
+        status: activeTab === 'All' ? null : activeTab,
+        page: 0,
+        size: 1000
+      };
+      const res = await studentService.getMyBookings(params);
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data.content || body.data;
+        } else {
+          list = body.content || body;
+        }
+      }
+      setBookings(Array.isArray(list) ? list : []);
     } catch (error) {
       toast.error('Failed to load your bookings');
       console.error(error);
@@ -42,7 +58,7 @@ const MyBookings = () => {
       setCancellingId(id);
       await studentService.cancelBooking(id);
       toast.success('Booking cancelled successfully');
-      setBookings(prev => prev.map(b => (b.id === id || b._id === id) ? { ...b, status: 'Cancelled' } : b));
+      setBookings(prev => prev.map(b => (b.bookingId === id || b.id === id || b._id === id) ? { ...b, status: 'Cancelled' } : b));
     } catch (error) {
       toast.error('Failed to cancel booking');
       console.error(error);
@@ -68,9 +84,14 @@ const MyBookings = () => {
     }
   };
 
-  const filteredBookings = bookings.filter(b => 
-    activeTab === 'All' ? true : b.status?.toLowerCase() === activeTab.toLowerCase()
-  );
+  const filteredBookings = useMemo(() => {
+    return bookings;
+  }, [bookings]);
+
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredBookings.slice(start, start + itemsPerPage);
+  }, [filteredBookings, currentPage]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -85,7 +106,10 @@ const MyBookings = () => {
           {STATUS_FILTERS.map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab);
+                setCurrentPage(1);
+              }}
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab 
                   ? 'bg-orange-500 text-white' 
@@ -134,16 +158,28 @@ const MyBookings = () => {
                   </td>
                 </tr>
               ) : (
-                filteredBookings.map((booking, index) => {
+                paginatedBookings.map((booking, index) => {
                   const bookingId = booking.bookingId || booking.id || booking._id || index;
                   const isApproved = booking.status?.toLowerCase() === 'approved' || booking.status?.toLowerCase() === 'completed';
 
                   return (
                     <tr key={bookingId} className="hover:bg-slate-800/20 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-slate-200">{booking.equipment?.name || 'Unknown Equipment'}</div>
+                        <div className="font-medium text-slate-200 flex items-center gap-1.5">
+                          {booking.equipment?.name || 'Unknown Equipment'}
+                          {(booking.isUrgent === true || booking.isUrgent === 'true' || booking.urgent === true) && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded animate-pulse">
+                              URGENT
+                            </span>
+                          )}
+                        </div>
                         {booking.equipment?.equipmentId && (
                           <div className="text-xs text-slate-500 mt-1">ID: {booking.equipment.equipmentId}</div>
+                        )}
+                        {booking.status?.toLowerCase() === 'rejected' && booking.rejectionReason && (
+                          <div className="text-xs text-red-400 mt-1.5 font-medium bg-red-500/5 border border-red-500/10 rounded-lg p-2 max-w-xs">
+                            Reason: {booking.rejectionReason}
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -200,6 +236,12 @@ const MyBookings = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredBookings.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* QR Code Pass Modal */}

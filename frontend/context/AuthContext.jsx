@@ -28,36 +28,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Synchronize student/faculty business profile ID on mount to correct legacy localStorage caches
-  useEffect(() => {
-    const syncProfileOnMount = async () => {
-      if (user && token && user.email) {
-        try {
-          if (user.role === "STUDENT") {
-            const res = await api.get(`/api/business/students/email/${user.email.toLowerCase().trim()}`).catch(() => null);
-            if (res?.data?.studentId) {
-              const currentId = res.data.studentId;
-              if (user.id !== currentId || user.name !== res.data.name) {
-                setUser(prev => prev ? { ...prev, id: currentId, name: res.data.name } : null);
-              }
-            }
-          } else if (user.role === "FACULTY") {
-            const res = await api.get(`/api/business/faculty/email/${user.email.toLowerCase().trim()}`).catch(() => null);
-            if (res?.data?.facultyId) {
-              const currentId = res.data.facultyId;
-              if (user.id !== currentId || user.name !== res.data.name) {
-                setUser(prev => prev ? { ...prev, id: currentId, name: res.data.name } : null);
-              }
-            }
-          }
-        } catch (err) {
-          console.warn("Error running auto-synchronization on mount:", err);
-        }
-      }
-    };
-    syncProfileOnMount();
-  }, [token]);
-
   const loginUser = async (email, password) => {
     try {
       const res = await authService.login({ email, password });
@@ -72,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       
       try {
         if (role === "STUDENT") {
-          const studentProfile = await api.get(`/api/business/students/email/${email.toLowerCase().trim()}`).catch(() => null);
+          const studentProfile = await api.get(`/api/business/students/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
           if (studentProfile?.data?.studentId) {
             profileId = studentProfile.data.studentId;
             // Synchronize name in business service if missing or mismatched
@@ -98,7 +68,7 @@ export const AuthProvider = ({ children }) => {
             }
           }
         } else if (role === "FACULTY") {
-          const facultyProfile = await api.get(`/api/business/faculty/email/${email.toLowerCase().trim()}`).catch(() => null);
+          const facultyProfile = await api.get(`/api/business/faculty/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
           if (facultyProfile?.data?.facultyId) {
             profileId = facultyProfile.data.facultyId;
             if (name && facultyProfile.data.name !== name) {
@@ -142,11 +112,15 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const logoutUser = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const logoutUser = async () => {
+    try {
+      await authService.logout().catch(() => null);
+    } finally {
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
   };
 
   return (

@@ -21,8 +21,16 @@ const Equipment = () => {
       try {
         setLoading(true);
         const res = await studentService.getEquipmentList();
-        const data = res?.data || res || [];
-        setEquipments(Array.isArray(data) ? data : []);
+        const body = res?.data || res;
+        let list = [];
+        if (body) {
+          if (body.success && body.data) {
+            list = body.data;
+          } else {
+            list = body;
+          }
+        }
+        setEquipments(Array.isArray(list) ? list : []);
       } catch (error) {
         console.error('Error fetching equipments:', error);
         toast.error('Failed to load equipment list');

@@ -22,12 +22,15 @@ const BookEquipment = () => {
   const [equipmentList, setEquipmentList] = useState([]);
   const [loadingEq, setLoadingEq] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [bookedCounts, setBookedCounts] = useState({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
   
   const [formData, setFormData] = useState({
     equipmentId: initialEquipmentId,
     date: '',
     timeSlot: '',
-    purpose: ''
+    purpose: '',
+    isUrgent: false
   });
 
   useEffect(() => {
@@ -35,10 +38,18 @@ const BookEquipment = () => {
       try {
         setLoadingEq(true);
         const res = await studentService.getEquipmentList();
-        const data = res?.data || res || [];
-        const list = Array.isArray(data) ? data : [];
+        const body = res?.data || res;
+        let list = [];
+        if (body) {
+          if (body.success && body.data) {
+            list = body.data;
+          } else {
+            list = body;
+          }
+        }
+        const dataList = Array.isArray(list) ? list : [];
         // Allow selection of available equipment
-        const availableList = list.filter(eq => eq.status?.toLowerCase() === 'available');
+        const availableList = dataList.filter(eq => eq.status?.toLowerCase() === 'available');
         setEquipmentList(availableList);
         
         // Warn if pre-selected equipment is not available
@@ -55,9 +66,35 @@ const BookEquipment = () => {
     fetchEquipment();
   }, [initialEquipmentId]);
 
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!formData.equipmentId || !formData.date) {
+        setBookedCounts({});
+        return;
+      }
+      try {
+        setLoadingAvailability(true);
+        const res = await studentService.getSlotAvailability(formData.equipmentId, formData.date);
+        setBookedCounts(res?.data || {});
+      } catch (err) {
+        console.warn("Could not load slot availability:", err);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+    fetchAvailability();
+  }, [formData.equipmentId, formData.date]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      // Clear timeslot if equipment or date changes to force choosing from the new slot options
+      if (name === 'equipmentId' || name === 'date') {
+        updated.timeSlot = '';
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -90,7 +127,8 @@ const BookEquipment = () => {
         equipment: { equipmentId: Number(formData.equipmentId) },
         date: formData.date,
         timeSlot: formData.timeSlot,
-        purpose: formData.purpose
+        purpose: formData.purpose,
+        isUrgent: formData.isUrgent
       });
       
       toast.success('Equipment booked successfully');
@@ -169,6 +207,7 @@ const BookEquipment = () => {
                     <p><span className="font-semibold text-slate-500 text-[11px]">Category:</span> {selectedEq.category || 'General'}</p>
                     <p><span className="font-semibold text-slate-500 text-[11px]">Lab:</span> {selectedEq.laboratory?.name || 'Main Lab'}</p>
                     <p><span className="font-semibold text-slate-500 text-[11px]">Status:</span> <span className="text-emerald-400 font-semibold">{selectedEq.status}</span></p>
+                    <p><span className="font-semibold text-slate-500 text-[11px]">Total Quantity:</span> <span className="text-white font-semibold">{selectedEq.quantity || 5}</span></p>
                   </div>
                 </div>
               </div>
@@ -201,13 +240,29 @@ const BookEquipment = () => {
                 name="timeSlot"
                 value={formData.timeSlot}
                 onChange={handleChange}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                disabled={!formData.equipmentId || !formData.date || loadingAvailability}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors disabled:opacity-50"
                 required
               >
-                <option value="">-- Choose Time Slot --</option>
-                {TIME_SLOTS.map(slot => (
-                  <option key={slot} value={slot}>{slot}</option>
-                ))}
+                <option value="">
+                  {loadingAvailability 
+                    ? '-- Checking Slot Availability... --' 
+                    : (!formData.equipmentId || !formData.date) 
+                      ? '-- Select Equipment and Date First --' 
+                      : '-- Choose Time Slot --'}
+                </option>
+                {TIME_SLOTS.map(slot => {
+                  const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
+                  const maxQty = selectedEq?.quantity || 5;
+                  const booked = bookedCounts[slot] || 0;
+                  const left = maxQty - booked;
+                  const isFull = left <= 0;
+                  return (
+                    <option key={slot} value={slot} disabled={isFull}>
+                      {slot} {isFull ? '(Fully Booked)' : `(${left} of ${maxQty} available)`}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
@@ -226,6 +281,20 @@ const BookEquipment = () => {
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none"
               required
             ></textarea>
+          </div>
+
+          <div className="flex items-center gap-3 py-2">
+            <input
+              type="checkbox"
+              id="isUrgent"
+              name="isUrgent"
+              checked={formData.isUrgent}
+              onChange={(e) => setFormData(prev => ({ ...prev, isUrgent: e.target.checked }))}
+              className="w-4 h-4 text-orange-500 bg-slate-800 border-slate-700 rounded focus:ring-orange-500 cursor-pointer accent-orange-500"
+            />
+            <label htmlFor="isUrgent" className="text-sm font-medium text-slate-300 cursor-pointer select-none">
+              Mark as Urgent / Priority Booking (Urgent requests are flagged for quick Faculty review)
+            </label>
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

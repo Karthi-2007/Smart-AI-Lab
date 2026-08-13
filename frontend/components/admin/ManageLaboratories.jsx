@@ -18,7 +18,15 @@ const LaboratoryForm = ({ isOpen, onClose, mode, onSave, initialData }) => {
 
   useEffect(() => {
     adminService.getDepartments().then(res => {
-      const list = res?.data || res || [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
       setDepartments(Array.isArray(list) ? list : []);
     }).catch(() => {});
   }, []);

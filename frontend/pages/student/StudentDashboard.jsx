@@ -21,12 +21,28 @@ const StudentDashboard = () => {
           studentService.getMyBookings(user.id)
         ]);
         
-        const dashboardObj = dashboard?.data || dashboard || {};
-        const bookingList = bookings?.data || bookings || [];
+        const dashboardObj = dashboard?.data?.data || dashboard?.data || {};
+        const bookingsBody = bookings?.data || bookings;
+        let bookingList = [];
+        if (bookingsBody) {
+          if (bookingsBody.success && bookingsBody.data) {
+            bookingList = bookingsBody.data.content || bookingsBody.data;
+          } else {
+            bookingList = bookingsBody.content || bookingsBody;
+          }
+        }
+
+        const sortedBookings = Array.isArray(bookingList)
+          ? [...bookingList].sort((a, b) => {
+              const aId = a.bookingId || a.id || 0;
+              const bId = b.bookingId || b.id || 0;
+              return bId - aId;
+            })
+          : [];
 
         setDashboardData({
           ...dashboardObj,
-          recentBookings: Array.isArray(bookingList) ? bookingList.slice(0, 5) : []
+          recentBookings: sortedBookings
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);

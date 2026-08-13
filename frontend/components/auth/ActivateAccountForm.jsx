@@ -8,7 +8,6 @@ import { authService } from "../../services/authService";
 
 // Steps: 0 = enter details, 1 = enter OTP + password, 2 = success
 const ActivateAccountForm = () => {
-  const [role, setRole] = useState("student");
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -51,26 +50,41 @@ const ActivateAccountForm = () => {
     }
     setLoading(true);
     try {
-      if (role === "student") {
-        await authService.registerStudent({
-          regNo: regNo.trim().toUpperCase(),
-          email: email.trim().toLowerCase(),
-          dob,
-        });
-      } else {
-        await authService.registerFaculty({
-          facultyId: regNo.trim().toUpperCase(),
-          email: email.trim().toLowerCase(),
-          dob,
-        });
-      }
+      // 1. Try to verify/register as student first
+      await authService.registerStudent({
+        regNo: regNo.trim().toUpperCase(),
+        email: email.trim().toLowerCase(),
+        dob,
+      });
       setRegisteredEmail(email.trim().toLowerCase());
       toast.success("OTP sent to your email! Check your inbox.");
       setStep(1);
       startResendCooldown();
     } catch (err) {
-      const msg = err?.response?.data || err?.message || "Verification failed.";
-      toast.error(typeof msg === "string" ? msg : "Could not verify details.");
+      const errorMsg = err?.response?.data || err?.message || "";
+      const isRecordNotFound = typeof errorMsg === "string" && 
+                              (errorMsg.includes("Student record not found") || errorMsg.includes("record not found"));
+      
+      if (isRecordNotFound) {
+        // 2. Fall back to faculty verification
+        try {
+          await authService.registerFaculty({
+            facultyId: regNo.trim().toUpperCase(),
+            email: email.trim().toLowerCase(),
+            dob,
+          });
+          setRegisteredEmail(email.trim().toLowerCase());
+          toast.success("OTP sent to your email! Check your inbox.");
+          setStep(1);
+          startResendCooldown();
+        } catch (facErr) {
+          const msg = facErr?.response?.data || facErr?.message || "Verification failed.";
+          toast.error(typeof msg === "string" ? msg : "Could not verify details.");
+        }
+      } else {
+        const msg = err?.response?.data || err?.message || "Verification failed.";
+        toast.error(typeof msg === "string" ? msg : "Could not verify details.");
+      }
     } finally {
       setLoading(false);
     }
@@ -172,39 +186,17 @@ const ActivateAccountForm = () => {
         Verify your college information to activate your SmartLab account.
       </p>
 
-      {/* Role Tabs */}
-      <div className="mt-8 flex bg-slate-800 rounded-xl p-1">
-        <button
-          type="button"
-          onClick={() => { setRole("student"); setStep(0); }}
-          className={`flex-1 py-3 rounded-lg font-semibold transition ${
-            role === "student" ? "bg-orange-500 text-white" : "text-slate-400"
-          }`}
-        >
-          Student
-        </button>
-        <button
-          type="button"
-          onClick={() => { setRole("faculty"); setStep(0); }}
-          className={`flex-1 py-3 rounded-lg font-semibold transition ${
-            role === "faculty" ? "bg-orange-500 text-white" : "text-slate-400"
-          }`}
-        >
-          Faculty
-        </button>
-      </div>
-
       {/* ─── Step 0: Enter Details ─── */}
       {step === 0 && (
         <form onSubmit={handleVerify} className="space-y-5 mt-8">
           <div>
             <label className="block mb-2 text-slate-300">
-              {role === "student" ? "Register Number" : "Faculty ID"}
+              Register Number / Faculty ID
             </label>
             <input
               value={regNo}
               onChange={(e) => setRegNo(e.target.value)}
-              placeholder={role === "student" ? "717824F226" : "FAC-101"}
+              placeholder="e.g. 717824F226 or FAC-101"
               required
               className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition"
             />
@@ -216,7 +208,7 @@ const ActivateAccountForm = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={role === "student" ? "717824f226@kce.ac.in" : "faculty@smartlab.com"}
+              placeholder="e.g. name@kce.ac.in"
               required
               className="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition"
             />

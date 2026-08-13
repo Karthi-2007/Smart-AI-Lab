@@ -19,42 +19,14 @@ const AIPreview = () => {
   useEffect(() => {
     const fetchLiveHealth = async () => {
       try {
-        const [eqRes, maintRes] = await Promise.all([
-          api.get("/api/business/equipments").catch(() => ({ data: [] })),
-          api.get("/api/business/maintenance").catch(() => ({ data: [] }))
-        ]);
+        const res = await api.get("/api/business/dashboard/public/telemetry");
+        const data = res?.data?.data || res?.data || {};
 
-        const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-        const maintList = Array.isArray(maintRes?.data || maintRes) ? (maintRes?.data || maintRes) : [];
-
-        if (eqList.length > 0) {
-          const list = eqList.slice(0, 3).map((eq, i) => {
-            let score = 95 - (i * 18);
-            let stat = "Optimal";
-            let color = "text-green-400";
-            if (eq.status === "Faulty") {
-              score = 42;
-              stat = "Fault Reported";
-              color = "text-red-400";
-            } else if (eq.status === "Under Maintenance" || score < 75) {
-              score = 68;
-              stat = "Maintenance Scheduled";
-              color = "text-amber-400";
-            }
-            return {
-              name: eq.name || "Equipment",
-              health: score,
-              status: stat,
-              color
-            };
-          });
-          setEquipmentHealthList(list);
-
-          if (maintList.length > 0) {
-            const m = maintList[0];
-            const eqName = typeof m.equipment === 'object' ? m.equipment?.name : (m.equipment || "Hardware");
-            setAiRecommendation(`Preventive maintenance assigned to ${m.technician || 'Staff'} for ${eqName}. Recommended inspection date: ${m.scheduledDate || 'Upcoming'}.`);
-          }
+        if (data.telemetryList) {
+          setEquipmentHealthList(data.telemetryList);
+        }
+        if (data.recommendation) {
+          setAiRecommendation(data.recommendation);
         }
       } catch (err) {
         console.warn("Using default AI preview telemetry", err);

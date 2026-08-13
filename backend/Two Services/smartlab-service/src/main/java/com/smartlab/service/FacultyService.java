@@ -25,21 +25,43 @@ public class FacultyService {
     public Faculty getFacultyById(Long id) {
         return facultyRepository.findById(id).orElse(null);
     }
-
     private Department findExistingDepartment(String inputName) {
-        String nameLower = inputName.trim().toLowerCase();
-        if (nameLower.contains("computer") || nameLower.equals("cse") || nameLower.equals("ece") || nameLower.contains("technology")) {
+        String nameClean = inputName.trim();
+        List<Department> allDepts = departmentRepository.findAll();
+        for (Department d : allDepts) {
+            if (d.getName().equalsIgnoreCase(nameClean) || 
+                (d.getCode() != null && d.getCode().equalsIgnoreCase(nameClean))) {
+                return d;
+            }
+        }
+        
+        String nameLower = nameClean.toLowerCase();
+        if (nameLower.contains("computer science") || nameLower.contains("cse") || nameLower.equals("cs")) {
             return departmentRepository.findById(1L).orElse(null);
         }
-        if (nameLower.contains("electrical") || nameLower.equals("eee") || nameLower.contains("electronics")) {
+        if (nameLower.contains("electronics & communication") || nameLower.contains("ece") || 
+            nameLower.contains("electronic") || nameLower.contains("communication")) {
+            return departmentRepository.findById(7L).orElse(null);
+        }
+        if (nameLower.contains("electrical") || nameLower.contains("eee")) {
             return departmentRepository.findById(2L).orElse(null);
         }
-        if (nameLower.contains("mechanical") || nameLower.equals("mech")) {
+        if (nameLower.contains("mechanical") || nameLower.contains("mech")) {
             return departmentRepository.findById(3L).orElse(null);
         }
-        Department dept = departmentRepository.findByName(inputName);
+        if (nameLower.contains("civil")) {
+            return departmentRepository.findById(4L).orElse(null);
+        }
+        if (nameLower.contains("information technology") || nameLower.equals("it") || nameLower.contains(" it ")) {
+            return departmentRepository.findById(5L).orElse(null);
+        }
+        if (nameLower.contains("artificial") || nameLower.contains("aids") || nameLower.contains("data science")) {
+            return departmentRepository.findById(6L).orElse(null);
+        }
+        
+        Department dept = departmentRepository.findByName(nameClean);
         if (dept == null) {
-            dept = departmentRepository.findByCode(inputName);
+            dept = departmentRepository.findByCode(nameClean);
         }
         return dept;
     }
@@ -59,18 +81,16 @@ public class FacultyService {
         if (faculty.getStatus() == null) {
             faculty.setStatus("ACTIVE");
         }
-        // Upsert: if a profile already exists for this userId, update it instead of inserting
         if (faculty.getUserId() != null) {
             Faculty existing = facultyRepository.findByUserId(faculty.getUserId());
             if (existing != null) {
-                return updateFaculty(existing.getFacultyId(), faculty);
+                return updateFaculty(existing.getFacultyId(), faculty, false);
             }
         }
-        // Upsert: if a profile already exists for this email, update it
         if (faculty.getEmail() != null) {
             Faculty existing = facultyRepository.findByEmailIgnoreCase(faculty.getEmail());
             if (existing != null) {
-                return updateFaculty(existing.getFacultyId(), faculty);
+                return updateFaculty(existing.getFacultyId(), faculty, false);
             }
         }
         resolveDepartment(faculty);
@@ -78,6 +98,10 @@ public class FacultyService {
     }
 
     public Faculty updateFaculty(Long id, Faculty facultyDetails) {
+        return updateFaculty(id, facultyDetails, false);
+    }
+
+    public Faculty updateFaculty(Long id, Faculty facultyDetails, boolean isSync) {
         Faculty faculty = facultyRepository.findById(id).orElse(null);
         if (faculty == null && facultyDetails.getEmail() != null) {
             faculty = facultyRepository.findByEmail(facultyDetails.getEmail());
@@ -89,13 +113,25 @@ public class FacultyService {
             if (facultyDetails.getEmail() != null && !facultyDetails.getEmail().isBlank()) {
                 faculty.setEmail(facultyDetails.getEmail());
             }
-            if (facultyDetails.getDepartment() != null && !facultyDetails.getDepartment().isBlank()) {
-                faculty.setDepartment(facultyDetails.getDepartment());
-                resolveDepartment(faculty);
+            
+            if (!isSync) {
+                if (facultyDetails.getDepartment() != null && !facultyDetails.getDepartment().isBlank()) {
+                    faculty.setDepartment(facultyDetails.getDepartment());
+                    resolveDepartment(faculty);
+                }
+                if (facultyDetails.getDesignation() != null && !facultyDetails.getDesignation().isBlank()) {
+                    faculty.setDesignation(facultyDetails.getDesignation());
+                }
+            } else {
+                if (faculty.getDepartmentEntity() == null && facultyDetails.getDepartment() != null && !facultyDetails.getDepartment().isBlank()) {
+                    faculty.setDepartment(facultyDetails.getDepartment());
+                    resolveDepartment(faculty);
+                }
+                if (faculty.getDesignation() == null && facultyDetails.getDesignation() != null && !facultyDetails.getDesignation().isBlank()) {
+                    faculty.setDesignation(facultyDetails.getDesignation());
+                }
             }
-            if (facultyDetails.getDesignation() != null && !facultyDetails.getDesignation().isBlank()) {
-                faculty.setDesignation(facultyDetails.getDesignation());
-            }
+
             if (facultyDetails.getStatus() != null && !facultyDetails.getStatus().isBlank()) {
                 faculty.setStatus(facultyDetails.getStatus());
             }

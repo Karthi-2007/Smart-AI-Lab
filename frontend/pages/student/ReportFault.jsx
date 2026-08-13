@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { studentService } from '../../services/studentService';
 import { toast } from 'react-hot-toast';
 import { AlertCircle, FileText, Loader2 } from 'lucide-react';
+import Pagination from '../../components/common/Pagination';
 
 export default function ReportFault() {
   const { user } = useAuth();
@@ -15,19 +16,57 @@ export default function ReportFault() {
     issueDescription: '',
     priority: 'Low'
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const paginatedReports = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return reports.slice(start, start + itemsPerPage);
+  }, [reports, currentPage]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [eqRes, faultRes] = await Promise.all([
-          studentService.getEquipmentList(),
+        const [bookingsRes, faultRes] = await Promise.all([
+          studentService.getMyBookings(user.id),
           studentService.getMyFaultReports(user.id)
         ]);
-        const eqData = eqRes?.data || eqRes || [];
-        const faultData = faultRes?.data || faultRes || [];
-        setEquipments(Array.isArray(eqData) ? eqData : []);
-        setReports(Array.isArray(faultData) ? faultData : []);
+        
+        const bookingsBody = bookingsRes?.data || bookingsRes;
+        let bookingsList = [];
+        if (bookingsBody) {
+          if (bookingsBody.success && bookingsBody.data) {
+            bookingsList = bookingsBody.data.content || bookingsBody.data;
+          } else {
+            bookingsList = bookingsBody.content || bookingsBody;
+          }
+        }
+        const dataBookings = Array.isArray(bookingsList) ? bookingsList : [];
+        
+        // Extract unique equipment from student's bookings
+        const uniqueEqsMap = new Map();
+        dataBookings.forEach(booking => {
+          if (booking.equipment) {
+            const eqId = booking.equipment.equipmentId || booking.equipment.id;
+            if (eqId) {
+              uniqueEqsMap.set(eqId, booking.equipment);
+            }
+          }
+        });
+        const userBookedEquipments = Array.from(uniqueEqsMap.values());
+        
+        const faultBody = faultRes?.data || faultRes;
+        let faultList = [];
+        if (faultBody) {
+          if (faultBody.success && faultBody.data) {
+            faultList = faultBody.data;
+          } else {
+            faultList = faultBody;
+          }
+        }
+        setEquipments(userBookedEquipments);
+        setReports(Array.isArray(faultList) ? faultList : []);
       } catch (error) {
         toast.error('Failed to load data.');
       } finally {
@@ -61,12 +100,32 @@ export default function ReportFault() {
       setFormData({ equipmentId: '', issueDescription: '', priority: 'Low' });
       // Refresh reports
       const updatedRes = await studentService.getMyFaultReports(user.id);
-      const updatedData = updatedRes?.data || updatedRes || [];
-      setReports(Array.isArray(updatedData) ? updatedData : []);
+      const updatedBody = updatedRes?.data || updatedRes;
+      let updatedList = [];
+      if (updatedBody) {
+        if (updatedBody.success && updatedBody.data) {
+          updatedList = updatedBody.data;
+        } else {
+          updatedList = updatedBody;
+        }
+      }
+      setReports(Array.isArray(updatedList) ? updatedList : []);
+      setCurrentPage(1);
     } catch (error) {
       toast.error('Failed to report fault.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancelFault = async (id) => {
+    if (!window.confirm('Are you sure you want to cancel this fault report?')) return;
+    try {
+      await studentService.cancelFaultReport(id);
+      toast.success('Fault report cancelled successfully.');
+      setReports(prev => prev.map(r => (r.faultId === id || r.id === id) ? { ...r, status: 'Cancelled' } : r));
+    } catch (err) {
+      toast.error('Failed to cancel fault report.');
     }
   };
 
@@ -158,44 +217,65 @@ export default function ReportFault() {
                   <th className="py-4 px-4 text-slate-400 font-medium text-sm">Priority</th>
                   <th className="py-4 px-4 text-slate-400 font-medium text-sm">Status</th>
                   <th className="py-4 px-4 text-slate-400 font-medium text-sm">Description</th>
+                  <th className="py-4 px-4 text-slate-400 font-medium text-sm text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {reports.map((report, index) => (
-                  <tr key={report.faultId || report.id || report._id || index} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50">
-                    <td className="py-4 px-4 text-white text-sm">
-                      {new Date(report.createdAt || Date.now()).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-4 text-white text-sm">
-                      {report.equipment?.name || report.equipment?.id || 'Unknown'}
-                    </td>
-                    <td className="py-4 px-4 text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        report.priority === 'High' ? 'bg-red-500/10 text-red-500' :
-                        report.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-500' :
-                        'bg-blue-500/10 text-blue-500'
-                      }`}>
-                        {report.priority}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        report.status === 'Open' ? 'bg-orange-500/10 text-orange-500' :
-                        report.status === 'In Progress' ? 'bg-yellow-500/10 text-yellow-500' :
-                        'bg-green-500/10 text-green-500'
-                      }`}>
-                        {report.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-slate-400 text-sm max-w-xs truncate">
-                      {report.issueDescription}
-                    </td>
-                  </tr>
-                ))}
+                {paginatedReports.map((report, index) => {
+                  const faultId = report.faultId || report.id || report._id || index;
+                  return (
+                    <tr key={faultId} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/50">
+                      <td className="py-4 px-4 text-white text-sm">
+                        {report.reportedAt ? new Date(report.reportedAt).toLocaleDateString() : (report.createdAt ? new Date(report.createdAt).toLocaleDateString() : new Date().toLocaleDateString())}
+                      </td>
+                      <td className="py-4 px-4 text-white text-sm">
+                        {report.equipment?.name || report.equipment?.id || 'Unknown'}
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          report.priority === 'High' ? 'bg-red-500/10 text-red-500' :
+                          report.priority === 'Medium' ? 'bg-yellow-500/10 text-yellow-500' :
+                          'bg-blue-500/10 text-blue-500'
+                        }`}>
+                          {report.priority || 'Low'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          report.status === 'Open' ? 'bg-orange-500/10 text-orange-500' :
+                          report.status === 'In Progress' ? 'bg-yellow-500/10 text-yellow-500' :
+                          report.status === 'Cancelled' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20' :
+                          'bg-green-500/10 text-green-500'
+                        }`}>
+                          {report.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-slate-400 text-sm max-w-xs truncate" title={report.description}>
+                        {report.description || report.issueDescription}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-right">
+                        {report.status?.toLowerCase() === 'open' && (
+                          <button
+                            onClick={() => handleCancelFault(faultId)}
+                            className="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-white border border-red-500/50 hover:bg-red-500 rounded-lg transition-colors whitespace-nowrap"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={reports.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

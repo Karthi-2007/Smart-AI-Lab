@@ -2,10 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Eye, Pencil, Trash2, Loader2, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../../services/adminService';
+import Pagination from '../../common/Pagination';
 
 const fallbackUrl = "https://images.unsplash.com/photo-1532187643603-ba119ca4109e?w=600&auto=format&fit=crop";
 
 const EquipmentTable = ({ search = '', equipment = [], loading = false, onDeleteSuccess, onDetail, onEdit }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this equipment?')) {
@@ -56,6 +63,11 @@ const EquipmentTable = ({ search = '', equipment = [], loading = false, onDelete
     return <span className={`px-3 py-1 rounded-full text-xs font-medium ${colors}`}>{statusText}</span>;
   };
 
+  const paginatedEquipment = filteredEquipment.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -73,7 +85,7 @@ const EquipmentTable = ({ search = '', equipment = [], loading = false, onDelete
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {filteredEquipment.map((item, idx) => {
+            {paginatedEquipment.map((item, idx) => {
               const eqId = item.equipmentId || item.id || item._id || idx;
               const labName = typeof item.laboratory === 'object'
                 ? item.laboratory?.name
@@ -131,6 +143,12 @@ const EquipmentTable = ({ search = '', equipment = [], loading = false, onDelete
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredEquipment.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

@@ -1,9 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Loader2, Users, Edit, Trash2 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
+import Pagination from '../../common/Pagination';
 
-const FacultyTable = ({ search, faculty = [], loading = false, onEdit, onDeleteSuccess }) => {
+const FacultyTable = ({
+  search,
+  faculty = [],
+  loading = false,
+  selectedDept = "All Departments",
+  selectedStatus = "Status",
+  onEdit,
+  onDeleteSuccess
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDept, selectedStatus]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this faculty member?')) return;
@@ -23,15 +38,46 @@ const FacultyTable = ({ search, faculty = [], loading = false, onEdit, onDeleteS
     return <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">{status}</span>;
   };
 
-  const filteredFaculty = faculty.filter(f => {
-    const s = search.toLowerCase();
-    return (
-      (f.name && f.name.toLowerCase().includes(s)) ||
-      (f.facultyId && f.facultyId.toLowerCase().includes(s)) ||
-      (f.email && f.email.toLowerCase().includes(s)) ||
-      (f.department && f.department.toLowerCase().includes(s))
-    );
-  });
+  const filteredFaculty = useMemo(() => {
+    return faculty.filter(f => {
+      // 1. Search Query filter
+      if (search) {
+        const s = search.toLowerCase();
+        const matchesSearch = (
+          (f.name && f.name.toLowerCase().includes(s)) ||
+          (f.facultyId && String(f.facultyId).toLowerCase().includes(s)) ||
+          (f.email && f.email.toLowerCase().includes(s)) ||
+          (f.department && f.department.toLowerCase().includes(s))
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Department filter
+      if (selectedDept && selectedDept !== "All Departments") {
+        const dept = f.department?.toLowerCase() || "";
+        const target = selectedDept.toLowerCase();
+        if (target === "cse" && !dept.includes("computer")) return false;
+        if (target === "ece" && !dept.includes("electronics & communication") && !dept.includes("ece")) return false;
+        if (target === "eee" && !dept.includes("electrical") && !dept.includes("eee")) return false;
+        if (target === "mechanical" && !dept.includes("mechanical")) return false;
+        if (target === "civil" && !dept.includes("civil")) return false;
+      }
+
+      // 3. Status filter
+      if (selectedStatus && selectedStatus !== "Status") {
+        const status = f.status?.toLowerCase() || "";
+        const target = selectedStatus.toLowerCase();
+        if (status !== target) return false;
+      }
+
+      return true;
+    });
+  }, [faculty, search, selectedDept, selectedStatus]);
+
+  const paginatedFaculty = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredFaculty.slice(start, start + itemsPerPage);
+  }, [filteredFaculty, currentPage]);
 
   if (loading) {
     return (
@@ -52,7 +98,7 @@ const FacultyTable = ({ search, faculty = [], loading = false, onEdit, onDeleteS
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[800px] text-left text-sm text-slate-300">
           <thead className="bg-slate-800 text-slate-400 border-b border-slate-700">
@@ -69,7 +115,7 @@ const FacultyTable = ({ search, faculty = [], loading = false, onEdit, onDeleteS
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filteredFaculty.length > 0 ? (
-              filteredFaculty.map((f) => (
+              paginatedFaculty.map((f) => (
                 <tr key={f.id} className="hover:bg-slate-800/50 transition-colors">
                   <td className="px-6 py-4">{f.facultyId}</td>
                   <td className="px-6 py-4 font-medium text-white">{f.name}</td>
@@ -100,6 +146,12 @@ const FacultyTable = ({ search, faculty = [], loading = false, onEdit, onDeleteS
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredFaculty.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

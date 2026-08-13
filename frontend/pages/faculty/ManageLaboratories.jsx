@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { facultyService } from '../../services/facultyService';
+import Pagination from '../../components/common/Pagination';
 
 /* ─── Modal ─────────────────────────────────────────────────── */
 function LabModal({ mode, lab, onClose, onSave }) {
@@ -248,12 +249,27 @@ export default function ManageLaboratories() {
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null); // null | { mode:'add' } | { mode:'edit', lab }
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const fetchLabs = async () => {
     setLoading(true);
     try {
-      const res = await facultyService.getLabs();
-      setLabs(res?.data || []);
+      const res = await facultyService.getMyLabs();
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
+      setLabs(Array.isArray(list) ? list : []);
     } catch (err) {
       toast.error('Failed to load laboratories');
       console.error(err);
@@ -272,6 +288,11 @@ export default function ManageLaboratories() {
       (l.department?.name || '').toLowerCase().includes(term)
     );
   }, [labs, search]);
+
+  const paginatedLabs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage]);
 
   const handleAdd = async (form) => {
     try {
@@ -390,16 +411,22 @@ export default function ManageLaboratories() {
             {search && <span> for "<span className="text-orange-400">{search}</span>"</span>}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((lab, idx) => (
+            {paginatedLabs.map((lab, idx) => (
               <LabCard
                 key={lab.labId}
                 lab={lab}
-                index={idx}
+                index={(currentPage - 1) * itemsPerPage + idx}
                 onEdit={(l) => setModal({ mode: 'edit', lab: l })}
                 onDelete={(l) => setDeleteTarget(l)}
               />
             ))}
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filtered.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
 

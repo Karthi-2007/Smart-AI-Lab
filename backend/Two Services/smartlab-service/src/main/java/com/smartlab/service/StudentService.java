@@ -27,19 +27,42 @@ public class StudentService {
     }
 
     private Department findExistingDepartment(String inputName) {
-        String nameLower = inputName.trim().toLowerCase();
-        if (nameLower.contains("computer") || nameLower.equals("cse") || nameLower.equals("ece") || nameLower.contains("technology")) {
+        String nameClean = inputName.trim();
+        List<Department> allDepts = departmentRepository.findAll();
+        for (Department d : allDepts) {
+            if (d.getName().equalsIgnoreCase(nameClean) || 
+                (d.getCode() != null && d.getCode().equalsIgnoreCase(nameClean))) {
+                return d;
+            }
+        }
+        
+        String nameLower = nameClean.toLowerCase();
+        if (nameLower.contains("computer science") || nameLower.contains("cse") || nameLower.equals("cs")) {
             return departmentRepository.findById(1L).orElse(null);
         }
-        if (nameLower.contains("electrical") || nameLower.equals("eee") || nameLower.contains("electronics")) {
+        if (nameLower.contains("electronics & communication") || nameLower.contains("ece") || 
+            nameLower.contains("electronic") || nameLower.contains("communication")) {
+            return departmentRepository.findById(7L).orElse(null);
+        }
+        if (nameLower.contains("electrical") || nameLower.contains("eee")) {
             return departmentRepository.findById(2L).orElse(null);
         }
-        if (nameLower.contains("mechanical") || nameLower.equals("mech")) {
+        if (nameLower.contains("mechanical") || nameLower.contains("mech")) {
             return departmentRepository.findById(3L).orElse(null);
         }
-        Department dept = departmentRepository.findByName(inputName);
+        if (nameLower.contains("civil")) {
+            return departmentRepository.findById(4L).orElse(null);
+        }
+        if (nameLower.contains("information technology") || nameLower.equals("it") || nameLower.contains(" it ")) {
+            return departmentRepository.findById(5L).orElse(null);
+        }
+        if (nameLower.contains("artificial") || nameLower.contains("aids") || nameLower.contains("data science")) {
+            return departmentRepository.findById(6L).orElse(null);
+        }
+        
+        Department dept = departmentRepository.findByName(nameClean);
         if (dept == null) {
-            dept = departmentRepository.findByCode(inputName);
+            dept = departmentRepository.findByCode(nameClean);
         }
         return dept;
     }
@@ -56,18 +79,16 @@ public class StudentService {
     }
 
     public Student createStudent(Student student) {
-        // Upsert: if a profile already exists for this userId, update it instead of inserting
         if (student.getUserId() != null) {
             Student existing = studentRepository.findByUserId(student.getUserId());
             if (existing != null) {
-                return updateStudent(existing.getStudentId(), student);
+                return updateStudent(existing.getStudentId(), student, false);
             }
         }
-        // Upsert: if a profile already exists for this email, update it
         if (student.getEmail() != null) {
             Student existing = studentRepository.findByEmailIgnoreCase(student.getEmail());
             if (existing != null) {
-                return updateStudent(existing.getStudentId(), student);
+                return updateStudent(existing.getStudentId(), student, false);
             }
         }
         resolveDepartment(student);
@@ -75,6 +96,10 @@ public class StudentService {
     }
 
     public Student updateStudent(Long id, Student studentDetails) {
+        return updateStudent(id, studentDetails, false);
+    }
+
+    public Student updateStudent(Long id, Student studentDetails, boolean isSync) {
         Student student = studentRepository.findById(id).orElse(null);
         if (student == null && studentDetails.getEmail() != null) {
             student = studentRepository.findByEmail(studentDetails.getEmail());
@@ -86,16 +111,31 @@ public class StudentService {
             if (studentDetails.getEmail() != null && !studentDetails.getEmail().isBlank()) {
                 student.setEmail(studentDetails.getEmail());
             }
-            if (studentDetails.getDepartment() != null && !studentDetails.getDepartment().isBlank()) {
-                student.setDepartment(studentDetails.getDepartment());
-                resolveDepartment(student);
+            
+            if (!isSync) {
+                if (studentDetails.getDepartment() != null && !studentDetails.getDepartment().isBlank()) {
+                    student.setDepartment(studentDetails.getDepartment());
+                    resolveDepartment(student);
+                }
+                if (studentDetails.getYear() > 0) {
+                    student.setYear(studentDetails.getYear());
+                }
+                if (studentDetails.getSection() != null && !studentDetails.getSection().isBlank()) {
+                    student.setSection(studentDetails.getSection());
+                }
+            } else {
+                if (student.getDepartmentEntity() == null && studentDetails.getDepartment() != null && !studentDetails.getDepartment().isBlank()) {
+                    student.setDepartment(studentDetails.getDepartment());
+                    resolveDepartment(student);
+                }
+                if (student.getYear() == 0 && studentDetails.getYear() > 0) {
+                    student.setYear(studentDetails.getYear());
+                }
+                if ((student.getSection() == null || student.getSection().isBlank()) && studentDetails.getSection() != null && !studentDetails.getSection().isBlank()) {
+                    student.setSection(studentDetails.getSection());
+                }
             }
-            if (studentDetails.getYear() > 0) {
-                student.setYear(studentDetails.getYear());
-            }
-            if (studentDetails.getSection() != null && !studentDetails.getSection().isBlank()) {
-                student.setSection(studentDetails.getSection());
-            }
+
             if (studentDetails.getStatus() != null && !studentDetails.getStatus().isBlank()) {
                 student.setStatus(studentDetails.getStatus());
             }

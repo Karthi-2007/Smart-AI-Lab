@@ -18,6 +18,8 @@ const FacultyDashboard = () => {
   const [statsData, setStatsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [rejectingBookingId, setRejectingBookingId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -26,11 +28,19 @@ const FacultyDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const dashboardRes = await facultyService.getDashboard(user?.userId || user?.id);
+      const dashboardRes = await facultyService.getDashboard();
       const bookingsRes = await facultyService.getBookings();
       
-      const dashData = dashboardRes?.data || dashboardRes || {};
-      const bookData = bookingsRes?.data || bookingsRes || [];
+      const dashData = dashboardRes?.data?.data || dashboardRes?.data || {};
+      const bookingsBody = bookingsRes?.data || bookingsRes;
+      let bookData = [];
+      if (bookingsBody) {
+        if (bookingsBody.success && bookingsBody.data) {
+          bookData = bookingsBody.data.content || bookingsBody.data;
+        } else {
+          bookData = bookingsBody.content || bookingsBody;
+        }
+      }
       
       setStatsData(dashData);
       setBookings(Array.isArray(bookData) ? bookData : []);
@@ -60,15 +70,23 @@ const FacultyDashboard = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = (id) => {
     if (!id) {
       toast.error('Invalid booking ID');
       return;
     }
+    setRejectingBookingId(id);
+    setRejectionReason('');
+  };
+
+  const submitRejection = async () => {
+    if (!rejectingBookingId) return;
     try {
-      setActionLoading(`reject-${id}`);
-      await facultyService.rejectBooking(id);
+      setActionLoading(`reject-${rejectingBookingId}`);
+      await facultyService.rejectBooking(rejectingBookingId, { reason: rejectionReason || "No reason specified" });
       toast.success('Booking rejected successfully');
+      setRejectingBookingId(null);
+      setRejectionReason('');
       fetchDashboardData();
     } catch (error) {
       console.error('Error rejecting booking:', error);
@@ -81,7 +99,13 @@ const FacultyDashboard = () => {
   const pendingBookings = bookings.filter(b => b.status?.toUpperCase() === 'PENDING');
   const activeBookings = bookings.filter(b => b.status?.toUpperCase() === 'APPROVED' || b.status?.toUpperCase() === 'ACTIVE');
   const completedBookings = bookings.filter(b => b.status?.toUpperCase() === 'COMPLETED');
-  const recentPending = [...pendingBookings].sort((a, b) => new Date(b.createdAt || b.bookedAt) - new Date(a.createdAt || a.bookedAt)).slice(0, 5);
+  const recentPending = [...pendingBookings].sort((a, b) => {
+    const aUrgent = a.isUrgent === true || a.isUrgent === 'true' || a.urgent === true;
+    const bUrgent = b.isUrgent === true || b.isUrgent === 'true' || b.urgent === true;
+    if (aUrgent && !bUrgent) return -1;
+    if (!aUrgent && bUrgent) return 1;
+    return new Date(b.createdAt || b.bookedAt || 0) - new Date(a.createdAt || a.bookedAt || 0);
+  }).slice(0, 5);
 
   const stats = [
     {
@@ -177,7 +201,14 @@ const FacultyDashboard = () => {
                     <tr key={bId || `pending-${idx}`} className="hover:bg-slate-800/30 transition-colors">
                       <td className="p-4">
                         <p className="font-medium text-white">{booking.equipment?.name || 'Unknown Equipment'}</p>
-                        <p className="text-xs text-slate-400 mt-1">Requested by: {booking.student?.name || 'Unknown User'}</p>
+                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                          Requested by: {booking.student?.name || 'Unknown User'}
+                          {(booking.isUrgent === true || booking.isUrgent === 'true' || booking.urgent === true) && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded animate-pulse">
+                              URGENT
+                            </span>
+                          )}
+                        </p>
                       </td>
                       <td className="p-4">
                         <p className="text-sm">{booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'}</p>
@@ -229,6 +260,38 @@ const FacultyDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Rejection Reason Modal */}
+      {rejectingBookingId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-white mb-2">Reject Booking Request</h3>
+            <p className="text-xs text-slate-400 mb-4">Please provide a reason for rejecting this booking. The student will be notified.</p>
+            
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Type rejection reason here..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition-colors h-28 resize-none mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setRejectingBookingId(null); setRejectionReason(''); }}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRejection}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition"
+              >
+                Reject Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

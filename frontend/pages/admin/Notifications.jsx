@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/common/Pagination';
 
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -15,12 +16,23 @@ const AdminNotifications = () => {
   const [broadcastMsg, setBroadcastMsg] = useState('');
   const [targetRole, setTargetRole] = useState('ALL');
   const [sending, setSending] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchLiveNotifications = async () => {
     setLoading(true);
     try {
       const notifRes = await adminService.getNotifications().catch(() => ({ data: [] }));
-      const notifList = Array.isArray(notifRes?.data || notifRes) ? (notifRes?.data || notifRes) : [];
+      const body = notifRes?.data || notifRes;
+      let rawList = [];
+      if (body) {
+        if (body.success && body.data) {
+          rawList = body.data;
+        } else {
+          rawList = body;
+        }
+      }
+      const notifList = Array.isArray(rawList) ? rawList : [];
 
       const list = notifList.map((n) => ({
         id: n.id || n._id,
@@ -45,6 +57,10 @@ const AdminNotifications = () => {
     fetchLiveNotifications();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType]);
+
   const handleMarkAsRead = async (id) => {
     try {
       await adminService.markNotificationRead(id);
@@ -59,12 +75,23 @@ const AdminNotifications = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      const unreadList = notifications.filter(n => !n.isRead);
-      await Promise.all(unreadList.map(n => adminService.markNotificationRead(n.id)));
+      await adminService.markAllNotificationsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       toast.success('All notifications marked as read');
     } catch (error) {
       toast.error('Failed to mark all as read');
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (notifications.length === 0) { toast('No notifications to clear'); return; }
+    if (!window.confirm('Clear all notifications? This cannot be undone.')) return;
+    try {
+      await adminService.clearAllNotifications();
+      setNotifications([]);
+      toast.success('All notifications cleared');
+    } catch (error) {
+      toast.error('Failed to clear notifications');
     }
   };
 
@@ -116,6 +143,11 @@ const AdminNotifications = () => {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const paginatedNotifications = filteredNotifications.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -155,6 +187,16 @@ const AdminNotifications = () => {
             >
               <CheckCheck className="w-4 h-4 text-green-400" />
               <span>Mark All Read</span>
+            </button>
+          )}
+
+          {notifications.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 font-semibold text-xs rounded-xl transition border border-slate-700 hover:border-rose-500/30 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Clear All</span>
             </button>
           )}
 
@@ -206,64 +248,72 @@ const AdminNotifications = () => {
             <p className="text-xs text-slate-500">Live notifications will appear here when events occur.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {filteredNotifications.map((n) => {
-              const IconComp = n.icon || Bell;
-              return (
-                <div
-                  key={n.id}
-                  className={`p-5 transition flex items-start justify-between gap-4 ${
-                    !n.isRead ? 'bg-slate-800/40 hover:bg-slate-800/60 border-l-4 border-l-orange-500' : 'hover:bg-slate-800/20'
-                  }`}
-                >
-                  <div className="flex gap-4 items-start">
-                    <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700/60 shrink-0 text-orange-400 mt-0.5">
-                      <IconComp className="w-5 h-5" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className={`text-sm ${!n.isRead ? 'font-bold text-white' : 'font-semibold text-slate-300'}`}>
-                          {n.title}
-                        </h3>
-                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${n.badgeColor}`}>
-                          {n.type}
-                        </span>
+          <>
+            <div className="divide-y divide-slate-800">
+              {paginatedNotifications.map((n) => {
+                const IconComp = n.icon || Bell;
+                return (
+                  <div
+                    key={n.id}
+                    className={`p-5 transition flex items-start justify-between gap-4 ${
+                      !n.isRead ? 'bg-slate-800/40 hover:bg-slate-800/60 border-l-4 border-l-orange-500' : 'hover:bg-slate-800/20'
+                    }`}
+                  >
+                    <div className="flex gap-4 items-start">
+                      <div className="p-3 rounded-2xl bg-slate-800 border border-slate-700/60 shrink-0 text-orange-400 mt-0.5">
+                        <IconComp className="w-5 h-5" />
                       </div>
 
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        {n.message}
-                      </p>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className={`text-sm ${!n.isRead ? 'font-bold text-white' : 'font-semibold text-slate-300'}`}>
+                            {n.title}
+                          </h3>
+                          <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${n.badgeColor}`}>
+                            {n.type}
+                          </span>
+                        </div>
 
-                      <span className="text-[10px] text-slate-500 font-mono block pt-1">
-                        {n.createdAt ? new Date(n.createdAt).toLocaleString() : 'Recently'}
-                      </span>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          {n.message}
+                        </p>
+
+                        <span className="text-[10px] text-slate-500 font-mono block pt-1">
+                          {n.createdAt ? new Date(n.createdAt).toLocaleString() : 'Recently'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!n.isRead && (
+                        <button
+                          onClick={() => handleMarkAsRead(n.id)}
+                          className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-800 rounded-xl transition"
+                          title="Mark as Read"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteNotification(n.id)}
+                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition"
+                        title="Delete Notification"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {!n.isRead && (
-                      <button
-                        onClick={() => handleMarkAsRead(n.id)}
-                        className="p-2 text-slate-400 hover:text-green-400 hover:bg-slate-800 rounded-xl transition"
-                        title="Mark as Read"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => handleDeleteNotification(n.id)}
-                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-xl transition"
-                      title="Delete Notification"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredNotifications.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
 

@@ -13,8 +13,16 @@ const BookingHistory = () => {
       try {
         setLoading(true);
         const res = await studentService.getMyBookings(user?.id);
-        const data = res?.data || res || [];
-        setBookings(Array.isArray(data) ? data : []);
+        const body = res?.data || res;
+        let list = [];
+        if (body) {
+          if (body.success && body.data) {
+            list = body.data.content || body.data;
+          } else {
+            list = body.content || body;
+          }
+        }
+        setBookings(Array.isArray(list) ? list : []);
       } catch (error) {
         console.error('Error fetching bookings:', error);
         toast.error('Failed to load booking history');

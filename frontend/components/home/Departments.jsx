@@ -33,9 +33,17 @@ const Departments = () => {
   useEffect(() => {
     const fetchLiveLabs = async () => {
       try {
-        const res = await api.get("/api/business/laboratories").catch(() => ({ data: [] }));
-        const data = Array.isArray(res?.data || res) ? (res?.data || res) : [];
-        if (data.length > 0) {
+        const res = await api.get("/api/business/dashboard/public/laboratories");
+        const body = res?.data || res;
+        let data = [];
+        if (body) {
+          if (body.success && body.data) {
+            data = body.data;
+          } else {
+            data = body;
+          }
+        }
+        if (Array.isArray(data) && data.length > 0) {
           const mapped = data.map((l, i) => {
             const deptName = typeof l.department === 'object' ? l.department?.name : (l.department || "Department");
             let IconComponent = FlaskConical;
@@ -77,16 +85,18 @@ const Departments = () => {
                 className="group hover:border-orange-500/60 transition-all duration-300 hover:-translate-y-2 flex flex-col justify-between p-6 sm:p-7"
               >
                 <div>
-                  <div className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform" style={{ background: 'rgba(204,105,38,0.1)', border: '1px solid rgba(204,105,38,0.3)', color: '#cc6926' }}>
-                    <Icon className="w-7 h-7" />
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl text-white flex items-center justify-center group-hover:rotate-6 transition-transform shrink-0" style={{ background: 'rgba(204,105,38,0.1)', border: '1px solid rgba(204,105,38,0.3)', color: '#cc6926' }}>
+                      <Icon className="w-6 h-6" />
+                    </div>
                   </div>
 
-                  <h3 className="text-lg sm:text-xl font-bold transition-colors" style={{ color: '#0b2545' }}>
-                    {dept.name}
+                  <h3 className="text-base sm:text-lg font-bold transition-colors min-h-[3rem] flex items-center" style={{ color: '#0b2545' }}>
+                    {dept.lab}
                   </h3>
 
-                  <p className="mt-2 text-slate-600 text-xs sm:text-sm leading-relaxed">
-                    {dept.lab}
+                  <p className="mt-2 text-slate-500 text-xs font-medium truncate" title={dept.name}>
+                    {dept.name}
                   </p>
                 </div>
 

@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.smartlab.repository.FacultyRepository;
+import com.smartlab.security.SecurityUtils;
+import com.smartlab.security.UserPrincipal;
 
 @Service
 public class FaultReportService {
@@ -20,17 +22,24 @@ public class FaultReportService {
     private final StudentRepository studentRepository;
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final SmsService smsService;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FaultReportService.class);
 
     public FaultReportService(FaultReportRepository faultReportRepository,
                               EquipmentRepository equipmentRepository,
                               StudentRepository studentRepository,
                               FacultyRepository facultyRepository,
-                              NotificationService notificationService) {
+                              NotificationService notificationService,
+                              EmailService emailService,
+                              SmsService smsService) {
         this.faultReportRepository = faultReportRepository;
         this.equipmentRepository = equipmentRepository;
         this.studentRepository = studentRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
+        this.emailService = emailService;
+        this.smsService = smsService;
     }
 
     public List<FaultReport> getAllFaults() {
@@ -112,9 +121,31 @@ public class FaultReportService {
                         if (fUserId != null) {
                             notificationService.createNotification(fUserId, "FACULTY", "Fault Reported", reporterName + " reported a fault for " + eqName + ".", "Equipment");
                         }
+                        // Send Email to Faculty
+                        if (f.getEmail() != null && !f.getEmail().trim().isEmpty()) {
+                            try {
+                                String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                                 "<tr><td class='label'>Reported By:</td><td class='value'>" + reporterName + "</td></tr>" +
+                                                 "<tr><td class='label'>Description:</td><td class='value'>" + saved.getDescription() + "</td></tr>";
+                                String html = emailService.buildTemplate("New Fault Report", "New Fault Report Received", "A student has reported a fault for equipment in your department.", details);
+                                emailService.sendEmail(f.getEmail(), "SmartLab AI - Fault Reported: " + eqName, html);
+                            } catch (Exception e) {
+                                log.warn("Failed to send fault email to faculty: {}", e.getMessage());
+                            }
+                        }
+                        // Send SMS to Faculty
+                        if (f.getPhone() != null && !f.getPhone().trim().isEmpty()) {
+                            try {
+                                smsService.sendSms(f.getPhone(), "SmartLab AI: " + reporterName + " reported a fault for " + eqName + ".");
+                            } catch (Exception e) {
+                                log.warn("Failed to send fault SMS to faculty: {}", e.getMessage());
+                            }
+                        }
                     });
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            log.warn("Failed to notify of fault report: {}", e.getMessage());
+        }
         return saved;
     }
 
@@ -122,7 +153,49 @@ public class FaultReportService {
         FaultReport fault = faultReportRepository.findById(id).orElse(null);
         if (fault != null) {
             fault.setStatus(status);
-            return faultReportRepository.save(fault);
+            FaultReport saved = faultReportRepository.save(fault);
+            
+            // Notify student
+            try {
+                String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
+                Long studentUserId = saved.getReportedByUserId();
+                if (studentUserId == null && saved.getReportedBy() != null) {
+                    studentUserId = saved.getReportedBy().getUserId() != null ? saved.getReportedBy().getUserId() : saved.getReportedBy().getStudentId();
+                }
+                
+                String actorName = "Staff/Faculty";
+                try {
+                    UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+                    if (principal != null) {
+                        actorName = principal.getName();
+                    }
+                } catch (Exception e) {}
+                
+                if (studentUserId != null) {
+                    notificationService.createNotification(studentUserId, "STUDENT", "Fault Status Updated", "The status of the fault reported for " + eqName + " has changed to " + status + " by " + actorName + ".", "Equipment");
+                }
+                
+                if (saved.getReportedBy() != null) {
+                    // Send email
+                    if (saved.getReportedBy().getEmail() != null && !saved.getReportedBy().getEmail().trim().isEmpty()) {
+                        String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                         "<tr><td class='label'>Fault Description:</td><td class='value'>" + saved.getDescription() + "</td></tr>" +
+                                         "<tr><td class='label'>Updated Status:</td><td class='value' style='font-weight: bold; color: #1e3a8a;'>" + status + "</td></tr>" +
+                                         "<tr><td class='label'>Updated By:</td><td class='value' style='font-weight: bold; color: #1e3a8a;'>" + actorName + "</td></tr>";
+                        String html = emailService.buildTemplate("Fault Status Update", "Fault Status Updated", "The status of your reported equipment fault has been updated by " + actorName + ".", details);
+                        emailService.sendEmail(saved.getReportedBy().getEmail(), "SmartLab AI - Fault Status Update: " + eqName, html);
+                    }
+                    
+                    // Send SMS
+                    if (saved.getReportedBy().getPhone() != null && !saved.getReportedBy().getPhone().trim().isEmpty()) {
+                        smsService.sendSms(saved.getReportedBy().getPhone(), "SmartLab AI: The fault status for " + eqName + " has changed to " + status + " by " + actorName + ".");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to notify student of fault status update: {}", e.getMessage());
+            }
+            
+            return saved;
         }
         return null;
     }

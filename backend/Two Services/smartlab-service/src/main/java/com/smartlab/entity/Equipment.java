@@ -23,6 +23,9 @@ public class Equipment {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "quantity")
+    private Integer quantity = 5;
+
     public Equipment() {}
 
     public Equipment(Long equipmentId, String name, String status, Laboratory laboratory) {
@@ -102,5 +105,13 @@ public class Equipment {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }

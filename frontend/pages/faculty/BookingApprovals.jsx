@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, Search, Clock, Calendar, User, Tag, QrCode } from
 import toast from 'react-hot-toast';
 import { facultyService } from '../../services/facultyService';
 import QRScannerModal from '../../components/common/QRScannerModal';
+import Pagination from '../../components/common/Pagination';
 
 export default function BookingApprovals() {
   const [bookings, setBookings] = useState([]);
@@ -10,12 +11,29 @@ export default function BookingApprovals() {
   const [filter, setFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rejectingBookingId, setRejectingBookingId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchTerm]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const response = await facultyService.getBookings();
-      setBookings(response.data || []);
+      const body = response?.data || response;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data.content || body.data;
+        } else {
+          list = body.content || body;
+        }
+      }
+      setBookings(Array.isArray(list) ? list : []);
     } catch (error) {
       toast.error('Failed to fetch bookings');
       console.error('Error fetching bookings:', error);
@@ -39,10 +57,18 @@ export default function BookingApprovals() {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = (id) => {
+    setRejectingBookingId(id);
+    setRejectionReason('');
+  };
+
+  const submitRejection = async () => {
+    if (!rejectingBookingId) return;
     try {
-      await facultyService.rejectBooking(id);
-      toast.success('Booking rejected');
+      await facultyService.rejectBooking(rejectingBookingId, { reason: rejectionReason || "No reason specified" });
+      toast.success('Booking rejected successfully');
+      setRejectingBookingId(null);
+      setRejectionReason('');
       fetchBookings();
     } catch (error) {
       toast.error('Failed to reject booking');
@@ -66,8 +92,20 @@ export default function BookingApprovals() {
       );
     }
     
-    return result;
+    // Sort: Urgent bookings first, then by bookingId descending
+    return [...result].sort((a, b) => {
+      const aUrgent = a.isUrgent === true || a.isUrgent === 'true' || a.urgent === true;
+      const bUrgent = b.isUrgent === true || b.isUrgent === 'true' || b.urgent === true;
+      if (aUrgent && !bUrgent) return -1;
+      if (!aUrgent && bUrgent) return 1;
+      return (b.bookingId || 0) - (a.bookingId || 0);
+    });
   }, [bookings, filter, searchTerm]);
+
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredBookings.slice(start, start + itemsPerPage);
+  }, [filteredBookings, currentPage]);
 
   const tabs = ['All', 'Pending', 'Approved', 'Rejected', 'Completed'];
 
@@ -154,7 +192,7 @@ export default function BookingApprovals() {
                   </tr>
                 ))
               ) : filteredBookings.length > 0 ? (
-                filteredBookings.map((booking) => (
+                paginatedBookings.map((booking) => (
                   <tr key={booking.bookingId} className="hover:bg-slate-800/30 transition-colors text-slate-300">
                     <td className="px-6 py-4 font-mono text-xs">#{booking.bookingId}</td>
                     <td className="px-6 py-4">
@@ -163,8 +201,13 @@ export default function BookingApprovals() {
                           <User className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="font-semibold text-white">
+                          <div className="font-semibold text-white flex items-center gap-1.5">
                             {booking.student?.name || booking.studentName || 'Student'}
+                            {(booking.isUrgent === true || booking.isUrgent === 'true' || booking.urgent === true) && (
+                              <span className="px-1.5 py-0.5 text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded animate-pulse">
+                                URGENT
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-400 font-mono">
                             {booking.student?.regNo || booking.studentRegNo || 'REG-N/A'}
@@ -235,6 +278,12 @@ export default function BookingApprovals() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredBookings.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* QR Scanner Modal */}
@@ -243,6 +292,38 @@ export default function BookingApprovals() {
         onClose={() => setIsScannerOpen(false)} 
         onVerificationSuccess={fetchBookings} 
       />
+
+      {/* Rejection Reason Modal */}
+      {rejectingBookingId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-white mb-2">Reject Booking Request</h3>
+            <p className="text-xs text-slate-400 mb-4">Please provide a reason for rejecting this booking. The student will be notified.</p>
+            
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Type rejection reason here..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition-colors h-28 resize-none mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setRejectingBookingId(null); setRejectionReason(''); }}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRejection}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition"
+              >
+                Reject Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

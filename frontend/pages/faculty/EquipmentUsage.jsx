@@ -12,7 +12,8 @@ const EquipmentUsagePage = () => {
       setLoading(true);
       try {
         const res = await facultyService.getReportsSummary();
-        const data = res?.data || res;
+        const body = res?.data || res;
+        const data = body?.data || body;
         if (data && data.usageList) {
           setUsageList(data.usageList);
         }

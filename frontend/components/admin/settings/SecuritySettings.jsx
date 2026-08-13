@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ShieldCheck, Lock, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import authService from "../../../services/authService";
 
 const SecuritySettings = () => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -11,7 +12,7 @@ const SecuritySettings = () => {
   const [loginVerification, setLoginVerification] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  const handleUpdateSecurity = (e) => {
+  const handleUpdateSecurity = async (e) => {
     e.preventDefault();
     if (newPassword || confirmPassword || currentPassword) {
       if (!currentPassword) {
@@ -29,20 +30,27 @@ const SecuritySettings = () => {
     }
 
     setUpdating(true);
-    setTimeout(() => {
-      try {
-        const securityPrefs = { sessionTimeout, twoFactor, loginVerification };
-        localStorage.setItem("smartlab_security_settings", JSON.stringify(securityPrefs));
-        toast.success("Security settings and credentials updated successfully!");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } catch (err) {
-        toast.error("Failed to update security settings.");
-      } finally {
-        setUpdating(false);
+    try {
+      const stored = localStorage.getItem("user");
+      const u = stored ? JSON.parse(stored) : {};
+      const email = u.email || "admin@smartlab.com";
+
+      if (newPassword) {
+        // Call backend API
+        await authService.changePassword(email, currentPassword, newPassword);
       }
-    }, 500);
+
+      const securityPrefs = { sessionTimeout, twoFactor, loginVerification };
+      localStorage.setItem("smartlab_security_settings", JSON.stringify(securityPrefs));
+      toast.success("Security settings and credentials updated successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      toast.error(err.response?.data || "Failed to update security settings.");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (

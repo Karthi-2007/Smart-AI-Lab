@@ -28,7 +28,7 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const res = await adminService.getDashboard();
-      const data = res?.data || res;
+      const data = res?.data?.data || res?.data || res;
       setStats({
         students: data?.totalStudents || data?.students || 0,
         faculty: data?.totalFaculty || data?.faculty || 0,

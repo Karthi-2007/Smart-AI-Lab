@@ -1,22 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { studentService } from '../../services/studentService';
 import { toast } from 'react-hot-toast';
 import { History, Download, Loader2 } from 'lucide-react';
+import Pagination from '../../components/common/Pagination';
 
 export default function UsageHistory() {
   const { user } = useAuth();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const paginatedHistory = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return history.slice(start, start + itemsPerPage);
+  }, [history, currentPage]);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
         const res = await studentService.getMyBookings(user.id);
-        const data = res?.data || res || [];
-        const list = Array.isArray(data) ? data : [];
-        const completed = list.filter(b => b.status?.toLowerCase() === 'completed');
+        const body = res?.data || res;
+        let list = [];
+        if (body) {
+          if (body.success && body.data) {
+            list = body.data.content || body.data;
+          } else {
+            list = body.content || body;
+          }
+        }
+        const dataList = Array.isArray(list) ? list : [];
+        const completed = dataList.filter(b => b.status?.toLowerCase() === 'completed');
         setHistory(completed);
       } catch (error) {
         toast.error('Failed to load usage history.');
@@ -101,7 +117,7 @@ export default function UsageHistory() {
                 </tr>
               </thead>
               <tbody>
-                {history.map((record) => (
+                {paginatedHistory.map((record) => (
                   <tr key={record.id} className="border-b border-slate-800 last:border-0 hover:bg-slate-800/30">
                     <td className="py-4 px-6 text-white text-sm">
                       {new Date(record.date || record.createdAt || Date.now()).toLocaleDateString()}
@@ -127,6 +143,12 @@ export default function UsageHistory() {
             </table>
           </div>
         )}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={history.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

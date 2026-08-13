@@ -15,24 +15,14 @@ const Statistics = () => {
   useEffect(() => {
     const fetchLiveStats = async () => {
       try {
-        const [eqRes, labRes, userRes] = await Promise.all([
-          api.get("/api/business/equipments").catch(() => ({ data: [] })),
-          api.get("/api/business/laboratories").catch(() => ({ data: [] })),
-          api.get("/api/business/students").catch(() => ({ data: [] }))
-        ]);
-
-        const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-        const labList = Array.isArray(labRes?.data || labRes) ? (labRes?.data || labRes) : [];
-        const studentList = Array.isArray(userRes?.data || userRes) ? (userRes?.data || userRes) : [];
-
-        const activeEq = eqList.filter(e => e.status !== "Faulty").length;
-        const availRate = eqList.length ? Math.round((activeEq / eqList.length) * 100) + "%" : "98%";
+        const res = await api.get("/api/business/dashboard/public/statistics");
+        const data = res?.data?.data || res?.data || {};
 
         setStats({
-          equipments: eqList.length ? `${eqList.length}+` : "120+",
-          labs: labList.length ? `${labList.length}` : "12",
-          students: studentList.length ? `${studentList.length}+` : "850+",
-          availability: availRate
+          equipments: data.equipmentsCount ? `${data.equipmentsCount}+` : "120+",
+          labs: data.labsCount ? `${data.labsCount}` : "12",
+          students: data.studentsCount ? `${data.studentsCount}+` : "850+",
+          availability: data.availabilityRate || "98%"
         });
       } catch (err) {
         console.warn("Using default stats", err);

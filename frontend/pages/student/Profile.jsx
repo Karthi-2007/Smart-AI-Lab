@@ -28,7 +28,8 @@ export default function Profile() {
       if (!profileId) { setLoading(false); return; }
       try {
         const res = await studentService.getProfile(profileId);
-        const data = res?.data || res;
+        const body = res?.data || res;
+        const data = body?.success ? body.data : body;
         setProfile(data);
         setFormData({
           name: data.name || user?.name || '',

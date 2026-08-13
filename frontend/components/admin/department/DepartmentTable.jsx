@@ -1,17 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Loader2, Building2, Edit, Trash2 } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
+import Pagination from '../../common/Pagination';
 
-const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
+const DepartmentTable = ({
+  search,
+  selectedStatus = "Status",
+  onDepartmentsLoaded,
+  onEdit
+}) => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedStatus]);
 
   const fetchDepartments = async () => {
     try {
       setLoading(true);
       const res = await adminService.getDepartments();
-      const list = res?.data || res || [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
       const dataArray = Array.isArray(list) ? list : [];
       setDepartments(dataArray);
       if (onDepartmentsLoaded) onDepartmentsLoaded(dataArray);
@@ -44,14 +64,29 @@ const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
     return <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-500/20 text-slate-400">{status}</span>;
   };
 
-  const filteredDepartments = departments.filter(d => {
-    const s = search.toLowerCase();
-    return (
-      (d.name && d.name.toLowerCase().includes(s)) ||
-      (d.code && d.code.toLowerCase().includes(s)) ||
-      (d.hod && d.hod.toLowerCase().includes(s))
-    );
-  });
+  const filteredDepartments = useMemo(() => {
+    return departments.filter(d => {
+      // 1. Search Query filter
+      if (search) {
+        const s = search.toLowerCase();
+        const matchesSearch = (
+          (d.name && d.name.toLowerCase().includes(s)) ||
+          (d.code && d.code.toLowerCase().includes(s)) ||
+          (d.hod && d.hod.toLowerCase().includes(s))
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Status filter
+      if (selectedStatus && selectedStatus !== "Status") {
+        const status = d.status?.toLowerCase() || "";
+        const target = selectedStatus.toLowerCase();
+        if (status !== target) return false;
+      }
+
+      return true;
+    });
+  }, [departments, search, selectedStatus]);
 
   if (loading) {
     return (
@@ -89,33 +124,35 @@ const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
           </thead>
           <tbody className="divide-y divide-slate-800">
             {filteredDepartments.length > 0 ? (
-              filteredDepartments.map((d, idx) => {
-                const deptId = d.departmentId || d.id || idx;
-                return (
-                  <tr key={deptId} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white">{d.code || `DEPT-${deptId}`}</td>
-                    <td className="px-6 py-4">{d.name}</td>
-                    <td className="px-6 py-4">{d.hod || '-'}</td>
-                    <td className="px-6 py-4">{d.facultyCount || 0}</td>
-                    <td className="px-6 py-4">{d.studentCount || 0}</td>
-                    <td className="px-6 py-4">{d.labCount || 0}</td>
-                    <td className="px-6 py-4">{getStatusBadge(d.status || 'ACTIVE')}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-end gap-3">
-                        <button onClick={() => onEdit && onEdit(d)} className="p-2 text-slate-400 hover:text-orange-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(deptId)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+              filteredDepartments
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((d, idx) => {
+                  const deptId = d.departmentId || d.id || idx;
+                  return (
+                    <tr key={deptId} className="hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-white">{d.code || `DEPT-${deptId}`}</td>
+                      <td className="px-6 py-4">{d.name}</td>
+                      <td className="px-6 py-4">{d.hod || '-'}</td>
+                      <td className="px-6 py-4">{d.facultyCount || 0}</td>
+                      <td className="px-6 py-4">{d.studentCount || 0}</td>
+                      <td className="px-6 py-4">{d.labCount || 0}</td>
+                      <td className="px-6 py-4">{getStatusBadge(d.status || 'ACTIVE')}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => onEdit && onEdit(d)} className="p-2 text-slate-400 hover:text-orange-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(deptId)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
             ) : (
               <tr>
-                <td colSpan="7" className="px-6 py-8 text-center text-slate-400">
+                <td colSpan="8" className="px-6 py-8 text-center text-slate-400">
                   No departments match your search.
                 </td>
               </tr>
@@ -123,6 +160,12 @@ const DepartmentTable = ({ search, onDepartmentsLoaded, onEdit }) => {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredDepartments.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import StudentRow from "./StudentRow";
 import StudentModal from "./StudentModal";
 import DeleteStudentModal from "./DeleteStudentModal";
@@ -6,12 +6,28 @@ import StudentForm from "./StudentForm";
 import { adminService } from "../../../services/adminService";
 import { Loader2, Users } from "lucide-react";
 import toast from "react-hot-toast";
+import Pagination from "../../common/Pagination";
 
-const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess, onUpdateSuccess }) => {
+const StudentTable = ({
+  search,
+  students = [],
+  loading = false,
+  selectedDept = "All Departments",
+  selectedYear = "All Years",
+  selectedStatus = "Status",
+  onDeleteSuccess,
+  onUpdateSuccess
+}) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDept, selectedYear, selectedStatus]);
 
   const handleView = (student) => { setSelectedStudent(student); setOpenModal(true); };
   const handleDeleteClick = (student) => { setSelectedStudent(student); setDeleteModal(true); };
@@ -41,16 +57,55 @@ const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess,
     }
   };
 
-  const filtered = students.filter((student) => {
-    if (!search) return true;
-    const kw = search.toLowerCase();
-    return (
-      student.name?.toLowerCase().includes(kw) ||
-      student.regNo?.toLowerCase().includes(kw) ||
-      student.registerNo?.toLowerCase().includes(kw) ||
-      student.email?.toLowerCase().includes(kw)
-    );
-  });
+  const filtered = useMemo(() => {
+    return students.filter((student) => {
+      // 1. Search Query filter
+      if (search) {
+        const kw = search.toLowerCase();
+        const matchesSearch = (
+          student.name?.toLowerCase().includes(kw) ||
+          student.regNo?.toLowerCase().includes(kw) ||
+          student.registerNo?.toLowerCase().includes(kw) ||
+          student.email?.toLowerCase().includes(kw)
+        );
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Department filter
+      if (selectedDept && selectedDept !== "All Departments") {
+        const dept = student.department?.toLowerCase() || "";
+        const target = selectedDept.toLowerCase();
+        if (target === "cse" && !dept.includes("computer")) return false;
+        if (target === "ece" && !dept.includes("electronics & communication") && !dept.includes("ece")) return false;
+        if (target === "eee" && !dept.includes("electrical") && !dept.includes("eee")) return false;
+        if (target === "mechanical" && !dept.includes("mechanical")) return false;
+        if (target === "civil" && !dept.includes("civil")) return false;
+      }
+
+      // 3. Year filter
+      if (selectedYear && selectedYear !== "All Years") {
+        const yr = parseInt(student.year);
+        if (selectedYear === "I Year" && yr !== 1) return false;
+        if (selectedYear === "II Year" && yr !== 2) return false;
+        if (selectedYear === "III Year" && yr !== 3) return false;
+        if (selectedYear === "IV Year" && yr !== 4) return false;
+      }
+
+      // 4. Status filter
+      if (selectedStatus && selectedStatus !== "Status") {
+        const status = student.status?.toLowerCase() || "";
+        if (selectedStatus === "Activated" && status !== "active" && status !== "activated") return false;
+        if (selectedStatus === "Pending" && status !== "pending") return false;
+      }
+
+      return true;
+    });
+  }, [students, search, selectedDept, selectedYear, selectedStatus]);
+
+  const paginatedStudents = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage]);
 
   if (loading) {
     return (
@@ -71,7 +126,7 @@ const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess,
 
   return (
     <>
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto table-wrapper">
           <table className="w-full min-w-[700px]">
             <thead className="bg-slate-800">
@@ -86,7 +141,7 @@ const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess,
               </tr>
             </thead>
             <tbody>
-              {filtered.map((student) => (
+              {paginatedStudents.map((student) => (
                 <StudentRow
                   key={student.id}
                   student={student}
@@ -98,6 +153,12 @@ const StudentTable = ({ search, students = [], loading = false, onDeleteSuccess,
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <StudentModal isOpen={openModal} onClose={() => setOpenModal(false)} student={selectedStudent} />

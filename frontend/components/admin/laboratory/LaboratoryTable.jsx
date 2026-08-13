@@ -2,16 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { Eye, Pencil, Trash2, Loader2, FlaskConical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminService } from '../../../services/adminService';
+import Pagination from '../../common/Pagination';
 
 const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
   const [laboratories, setLaboratories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchLaboratories = async () => {
     try {
       setLoading(true);
       const res = await adminService.getLaboratories();
-      const list = res?.data || res || [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data;
+        } else {
+          list = body;
+        }
+      }
       const dataArray = Array.isArray(list) ? list : [];
       setLaboratories(dataArray);
       if (onLabsLoaded) {
@@ -29,6 +40,10 @@ const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
     fetchLaboratories();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this laboratory?')) {
       try {
@@ -44,10 +59,11 @@ const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
 
   const filteredLabs = laboratories.filter(lab => {
     const searchLower = search.toLowerCase();
+    const deptName = typeof lab.department === 'object' ? lab.department?.name : (lab.department || '');
     return (
       (lab.name && lab.name.toLowerCase().includes(searchLower)) ||
       (lab.code && lab.code.toLowerCase().includes(searchLower)) ||
-      (lab.department && lab.department.toLowerCase().includes(searchLower))
+      (deptName && String(deptName).toLowerCase().includes(searchLower))
     );
   });
 
@@ -68,6 +84,11 @@ const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
     );
   }
 
+  const paginatedLabs = filteredLabs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -84,7 +105,7 @@ const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {filteredLabs.map((lab, idx) => {
+            {paginatedLabs.map((lab, idx) => {
               const lId = lab.labId || lab.id || lab._id || idx;
               const deptName = typeof lab.department === 'object' ? lab.department?.name : (lab.department || 'N/A');
               const labCode = lab.code || `LAB-${lId}`;
@@ -136,6 +157,12 @@ const LaboratoryTable = ({ search = '', onLabsLoaded, onDetail, onEdit }) => {
           </tbody>
         </table>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredLabs.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

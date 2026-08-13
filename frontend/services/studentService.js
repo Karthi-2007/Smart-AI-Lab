@@ -1,17 +1,42 @@
 import api from './api';
 
 export const studentService = {
-    getEquipmentList: () => api.get('/api/business/equipments'),
+    getEquipmentList: () => api.get('/api/business/equipments/available-for-student'),
     createBooking: (bookingData) => api.post('/api/business/bookings', bookingData),
-    getMyBookings: (id) => api.get(`/api/business/bookings/student/${id}`),
+    getMyBookings: (arg, params = {}) => {
+        if (arg && typeof arg === 'object') {
+            return api.get('/api/business/bookings/my-bookings', { params: arg });
+        }
+        return api.get('/api/business/bookings/my-bookings', { params });
+    },
     reportFault: (faultData) => api.post('/api/business/faults', faultData),
-    getMyFaultReports: (id) => api.get(`/api/business/faults/student/${id}`),
-    cancelBooking: (id) => api.delete(`/api/business/bookings/${id}`),
+    getMyFaultReports: (id) => api.get(`/api/business/faults/student/${id}/faults-list`),
+    
+    // Action-specific cancellation endpoints
+    cancelBooking: (id) => api.post(`/api/business/bookings/${id}/cancel`),
+    cancelBookingPost: (id) => api.post(`/api/business/bookings/${id}/cancel`),
+    cancelFaultReport: (id) => api.post(`/api/business/faults/${id}/cancel`),
+    cancelFaultReportPost: (id) => api.post(`/api/business/faults/${id}/cancel`),
+    
     getProfile: (id) => api.get(`/api/business/students/${id}`),
-    getMyNotifications: (id) => api.get(`/api/business/notifications/user/${id}?role=STUDENT`),
-    markNotificationRead: (id) => api.put(`/api/business/notifications/${id}/read`),
-    getDashboard: (id) => api.get(`/api/business/dashboard/student/${id}`),
-    updateProfile: (id, data) => api.put(`/api/business/students/${id}`, data)
+    updateProfile: (id, data) => api.put(`/api/business/students/${id}`, data),
+    
+    // Notifications
+    getMyNotifications: (id) => api.get(`/api/business/notifications/user/${id}/notifications-list`),
+    getUnreadNotifications: () => api.get('/api/business/notifications/unread'),
+    getUnreadCount: () => api.get('/api/business/notifications/count'),
+    markNotificationRead: (id) => api.patch(`/api/business/notifications/${id}/read`),
+    markAllNotificationsRead: () => api.patch('/api/business/notifications/read-all'),
+    clearAllNotifications: () => api.delete('/api/business/notifications/clear-all'),
+    deleteNotification: (id) => api.delete(`/api/business/notifications/${id}`),
+    
+    // Dashboard & Details
+    getDashboard: () => api.get('/api/business/dashboard/student'),
+    getDashboardStudentSummary: () => api.get('/api/business/dashboard/student/summary'),
+    getDashboardStudentBookings: () => api.get('/api/business/dashboard/student/bookings'),
+    getDashboardStudentFaults: () => api.get('/api/business/dashboard/student/faults'),
+    
+    getSlotAvailability: (equipmentId, date) => api.get(`/api/business/bookings/availability`, { params: { equipmentId, date } })
 };
 
 export default studentService;

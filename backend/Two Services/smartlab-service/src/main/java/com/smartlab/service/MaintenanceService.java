@@ -12,10 +12,69 @@ import java.util.List;
 public class MaintenanceService {
     private final MaintenanceRepository maintenanceRepository;
     private final FacultyRepository facultyRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final SmsService smsService;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MaintenanceService.class);
 
-    public MaintenanceService(MaintenanceRepository maintenanceRepository, FacultyRepository facultyRepository) {
+    public MaintenanceService(MaintenanceRepository maintenanceRepository, 
+                              FacultyRepository facultyRepository,
+                              NotificationService notificationService,
+                              EmailService emailService,
+                              SmsService smsService) {
         this.maintenanceRepository = maintenanceRepository;
         this.facultyRepository = facultyRepository;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
+        this.smsService = smsService;
+    }
+
+    private void sendMaintenanceNotifications(Maintenance saved, String actionTitle, String actionDesc) {
+        try {
+            String eqName = saved.getEquipment() != null ? saved.getEquipment().getName() : "Equipment";
+            
+            // 1. Notify the assigned technician/faculty
+            if (saved.getAssignedToUserId() != null) {
+                com.smartlab.entity.Faculty faculty = facultyRepository.findByUserId(saved.getAssignedToUserId());
+                if (faculty != null) {
+                    notificationService.createNotification(faculty.getUserId(), "FACULTY", actionTitle, actionDesc + " (" + eqName + ")", "Maintenance");
+                    if (faculty.getEmail() != null && !faculty.getEmail().trim().isEmpty()) {
+                        String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                         "<tr><td class='label'>Type:</td><td class='value'>" + saved.getType() + "</td></tr>" +
+                                         "<tr><td class='label'>Status:</td><td class='value' style='font-weight: bold;'>" + saved.getStatus() + "</td></tr>" +
+                                         "<tr><td class='label'>Scheduled Date:</td><td class='value'>" + saved.getScheduledDate() + "</td></tr>";
+                        String html = emailService.buildTemplate(actionTitle, actionTitle, actionDesc, details);
+                        emailService.sendEmail(faculty.getEmail(), "SmartLab AI - " + actionTitle + ": " + eqName, html);
+                    }
+                    if (faculty.getPhone() != null && !faculty.getPhone().trim().isEmpty()) {
+                        smsService.sendSms(faculty.getPhone(), "SmartLab AI: " + actionTitle + " for " + eqName + ". Status: " + saved.getStatus());
+                    }
+                }
+            }
+
+            // 2. Notify all faculty members of the same department
+            if (saved.getEquipment() != null &&
+                saved.getEquipment().getLaboratory() != null &&
+                saved.getEquipment().getLaboratory().getDepartment() != null) {
+                
+                Long deptId = saved.getEquipment().getLaboratory().getDepartment().getDepartmentId();
+                facultyRepository.findAll().stream()
+                    .filter(f -> f.getDepartmentEntity() != null && deptId.equals(f.getDepartmentEntity().getDepartmentId()))
+                    .filter(f -> saved.getAssignedToUserId() == null || !f.getUserId().equals(saved.getAssignedToUserId()))
+                    .forEach(f -> {
+                        notificationService.createNotification(f.getUserId(), "FACULTY", actionTitle, actionDesc + " (" + eqName + ")", "Maintenance");
+                        if (f.getEmail() != null && !f.getEmail().trim().isEmpty()) {
+                            String details = "<tr><td class='label'>Equipment:</td><td class='value'>" + eqName + "</td></tr>" +
+                                             "<tr><td class='label'>Type:</td><td class='value'>" + saved.getType() + "</td></tr>" +
+                                             "<tr><td class='label'>Status:</td><td class='value' style='font-weight: bold;'>" + saved.getStatus() + "</td></tr>";
+                            String html = emailService.buildTemplate(actionTitle, actionTitle, actionDesc, details);
+                            emailService.sendEmail(f.getEmail(), "SmartLab AI - " + actionTitle + ": " + eqName, html);
+                        }
+                    });
+            }
+        } catch (Exception e) {
+            log.warn("Failed to send maintenance notifications: {}", e.getMessage());
+        }
     }
 
     private Maintenance populateTechnicianName(Maintenance maintenance) {
@@ -59,6 +118,9 @@ public class MaintenanceService {
             maintenance.setScheduledDate(java.time.LocalDate.now());
         }
         Maintenance saved = maintenanceRepository.save(maintenance);
+        
+        sendMaintenanceNotifications(saved, "Maintenance Scheduled", "A new equipment maintenance task has been scheduled.");
+        
         return populateTechnicianName(saved);
     }
 
@@ -80,6 +142,9 @@ public class MaintenanceService {
                 maintenance.setType(maintenanceDetails.getType());
             }
             Maintenance saved = maintenanceRepository.save(maintenance);
+            
+            sendMaintenanceNotifications(saved, "Maintenance Updated", "The maintenance task has been updated.");
+            
             return populateTechnicianName(saved);
         }
         return null;
@@ -91,6 +156,9 @@ public class MaintenanceService {
             maintenance.setStatus("Completed");
             maintenance.setCompletedDate(java.time.LocalDate.now());
             Maintenance saved = maintenanceRepository.save(maintenance);
+            
+            sendMaintenanceNotifications(saved, "Maintenance Completed", "The equipment maintenance task has been completed successfully.");
+            
             return populateTechnicianName(saved);
         }
         return null;

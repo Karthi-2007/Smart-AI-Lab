@@ -2,21 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { CalendarDays, CheckCircle, XCircle, Eye, Trash2, X } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
+import Pagination from '../../common/Pagination';
 
 const BookingTable = ({ search, onBookingsLoaded }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailBooking, setDetailBooking] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     fetchBookings();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const fetchBookings = async () => {
     setLoading(true);
     try {
       const res = await adminService.getBookings();
-      const list = res?.data || res || [];
+      const body = res?.data || res;
+      let list = [];
+      if (body) {
+        if (body.success && body.data) {
+          list = body.data.content || body.data;
+        } else {
+          list = body.content || body;
+        }
+      }
       const dataArray = Array.isArray(list) ? list : [];
       setBookings(dataArray);
       if (onBookingsLoaded) onBookingsLoaded(dataArray);
@@ -29,7 +44,7 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
 
   const handleApprove = async (id) => {
     try {
-      await adminService.approveBooking(id);
+      await adminService.approveBookingPost(id);
       setBookings(prev => prev.map(b => (b.bookingId === id || b.id === id) ? { ...b, status: 'Approved' } : b));
       toast.success('Booking approved!');
       fetchBookings();
@@ -39,9 +54,11 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
   };
 
   const handleReject = async (id) => {
+    const reason = window.prompt("Enter rejection reason:", "Scheduling conflict");
+    if (reason === null) return;
     try {
-      await adminService.rejectBooking(id);
-      setBookings(prev => prev.map(b => (b.bookingId === id || b.id === id) ? { ...b, status: 'Rejected' } : b));
+      await adminService.rejectBookingPost(id, reason);
+      setBookings(prev => prev.map(b => (b.bookingId === id || b.id === id) ? { ...b, status: 'Rejected', rejectionReason: reason } : b));
       toast.success('Booking rejected!');
       fetchBookings();
     } catch (error) {
@@ -50,14 +67,14 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete/cancel this booking?')) {
+    if (window.confirm('Are you sure you want to cancel this booking?')) {
       try {
-        await adminService.rejectBooking(id);
+        await adminService.cancelBookingPost(id);
         setBookings(prev => prev.filter(b => (b.bookingId !== id && b.id !== id)));
-        toast.success('Booking deleted!');
+        toast.success('Booking cancelled!');
         fetchBookings();
       } catch (error) {
-        toast.error('Could not delete booking.');
+        toast.error('Could not cancel booking.');
       }
     }
   };
@@ -107,6 +124,11 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
     );
   }
 
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -124,7 +146,7 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
-            {filteredBookings.map((booking, idx) => {
+            {paginatedBookings.map((booking, idx) => {
               const bId = booking.bookingId || booking.id || booking._id || idx;
               const studentName = typeof booking.student === 'object' 
                 ? (booking.student?.name || booking.studentName || 'Student') 
@@ -170,6 +192,13 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredBookings.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Booking Details Modal */}
       {detailBooking && (

@@ -35,13 +35,75 @@ const Reports = () => {
         adminService.getMaintenance().catch(() => ({ data: [] }))
       ]);
 
-      const usersList = Array.isArray(usersRes?.data || usersRes) ? (usersRes?.data || usersRes) : [];
-      const deptList = Array.isArray(deptRes?.data || deptRes) ? (deptRes?.data || deptRes) : [];
-      const labList = Array.isArray(labRes?.data || labRes) ? (labRes?.data || labRes) : [];
-      const eqList = Array.isArray(eqRes?.data || eqRes) ? (eqRes?.data || eqRes) : [];
-      const bookList = Array.isArray(bookRes?.data || bookRes) ? (bookRes?.data || bookRes) : [];
-      const faultList = Array.isArray(faultRes?.data || faultRes) ? (faultRes?.data || faultRes) : [];
-      const maintList = Array.isArray(maintRes?.data || maintRes) ? (maintRes?.data || maintRes) : [];
+      const usersBody = usersRes?.data || usersRes;
+      let usersList = [];
+      if (usersBody) {
+        if (usersBody.success && usersBody.data) {
+          usersList = usersBody.data;
+        } else {
+          usersList = usersBody;
+        }
+      }
+
+      const deptBody = deptRes?.data || deptRes;
+      let deptList = [];
+      if (deptBody) {
+        if (deptBody.success && deptBody.data) {
+          deptList = deptBody.data;
+        } else {
+          deptList = deptBody;
+        }
+      }
+
+      const labBody = labRes?.data || labRes;
+      let labList = [];
+      if (labBody) {
+        if (labBody.success && labBody.data) {
+          labList = labBody.data;
+        } else {
+          labList = labBody;
+        }
+      }
+
+      const eqBody = eqRes?.data || eqRes;
+      let eqList = [];
+      if (eqBody) {
+        if (eqBody.success && eqBody.data) {
+          eqList = eqBody.data;
+        } else {
+          eqList = eqBody;
+        }
+      }
+
+      const bookBody = bookRes?.data || bookRes;
+      let bookList = [];
+      if (bookBody) {
+        if (bookBody.success && bookBody.data) {
+          bookList = bookBody.data.content || bookBody.data;
+        } else {
+          bookList = bookBody.content || bookBody;
+        }
+      }
+
+      const faultBody = faultRes?.data || faultRes;
+      let faultList = [];
+      if (faultBody) {
+        if (faultBody.success && faultBody.data) {
+          faultList = faultBody.data.content || faultBody.data;
+        } else {
+          faultList = faultBody.content || faultBody;
+        }
+      }
+
+      const maintBody = maintRes?.data || maintRes;
+      let maintList = [];
+      if (maintBody) {
+        if (maintBody.success && maintBody.data) {
+          maintList = maintBody.data.content || maintBody.data;
+        } else {
+          maintList = maintBody.content || maintBody;
+        }
+      }
 
       setDatasets({
         users: usersList,
@@ -69,41 +131,71 @@ const Reports = () => {
   const facultyList = datasets.users.filter(u => (u.role === 'FACULTY' || u.userRole === 'FACULTY'));
 
   // Derived Trend Chart Data
-  const monthMap = { Jan: 0, Feb: 0, Mar: 0, Apr: 0, May: 0, Jun: datasets.bookings.length || 0 };
+  const monthMap = { Jan: 0, Feb: 0, Mar: 0, Apr: 0, May: 0, Jun: 0, Jul: 0, Aug: 0, Sep: 0, Oct: 0, Nov: 0, Dec: 0 };
   datasets.bookings.forEach(b => {
-    const dStr = b.bookedAt || b.date;
+    const dStr = b.bookingDate || b.date || b.bookedAt;
     if (dStr) {
-      const m = new Date(dStr).toLocaleString('default', { month: 'short' });
-      if (monthMap[m] !== undefined) monthMap[m]++;
+      try {
+        const dateObj = new Date(dStr);
+        if (!isNaN(dateObj.getTime())) {
+          const m = dateObj.toLocaleString('en-US', { month: 'short' });
+          if (monthMap[m] !== undefined) monthMap[m]++;
+        }
+      } catch (e) {
+        // ignore
+      }
     }
   });
-  const trendData = Object.keys(monthMap).map(m => ({ month: m, bookings: monthMap[m] }));
+  const trendData = Object.keys(monthMap)
+    .map(m => ({ month: m, bookings: monthMap[m] }))
+    .filter((item, index) => index <= new Date().getMonth() + 1);
 
-  // Equipment Usage Top Chart
+  // Equipment Utilization Ranking based on actual booking frequencies
   const eqUsageMap = {};
   datasets.equipments.forEach(eq => {
-    eqUsageMap[eq.name] = (eqUsageMap[eq.name] || 0) + 1;
+    eqUsageMap[eq.name] = 0;
   });
   datasets.bookings.forEach(b => {
     const name = typeof b.equipment === 'object' ? b.equipment?.name : b.equipment;
-    if (name) eqUsageMap[name] = (eqUsageMap[name] || 0) + 5;
+    if (name && eqUsageMap[name] !== undefined) {
+      eqUsageMap[name]++;
+    }
   });
-  const usageData = Object.keys(eqUsageMap).map(k => ({ name: k.length > 15 ? k.slice(0, 12) + '...' : k, usage: eqUsageMap[k] }));
+  const usageData = Object.keys(eqUsageMap)
+    .map(k => ({ name: k.length > 15 ? k.slice(0, 12) + '...' : k, usage: eqUsageMap[k] }))
+    .sort((a, b) => b.usage - a.usage)
+    .slice(0, 6);
 
   // Status Distribution Data
   const bookingStatusMap = { Pending: 0, Approved: 0, Rejected: 0, Completed: 0 };
   datasets.bookings.forEach(b => {
     const st = b.status || 'Pending';
-    if (bookingStatusMap[st] !== undefined) bookingStatusMap[st]++;
-    else bookingStatusMap['Pending']++;
+    const normalized = st.charAt(0).toUpperCase() + st.slice(1).toLowerCase();
+    if (bookingStatusMap[normalized] !== undefined) {
+      bookingStatusMap[normalized]++;
+    } else {
+      bookingStatusMap['Pending']++;
+    }
   });
   const bookingStatusData = Object.keys(bookingStatusMap).map(k => ({ name: k, value: bookingStatusMap[k] }));
 
+  // Equipment Status mapping dynamically linked to live Faults and Maintenance
   const eqStatusMap = { Available: 0, 'In Use': 0, Faulty: 0, Maintenance: 0 };
   datasets.equipments.forEach(e => {
     const st = e.status || 'Available';
-    if (eqStatusMap[st] !== undefined) eqStatusMap[st]++;
-    else eqStatusMap['Available']++;
+    const eqId = e.equipmentId || e.id;
+    const isFaulty = datasets.faults.some(f => f.status && f.status.toLowerCase() !== 'resolved' && (f.equipment?.equipmentId || f.equipmentId) === eqId);
+    const isMaint = datasets.maintenance.some(m => m.status && m.status.toLowerCase() !== 'completed' && (m.equipment?.equipmentId || m.equipmentId) === eqId);
+    
+    if (isFaulty) {
+      eqStatusMap['Faulty']++;
+    } else if (isMaint) {
+      eqStatusMap['Maintenance']++;
+    } else if (eqStatusMap[st] !== undefined) {
+      eqStatusMap[st]++;
+    } else {
+      eqStatusMap['Available']++;
+    }
   });
   const equipmentStatusData = Object.keys(eqStatusMap).map(k => ({ name: k, value: eqStatusMap[k] }));
 
@@ -198,11 +290,11 @@ const Reports = () => {
   };
 
   const reportModules = [
-    { type: 'STUDENTS', title: 'Students Report', desc: `${studentList.length || datasets.users.length} Enrolled Students`, icon: Users, color: 'bg-blue-500' },
+    { type: 'STUDENTS', title: 'Students Report', desc: `${studentList.length} Enrolled Students`, icon: Users, color: 'bg-blue-500' },
     { type: 'FACULTY', title: 'Faculty Report', desc: `${facultyList.length} Registered Faculty`, icon: UserCog, color: 'bg-green-500' },
     { type: 'EQUIPMENT', title: 'Equipment Report', desc: `${datasets.equipments.length} Total Hardware Assets`, icon: Package, color: 'bg-orange-500' },
     { type: 'BOOKINGS', title: 'Bookings Report', desc: `${datasets.bookings.length} Reservation Logs`, icon: ClipboardList, color: 'bg-purple-500' },
-    { type: 'MAINTENANCE', title: 'Maintenance Report', desc: `${datasets.maintenance.length} Active Tasks`, icon: Wrench, color: 'bg-red-500' },
+    { type: 'MAINTENANCE', title: 'Maintenance Report', desc: `${datasets.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').length} Active Tasks`, icon: Wrench, color: 'bg-red-500' },
     { type: 'LABORATORIES', title: 'Laboratories Report', desc: `${datasets.laboratories.length} College Rooms`, icon: FlaskConical, color: 'bg-cyan-500' }
   ];
 
@@ -233,14 +325,14 @@ const Reports = () => {
       {/* Dynamic Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {[
-          { label: 'Students', value: studentList.length || datasets.users.length || 17 },
-          { label: 'Faculty', value: facultyList.length || 6 },
-          { label: 'Departments', value: datasets.departments.length || 4 },
-          { label: 'Laboratories', value: datasets.laboratories.length || 5 },
-          { label: 'Total Equipment', value: datasets.equipments.length || 10 },
-          { label: 'Total Bookings', value: datasets.bookings.length || 8 },
-          { label: 'Active Faults', value: datasets.faults.filter(f => f.status !== 'Resolved').length || 4 },
-          { label: 'Maintenance Tasks', value: datasets.maintenance.filter(m => m.status !== 'Completed').length || 3 }
+          { label: 'Students', value: loading ? '-' : studentList.length },
+          { label: 'Faculty', value: loading ? '-' : facultyList.length },
+          { label: 'Departments', value: loading ? '-' : datasets.departments.length },
+          { label: 'Laboratories', value: loading ? '-' : datasets.laboratories.length },
+          { label: 'Total Equipment', value: loading ? '-' : datasets.equipments.length },
+          { label: 'Total Bookings', value: loading ? '-' : datasets.bookings.length },
+          { label: 'Active Faults', value: loading ? '-' : datasets.faults.filter(f => f.status && f.status.toLowerCase() !== 'resolved').length },
+          { label: 'Maintenance Tasks', value: loading ? '-' : datasets.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').length }
         ].map((stat, idx) => (
           <div key={idx} className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl backdrop-blur-md hover:border-slate-700 transition">
             <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{stat.label}</p>

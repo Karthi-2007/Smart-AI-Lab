@@ -74,4 +74,15 @@ public class Laboratory {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Transient
+    private int equipmentCount;
+
+    public int getEquipmentCount() {
+        return equipmentCount;
+    }
+
+    public void setEquipmentCount(int equipmentCount) {
+        this.equipmentCount = equipmentCount;
+    }
 }
