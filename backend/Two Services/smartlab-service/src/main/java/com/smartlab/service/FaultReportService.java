@@ -23,7 +23,7 @@ public class FaultReportService {
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final SmsService smsService;
+    private final TelegramService telegramService;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FaultReportService.class);
 
     public FaultReportService(FaultReportRepository faultReportRepository,
@@ -32,14 +32,14 @@ public class FaultReportService {
                               FacultyRepository facultyRepository,
                               NotificationService notificationService,
                               EmailService emailService,
-                              SmsService smsService) {
+                              TelegramService telegramService) {
         this.faultReportRepository = faultReportRepository;
         this.equipmentRepository = equipmentRepository;
         this.studentRepository = studentRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
         this.emailService = emailService;
-        this.smsService = smsService;
+        this.telegramService = telegramService;
     }
 
     public List<FaultReport> getAllFaults() {
@@ -133,13 +133,11 @@ public class FaultReportService {
                                 log.warn("Failed to send fault email to faculty: {}", e.getMessage());
                             }
                         }
-                        // Send SMS to Faculty
-                        if (f.getPhone() != null && !f.getPhone().trim().isEmpty()) {
-                            try {
-                                smsService.sendSms(f.getPhone(), "SmartLab AI: " + reporterName + " reported a fault for " + eqName + ".");
-                            } catch (Exception e) {
-                                log.warn("Failed to send fault SMS to faculty: {}", e.getMessage());
-                            }
+                        // Send Telegram Alert to Faculty
+                        try {
+                            telegramService.sendTelegramMessage("<b>SmartLab AI - Fault Reported</b>\nReporter: " + reporterName + "\nEquipment: " + eqName + "\nDescription: " + saved.getDescription());
+                        } catch (Exception e) {
+                            log.warn("Failed to send fault Telegram alert to faculty: {}", e.getMessage());
                         }
                     });
             }
@@ -186,9 +184,11 @@ public class FaultReportService {
                         emailService.sendEmail(saved.getReportedBy().getEmail(), "SmartLab AI - Fault Status Update: " + eqName, html);
                     }
                     
-                    // Send SMS
-                    if (saved.getReportedBy().getPhone() != null && !saved.getReportedBy().getPhone().trim().isEmpty()) {
-                        smsService.sendSms(saved.getReportedBy().getPhone(), "SmartLab AI: The fault status for " + eqName + " has changed to " + status + " by " + actorName + ".");
+                    // Send Telegram Alert
+                    try {
+                        telegramService.sendTelegramMessage("<b>SmartLab AI - Fault Status Update</b>\nEquipment: " + eqName + "\nNew Status: " + status + "\nUpdated by: " + actorName);
+                    } catch (Exception e) {
+                        log.warn("Failed to send fault Telegram alert: {}", e.getMessage());
                     }
                 }
             } catch (Exception e) {

@@ -34,7 +34,7 @@ public class OtpService {
 
     private final OtpRecordRepository otpRecordRepository;
     private final EmailService emailService;
-    private final SmsService smsService;
+    private final TelegramService telegramService;
     private final com.auth.repository.AppUserRepository appUserRepository;
 
     @jakarta.persistence.PersistenceContext
@@ -42,11 +42,11 @@ public class OtpService {
 
     public OtpService(OtpRecordRepository otpRecordRepository,
                       EmailService emailService,
-                      SmsService smsService,
+                      TelegramService telegramService,
                       com.auth.repository.AppUserRepository appUserRepository) {
         this.otpRecordRepository = otpRecordRepository;
         this.emailService = emailService;
-        this.smsService = smsService;
+        this.telegramService = telegramService;
         this.appUserRepository = appUserRepository;
     }
 
@@ -88,14 +88,9 @@ public class OtpService {
         }
 
         try {
-            appUserRepository.findByEmail(email).ifPresent(user -> {
-                String phone = getUserPhone(email, user.getRole());
-                if (phone != null && !phone.trim().isEmpty()) {
-                    smsService.sendSms(phone, "SmartLab AI: Your OTP for account activation is " + otp + ". Valid for 5 minutes.");
-                }
-            });
+            telegramService.sendTelegramMessage("🔐 <b>SmartLab AI OTP Alert</b>\nUser: " + email + "\nYour OTP for password reset is: <code>" + otp + "</code>\nValid for 5 minutes.");
         } catch (Exception e) {
-            log.warn("SMS OTP dispatch failed: {}", e.toString());
+            log.warn("Telegram OTP dispatch failed: {}", e.toString());
         }
     }
 

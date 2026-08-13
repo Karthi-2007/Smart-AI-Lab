@@ -23,7 +23,7 @@ public class BookingService {
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final SmsService smsService;
+    private final TelegramService telegramService;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BookingService.class);
 
     public BookingService(BookingRepository bookingRepository,
@@ -32,14 +32,14 @@ public class BookingService {
                           FacultyRepository facultyRepository,
                           NotificationService notificationService,
                           EmailService emailService,
-                          SmsService smsService) {
+                          TelegramService telegramService) {
         this.bookingRepository = bookingRepository;
         this.studentRepository = studentRepository;
         this.equipmentRepository = equipmentRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
         this.emailService = emailService;
-        this.smsService = smsService;
+        this.telegramService = telegramService;
     }
 
     public List<Booking> getAllBookings() {
@@ -211,13 +211,11 @@ public class BookingService {
                                 log.warn("Failed to send booking email to faculty: {}", e.getMessage());
                             }
                         }
-                        // Send SMS
-                        if (f.getPhone() != null && !f.getPhone().trim().isEmpty()) {
-                            try {
-                                smsService.sendSms(f.getPhone(), "SmartLab AI: New booking request from " + studentName + " for " + eqName + " on " + saved.getDate() + ".");
-                            } catch (Exception e) {
-                                log.warn("Failed to send booking SMS to faculty: {}", e.getMessage());
-                            }
+                        // Send Telegram Alert
+                        try {
+                            telegramService.sendTelegramMessage("<b>SmartLab AI - New Booking Request</b>\nStudent: " + studentName + "\nEquipment: " + eqName + "\nDate: " + saved.getDate() + "\nTime Slot: " + saved.getTimeSlot());
+                        } catch (Exception e) {
+                            log.warn("Failed to send booking Telegram alert to faculty: {}", e.getMessage());
                         }
                     });
             }
@@ -267,9 +265,11 @@ public class BookingService {
                     emailService.sendEmail(saved.getStudent().getEmail(), "SmartLab AI - Booking Approved: " + eqName, html);
                 }
 
-                // SMS student
-                if (saved.getStudent() != null && saved.getStudent().getPhone() != null && !saved.getStudent().getPhone().trim().isEmpty()) {
-                    smsService.sendSms(saved.getStudent().getPhone(), "SmartLab AI: Your booking request for " + eqName + " has been approved by " + approverName + ".");
+                // Telegram alert
+                try {
+                    telegramService.sendTelegramMessage("<b>SmartLab AI - Booking Approved</b>\nEquipment: " + eqName + "\nApproved by: " + approverName);
+                } catch (Exception e) {
+                    log.warn("Failed to send approval Telegram alert: {}", e.getMessage());
                 }
             } catch (Exception e) {
                 log.warn("Failed to notify student of approval: {}", e.getMessage());
@@ -321,9 +321,11 @@ public class BookingService {
                     emailService.sendEmail(saved.getStudent().getEmail(), "SmartLab AI - Booking Rejected: " + eqName, html);
                 }
 
-                // SMS student
-                if (saved.getStudent() != null && saved.getStudent().getPhone() != null && !saved.getStudent().getPhone().trim().isEmpty()) {
-                    smsService.sendSms(saved.getStudent().getPhone(), "SmartLab AI: Your booking request for " + eqName + " was rejected by " + rejecterName + ". Reason: " + displayReason);
+                // Telegram alert
+                try {
+                    telegramService.sendTelegramMessage("<b>SmartLab AI - Booking Rejected</b>\nEquipment: " + eqName + "\nRejected by: " + rejecterName + "\nReason: " + displayReason);
+                } catch (Exception e) {
+                    log.warn("Failed to send rejection Telegram alert: {}", e.getMessage());
                 }
             } catch (Exception e) {
                 log.warn("Failed to notify student of rejection: {}", e.getMessage());
