@@ -70,14 +70,26 @@ public class NotificationService {
         if ("ALL".equals(targetRole) || "STUDENT".equals(targetRole)) {
             List<Student> students = studentRepository.findAll();
             for (Student s : students) {
-                notificationRepository.save(new Notification(s.getStudentId(), "STUDENT", title, message, notifType));
+                Long targetId = s.getUserId() != null ? s.getUserId() : s.getStudentId();
+                if (targetId != null) {
+                    notificationRepository.save(new Notification(targetId, "STUDENT", title, message, notifType));
+                }
+                if (s.getStudentId() != null && !s.getStudentId().equals(targetId)) {
+                    notificationRepository.save(new Notification(s.getStudentId(), "STUDENT", title, message, notifType));
+                }
             }
         }
 
         if ("ALL".equals(targetRole) || "FACULTY".equals(targetRole)) {
             List<Faculty> faculties = facultyRepository.findAll();
             for (Faculty f : faculties) {
-                notificationRepository.save(new Notification(f.getFacultyId(), "FACULTY", title, message, notifType));
+                Long targetId = f.getUserId() != null ? f.getUserId() : f.getFacultyId();
+                if (targetId != null) {
+                    notificationRepository.save(new Notification(targetId, "FACULTY", title, message, notifType));
+                }
+                if (f.getFacultyId() != null && !f.getFacultyId().equals(targetId)) {
+                    notificationRepository.save(new Notification(f.getFacultyId(), "FACULTY", title, message, notifType));
+                }
             }
         }
     }

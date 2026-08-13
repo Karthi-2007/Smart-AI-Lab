@@ -138,6 +138,7 @@ const AdminNotifications = () => {
         message: broadcastMsg.trim(),
         type: 'SYSTEM',
         targetRole: targetRole,
+        role: targetRole,
         isRead: false,
         createdAt: new Date().toISOString()
       });

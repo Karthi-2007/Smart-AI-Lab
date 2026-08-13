@@ -281,7 +281,7 @@ public class NotificationController {
     public ResponseEntity<?> createNotification(@RequestBody Map<String, String> payload) {
         String title = payload.get("title");
         String message = payload.get("message");
-        String role = payload.get("role");
+        String role = payload.containsKey("targetRole") ? payload.get("targetRole") : payload.get("role");
         String type = payload.get("type");
 
         notificationService.broadcastNotification(role, title, message, type);
