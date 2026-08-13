@@ -34,37 +34,14 @@ public class OtpService {
 
     private final OtpRecordRepository otpRecordRepository;
     private final EmailService emailService;
-    private final TelegramService telegramService;
     private final com.auth.repository.AppUserRepository appUserRepository;
-
-    @jakarta.persistence.PersistenceContext
-    private jakarta.persistence.EntityManager entityManager;
 
     public OtpService(OtpRecordRepository otpRecordRepository,
                       EmailService emailService,
-                      TelegramService telegramService,
                       com.auth.repository.AppUserRepository appUserRepository) {
         this.otpRecordRepository = otpRecordRepository;
         this.emailService = emailService;
-        this.telegramService = telegramService;
         this.appUserRepository = appUserRepository;
-    }
-
-    private String getUserPhone(String email, com.auth.entity.Role role) {
-        try {
-            if (role == com.auth.entity.Role.STUDENT) {
-                return (String) entityManager.createNativeQuery(
-                    "SELECT phone FROM smartlab.student_profiles WHERE email = :email"
-                ).setParameter("email", email).getSingleResult();
-            } else if (role == com.auth.entity.Role.FACULTY) {
-                return (String) entityManager.createNativeQuery(
-                    "SELECT phone FROM smartlab.faculty_profiles WHERE email = :email"
-                ).setParameter("email", email).getSingleResult();
-            }
-        } catch (Exception e) {
-            log.warn("Could not find phone number for {} in smartlab profiles: {}", email, e.getMessage());
-        }
-        return null;
     }
 
     @Transactional
@@ -85,12 +62,6 @@ public class OtpService {
             log.info("REAL EMAIL SUCCESSFULLY SENT TO {}", email);
         } catch (Exception e) {
             log.warn("SMTP email dispatch failed: [{}]. Generated OTP for [{}] is: [{}]", e.toString(), email, otp);
-        }
-
-        try {
-            telegramService.sendTelegramMessage("🔐 <b>SmartLab AI OTP Alert</b>\nUser: " + email + "\nYour OTP for password reset is: <code>" + otp + "</code>\nValid for 5 minutes.");
-        } catch (Exception e) {
-            log.warn("Telegram OTP dispatch failed: {}", e.toString());
         }
     }
 

@@ -14,19 +14,16 @@ public class MaintenanceService {
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final TelegramService telegramService;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MaintenanceService.class);
 
     public MaintenanceService(MaintenanceRepository maintenanceRepository, 
                               FacultyRepository facultyRepository,
                               NotificationService notificationService,
-                              EmailService emailService,
-                              TelegramService telegramService) {
+                              EmailService emailService) {
         this.maintenanceRepository = maintenanceRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
         this.emailService = emailService;
-        this.telegramService = telegramService;
     }
 
     private void sendMaintenanceNotifications(Maintenance saved, String actionTitle, String actionDesc) {
@@ -45,11 +42,6 @@ public class MaintenanceService {
                                          "<tr><td class='label'>Scheduled Date:</td><td class='value'>" + saved.getScheduledDate() + "</td></tr>";
                         String html = emailService.buildTemplate(actionTitle, actionTitle, actionDesc, details);
                         emailService.sendEmail(faculty.getEmail(), "SmartLab AI - " + actionTitle + ": " + eqName, html);
-                    }
-                    try {
-                        telegramService.sendTelegramMessage("<b>SmartLab AI - Maintenance Alert</b>\nTitle: " + actionTitle + "\nEquipment: " + eqName + "\nStatus: " + saved.getStatus());
-                    } catch (Exception e) {
-                        log.warn("Failed to send maintenance Telegram alert: {}", e.getMessage());
                     }
                 }
             }

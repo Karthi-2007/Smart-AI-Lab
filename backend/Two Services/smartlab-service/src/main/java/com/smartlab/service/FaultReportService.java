@@ -23,7 +23,6 @@ public class FaultReportService {
     private final FacultyRepository facultyRepository;
     private final NotificationService notificationService;
     private final EmailService emailService;
-    private final TelegramService telegramService;
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FaultReportService.class);
 
     public FaultReportService(FaultReportRepository faultReportRepository,
@@ -31,15 +30,13 @@ public class FaultReportService {
                               StudentRepository studentRepository,
                               FacultyRepository facultyRepository,
                               NotificationService notificationService,
-                              EmailService emailService,
-                              TelegramService telegramService) {
+                              EmailService emailService) {
         this.faultReportRepository = faultReportRepository;
         this.equipmentRepository = equipmentRepository;
         this.studentRepository = studentRepository;
         this.facultyRepository = facultyRepository;
         this.notificationService = notificationService;
         this.emailService = emailService;
-        this.telegramService = telegramService;
     }
 
     public List<FaultReport> getAllFaults() {
@@ -133,12 +130,6 @@ public class FaultReportService {
                                 log.warn("Failed to send fault email to faculty: {}", e.getMessage());
                             }
                         }
-                        // Send Telegram Alert to Faculty
-                        try {
-                            telegramService.sendTelegramMessage("<b>SmartLab AI - Fault Reported</b>\nReporter: " + reporterName + "\nEquipment: " + eqName + "\nDescription: " + saved.getDescription());
-                        } catch (Exception e) {
-                            log.warn("Failed to send fault Telegram alert to faculty: {}", e.getMessage());
-                        }
                     });
             }
         } catch (Exception e) {
@@ -184,12 +175,7 @@ public class FaultReportService {
                         emailService.sendEmail(saved.getReportedBy().getEmail(), "SmartLab AI - Fault Status Update: " + eqName, html);
                     }
                     
-                    // Send Telegram Alert
-                    try {
-                        telegramService.sendTelegramMessage("<b>SmartLab AI - Fault Status Update</b>\nEquipment: " + eqName + "\nNew Status: " + status + "\nUpdated by: " + actorName);
-                    } catch (Exception e) {
-                        log.warn("Failed to send fault Telegram alert: {}", e.getMessage());
-                    }
+
                 }
             } catch (Exception e) {
                 log.warn("Failed to notify student of fault status update: {}", e.getMessage());
