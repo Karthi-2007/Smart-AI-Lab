@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Mail,
+  Bell,
   QrCode,
   X,
 } from "lucide-react";
