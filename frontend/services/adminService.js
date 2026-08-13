@@ -101,8 +101,12 @@ export const adminService = {
 
     getReports: (reportType = '') => api.get(`/api/business/reports/${reportType}`),
     
-    // Bookings
+    // Bookings & QR Passes
     getBookings: () => api.get('/api/business/bookings'),
+    getQrPassesAll: () => api.get('/api/business/qr-passes/all'),
+    getQrPassesApproved: () => api.get('/api/business/qr-passes/approved'),
+    getQrPassesPending: () => api.get('/api/business/qr-passes/pending'),
+    getQrPassesCompleted: () => api.get('/api/business/qr-passes/completed'),
     approveBooking: (id) => api.post(`/api/business/bookings/${id}/approve`),
     rejectBooking: (id, payload) => api.post(`/api/business/bookings/${id}/reject`, payload),
     approveBookingPost: (id) => api.post(`/api/business/bookings/${id}/approve`),
@@ -120,6 +124,9 @@ export const adminService = {
     deactivateLaboratory: (id) => api.patch(`/api/business/laboratories/${id}/deactivate`),
 
     getDepartments: () => api.get('/api/business/departments'),
+    getDepartmentsAll: () => api.get('/api/business/departments/all'),
+    getDepartmentsActive: () => api.get('/api/business/departments/active'),
+    getDepartmentsInactive: () => api.get('/api/business/departments/inactive'),
     createDepartment: (data) => api.post('/api/business/departments', data),
     updateDepartment: (id, data) => api.put(`/api/business/departments/${id}`, data),
     deleteDepartment: (id) => api.delete(`/api/business/departments/${id}`),
@@ -150,6 +157,12 @@ export const adminService = {
     
     // Notifications
     getNotifications: () => api.get('/api/business/notifications'),
+    getNotificationsAdminAll: () => api.get('/api/business/notifications/admin/all'),
+    getNotificationsAdminUnread: () => api.get('/api/business/notifications/admin/unread'),
+    getNotificationsAdminBooking: () => api.get('/api/business/notifications/admin/booking'),
+    getNotificationsAdminSystem: () => api.get('/api/business/notifications/admin/system'),
+    getNotificationsAdminFault: () => api.get('/api/business/notifications/admin/fault'),
+    getNotificationsAdminMaintenance: () => api.get('/api/business/notifications/admin/maintenance'),
     createNotification: (data) => api.post('/api/business/notifications', data),
     markNotificationAsRead: (id) => api.patch(`/api/business/notifications/${id}/read`),
     markNotificationRead: (id) => api.patch(`/api/business/notifications/${id}/read`), // alias

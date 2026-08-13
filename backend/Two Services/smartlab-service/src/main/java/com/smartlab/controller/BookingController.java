@@ -164,6 +164,67 @@ public class BookingController {
         return fetchMyBookingsByStatus("Cancelled", page, size);
     }
 
+    // ── Faculty Review Queue Dedicated Endpoints ─────────────────
+    @GetMapping("/my-review-queue/all")
+    public ResponseEntity<?> getMyReviewQueueAll() {
+        return fetchMyReviewQueueByStatus("All");
+    }
+
+    @GetMapping("/my-review-queue/pending")
+    public ResponseEntity<?> getMyReviewQueuePending() {
+        return fetchMyReviewQueueByStatus("Pending");
+    }
+
+    @GetMapping("/my-review-queue/approved")
+    public ResponseEntity<?> getMyReviewQueueApproved() {
+        return fetchMyReviewQueueByStatus("Approved");
+    }
+
+    @GetMapping("/my-review-queue/rejected")
+    public ResponseEntity<?> getMyReviewQueueRejected() {
+        return fetchMyReviewQueueByStatus("Rejected");
+    }
+
+    @GetMapping("/my-review-queue/completed")
+    public ResponseEntity<?> getMyReviewQueueCompleted() {
+        return fetchMyReviewQueueByStatus("Completed");
+    }
+
+    private ResponseEntity<?> fetchMyReviewQueueByStatus(String status) {
+        UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+
+        Long deptId = null;
+        if (SecurityUtils.isFaculty()) {
+            Faculty faculty = facultyService.getFacultyByUserId(principal.getUserId());
+            if (faculty == null) {
+                faculty = facultyService.getFacultyByEmail(principal.getEmail());
+            }
+            if (faculty != null && faculty.getDepartmentEntity() != null) {
+                deptId = faculty.getDepartmentEntity().getDepartmentId();
+            }
+        }
+
+        final Long filterDeptId = deptId;
+        final String filterStatus = ("All".equalsIgnoreCase(status) || status == null) ? null : status;
+
+        Specification<Booking> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            if (filterDeptId != null) {
+                predicates.add(cb.equal(root.get("equipment").get("laboratory").get("department").get("departmentId"), filterDeptId));
+            }
+            if (filterStatus != null) {
+                predicates.add(cb.equal(cb.lower(root.get("status")), filterStatus.toLowerCase()));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+
+        List<Booking> list = bookingRepository.findAll(spec);
+        return ResponseEntity.ok(ApiResponse.success("Review queue loaded (" + status + ")", list));
+    }
+
     private ResponseEntity<?> fetchMyBookingsByStatus(String status, int page, int size) {
         UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
         if (principal == null) {

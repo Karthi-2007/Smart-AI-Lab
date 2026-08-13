@@ -18,12 +18,31 @@ export default function BookingApprovals() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, searchTerm]);
+    fetchBookings();
+  }, [filter]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await facultyService.getBookings();
+      let response;
+      switch (filter) {
+        case 'Pending':
+          response = await facultyService.getReviewQueuePending();
+          break;
+        case 'Approved':
+          response = await facultyService.getReviewQueueApproved();
+          break;
+        case 'Rejected':
+          response = await facultyService.getReviewQueueRejected();
+          break;
+        case 'Completed':
+          response = await facultyService.getReviewQueueCompleted();
+          break;
+        case 'All':
+        default:
+          response = await facultyService.getReviewQueueAll();
+          break;
+      }
       const body = response?.data || response;
       let list = [];
       if (body) {
@@ -41,10 +60,6 @@ export default function BookingApprovals() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
 
   const handleApprove = async (id) => {
     try {

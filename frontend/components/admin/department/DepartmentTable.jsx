@@ -17,12 +17,20 @@ const DepartmentTable = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, selectedStatus]);
+    fetchDepartments();
+  }, [selectedStatus]);
 
   const fetchDepartments = async () => {
     try {
       setLoading(true);
-      const res = await adminService.getDepartments();
+      let res;
+      if (selectedStatus === 'ACTIVE') {
+        res = await adminService.getDepartmentsActive();
+      } else if (selectedStatus === 'INACTIVE') {
+        res = await adminService.getDepartmentsInactive();
+      } else {
+        res = await adminService.getDepartmentsAll();
+      }
       const body = res?.data || res;
       let list = [];
       if (body) {
@@ -41,10 +49,6 @@ const DepartmentTable = ({
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this department?')) return;

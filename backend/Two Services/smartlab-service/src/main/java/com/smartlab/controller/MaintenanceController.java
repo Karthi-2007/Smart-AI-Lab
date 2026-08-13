@@ -122,6 +122,27 @@ public class MaintenanceController {
         }
     }
 
+    // ── Dedicated GET Endpoints for Maintenance Schedule Tabs ────
+    @GetMapping("/all")
+    public ResponseEntity<?> getMaintenanceAll() {
+        return getMaintenance(null, "All", null, null, 0, 1000);
+    }
+
+    @GetMapping("/scheduled")
+    public ResponseEntity<?> getMaintenanceScheduled() {
+        return getMaintenance(null, "Scheduled", null, null, 0, 1000);
+    }
+
+    @GetMapping("/in-progress")
+    public ResponseEntity<?> getMaintenanceInProgress() {
+        return getMaintenance(null, "In Progress", null, null, 0, 1000);
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity<?> getMaintenanceCompleted() {
+        return getMaintenance(null, "Completed", null, null, 0, 1000);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getMaintenanceById(@PathVariable Long id) {
         Maintenance maintenance = maintenanceService.getMaintenanceById(id);

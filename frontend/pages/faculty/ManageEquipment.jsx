@@ -202,13 +202,31 @@ export default function ManageEquipment() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter]);
+    fetchData();
+  }, [statusFilter]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      let eqReq;
+      switch (statusFilter) {
+        case 'Available':
+          eqReq = facultyService.getEquipmentsAvailable();
+          break;
+        case 'Under Maintenance':
+          eqReq = facultyService.getEquipmentsUnderMaintenance();
+          break;
+        case 'Faulty':
+          eqReq = facultyService.getEquipmentsFaulty();
+          break;
+        case 'All':
+        default:
+          eqReq = facultyService.getEquipmentsAll();
+          break;
+      }
+
       const [eqRes, labRes] = await Promise.all([
-        facultyService.getAllEquipments(),
+        eqReq,
         facultyService.getMyLabs()
       ]);
       const eqBody = eqRes?.data || eqRes;
@@ -239,8 +257,6 @@ export default function ManageEquipment() {
       setLoading(false);
     }
   };
-
-  useEffect(() => { fetchData(); }, []);
 
   const stats = useMemo(() => {
     return {

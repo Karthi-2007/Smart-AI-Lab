@@ -22,7 +22,29 @@ const AdminNotifications = () => {
   const fetchLiveNotifications = async () => {
     setLoading(true);
     try {
-      const notifRes = await adminService.getNotifications().catch(() => ({ data: [] }));
+      let notifRes;
+      switch (filterType) {
+        case 'UNREAD':
+          notifRes = await adminService.getNotificationsAdminUnread();
+          break;
+        case 'BOOKING':
+          notifRes = await adminService.getNotificationsAdminBooking();
+          break;
+        case 'SYSTEM':
+          notifRes = await adminService.getNotificationsAdminSystem();
+          break;
+        case 'FAULT':
+          notifRes = await adminService.getNotificationsAdminFault();
+          break;
+        case 'MAINTENANCE':
+          notifRes = await adminService.getNotificationsAdminMaintenance();
+          break;
+        case 'ALL':
+        default:
+          notifRes = await adminService.getNotificationsAdminAll();
+          break;
+      }
+
       const body = notifRes?.data || notifRes;
       let rawList = [];
       if (body) {
@@ -54,11 +76,8 @@ const AdminNotifications = () => {
   };
 
   useEffect(() => {
-    fetchLiveNotifications();
-  }, []);
-
-  useEffect(() => {
     setCurrentPage(1);
+    fetchLiveNotifications();
   }, [filterType]);
 
   const handleMarkAsRead = async (id) => {

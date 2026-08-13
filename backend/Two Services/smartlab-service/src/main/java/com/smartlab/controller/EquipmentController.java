@@ -118,6 +118,27 @@ public class EquipmentController {
         }
     }
 
+    // ── Dedicated GET Endpoints for Equipment Tab Filters ─────────
+    @GetMapping("/all")
+    public ResponseEntity<?> getEquipmentsAll() {
+        return getEquipment(null, null, null, null, null);
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<?> getEquipmentsAvailable() {
+        return getEquipment(null, null, null, "Available", null);
+    }
+
+    @GetMapping("/under-maintenance")
+    public ResponseEntity<?> getEquipmentsUnderMaintenance() {
+        return getEquipment(null, null, null, "Under Maintenance", null);
+    }
+
+    @GetMapping("/faulty")
+    public ResponseEntity<?> getEquipmentsFaulty() {
+        return getEquipment(null, null, null, "Faulty", null);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getEquipmentById(@PathVariable Long id) {
         Equipment equipment = equipmentService.getEquipmentById(id);

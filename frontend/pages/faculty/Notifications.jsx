@@ -18,10 +18,24 @@ const FacultyNotifications = () => {
 
   /* ── Fetch ───────────────────────────────────────────────── */
   const fetchNotifications = async () => {
-    const userId = user?.id || user?.userId || 2;
     try {
       setLoading(true);
-      const res = await facultyService.getNotifications(userId);
+      let res;
+      switch (filter) {
+        case 'Booking':
+          res = await facultyService.getNotificationsBooking();
+          break;
+        case 'Equipment':
+          res = await facultyService.getNotificationsEquipment();
+          break;
+        case 'Maintenance':
+          res = await facultyService.getNotificationsMaintenance();
+          break;
+        case 'All':
+        default:
+          res = await facultyService.getNotificationsAll();
+          break;
+      }
       const body = res?.data || res;
       let list = [];
       if (body?.success && body.data !== undefined) {
@@ -38,8 +52,10 @@ const FacultyNotifications = () => {
     }
   };
 
-  useEffect(() => { fetchNotifications(); }, [user?.id, user?.userId]);
-  useEffect(() => { setCurrentPage(1); }, [filter]);
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchNotifications();
+  }, [user?.id, user?.userId, filter]);
 
   /* ── Actions ─────────────────────────────────────────────── */
   const markRead = async (id) => {

@@ -126,6 +126,95 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success("Unread count loaded", data));
     }
 
+    // ── Dedicated GET Endpoints for User Notifications Tabs ───────
+    @GetMapping("/all")
+    public ResponseEntity<?> getMyNotificationsAll() {
+        return fetchMyNotificationsByType(null);
+    }
+
+    @GetMapping("/booking")
+    public ResponseEntity<?> getMyNotificationsBooking() {
+        return fetchMyNotificationsByType("Booking");
+    }
+
+    @GetMapping("/equipment")
+    public ResponseEntity<?> getMyNotificationsEquipment() {
+        return fetchMyNotificationsByType("Equipment");
+    }
+
+    @GetMapping("/maintenance")
+    public ResponseEntity<?> getMyNotificationsMaintenance() {
+        return fetchMyNotificationsByType("Maintenance");
+    }
+
+    // ── Dedicated GET Endpoints for Admin System Notification Tabs 
+    @GetMapping("/admin/all")
+    public ResponseEntity<?> getAdminNotificationsAll() {
+        return fetchAdminNotifications("ALL");
+    }
+
+    @GetMapping("/admin/unread")
+    public ResponseEntity<?> getAdminNotificationsUnread() {
+        return fetchAdminNotifications("UNREAD");
+    }
+
+    @GetMapping("/admin/booking")
+    public ResponseEntity<?> getAdminNotificationsBooking() {
+        return fetchAdminNotifications("BOOKING");
+    }
+
+    @GetMapping("/admin/system")
+    public ResponseEntity<?> getAdminNotificationsSystem() {
+        return fetchAdminNotifications("SYSTEM");
+    }
+
+    @GetMapping("/admin/fault")
+    public ResponseEntity<?> getAdminNotificationsFault() {
+        return fetchAdminNotifications("FAULT");
+    }
+
+    @GetMapping("/admin/maintenance")
+    public ResponseEntity<?> getAdminNotificationsMaintenance() {
+        return fetchAdminNotifications("MAINTENANCE");
+    }
+
+    private ResponseEntity<?> fetchAdminNotifications(String filter) {
+        if (!SecurityUtils.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Only admins can query system notifications."));
+        }
+
+        List<Notification> list = notificationRepository.findAll((root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            if ("UNREAD".equalsIgnoreCase(filter)) {
+                predicates.add(cb.equal(root.get("isRead"), false));
+            } else if (filter != null && !"ALL".equalsIgnoreCase(filter)) {
+                predicates.add(cb.equal(cb.lower(root.get("type")), filter.trim().toLowerCase()));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        });
+
+        return ResponseEntity.ok(ApiResponse.success("Admin notifications loaded (" + filter + ")", list));
+    }
+
+    private ResponseEntity<?> fetchMyNotificationsByType(String type) {
+        UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
+        }
+
+        List<Long> candidateIds = getCandidateUserIds();
+        List<Notification> list = notificationRepository.findAll((root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            predicates.add(root.get("userId").in(candidateIds));
+            if (type != null && !type.trim().isEmpty()) {
+                predicates.add(cb.equal(cb.lower(root.get("type")), type.trim().toLowerCase()));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        });
+
+        return ResponseEntity.ok(ApiResponse.success("Notifications loaded (" + (type != null ? type : "All") + ")", list));
+    }
+
     private List<Long> getCandidateUserIds() {
         UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
         List<Long> ids = new ArrayList<>();

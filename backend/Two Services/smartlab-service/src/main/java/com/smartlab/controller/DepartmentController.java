@@ -73,6 +73,22 @@ public class DepartmentController {
         return ResponseEntity.ok(ApiResponse.success("Departments retrieved successfully", list));
     }
 
+    // ── Dedicated GET Endpoints for Department Filter Tabs ────────
+    @GetMapping("/all")
+    public ResponseEntity<?> getDepartmentsAll() {
+        return getDepartments(null, null);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<?> getDepartmentsActive() {
+        return getDepartments(null, "ACTIVE");
+    }
+
+    @GetMapping("/inactive")
+    public ResponseEntity<?> getDepartmentsInactive() {
+        return getDepartments(null, "INACTIVE");
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getDepartmentById(@PathVariable Long id) {
         Department dept = departmentService.getDepartmentById(id);

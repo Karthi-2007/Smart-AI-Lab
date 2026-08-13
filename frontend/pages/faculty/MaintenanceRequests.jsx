@@ -209,22 +209,37 @@ export default function MaintenanceRequests() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter]);
+    fetchData();
+  }, [statusFilter]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      let mReq;
+      switch (statusFilter) {
+        case 'Scheduled':
+          mReq = facultyService.getMaintenanceScheduled();
+          break;
+        case 'In Progress':
+          mReq = facultyService.getMaintenanceInProgress();
+          break;
+        case 'Completed':
+          mReq = facultyService.getMaintenanceCompleted();
+          break;
+        case 'All':
+        default:
+          mReq = facultyService.getMaintenanceAll();
+          break;
+      }
+
       const [mRes, eqRes] = await Promise.all([
-        facultyService.getAllMaintenance(),
+        mReq,
         facultyService.getAllEquipments()
       ]);
 
-      // Backend returns ApiResponse<Page<Maintenance>>
-      // Page object: { content: [...], totalElements: N, ... }
       const mList = unpackList(mRes);
       setMaintenanceList(mList);
 
-      // Backend returns ApiResponse<List<Equipment>> or ApiResponse<Page<Equipment>>
       const eqList = unpackList(eqRes);
       setEquipments(eqList);
     } catch (err) {
@@ -234,8 +249,6 @@ export default function MaintenanceRequests() {
       setLoading(false);
     }
   };
-
-  useEffect(() => { fetchData(); }, []);
 
   /* Stats derived from the full list */
   const stats = useMemo(() => ({

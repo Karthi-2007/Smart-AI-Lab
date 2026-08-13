@@ -17,22 +17,23 @@ const QRMonitorView = ({ portalTitle = "QR Access Pass Monitor" }) => {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    fetchPassData();
-  }, []);
-
-  useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+    fetchPassData();
+  }, [statusFilter]);
 
   const fetchPassData = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/business/bookings").catch(() => ({ data: [] }));
+      let endpoint = "/api/business/qr-passes/all";
+      if (statusFilter === "Approved") endpoint = "/api/business/qr-passes/approved";
+      else if (statusFilter === "Pending") endpoint = "/api/business/qr-passes/pending";
+      else if (statusFilter === "Completed") endpoint = "/api/business/qr-passes/completed";
+
+      const res = await api.get(endpoint).catch(() => ({ data: [] }));
       const body = res?.data || res;
       let list = [];
       if (body) {
         if (body.success && body.data) {
-          // Paginated: body.data.content, or flat list: body.data
           const d = body.data;
           list = Array.isArray(d) ? d : (Array.isArray(d?.content) ? d.content : []);
         } else if (Array.isArray(body)) {
