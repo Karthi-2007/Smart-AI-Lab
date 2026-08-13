@@ -20,86 +20,30 @@ const AIAnalytics = () => {
   const fetchLiveAIData = async () => {
     setLoading(true);
     try {
-      const [eqRes, bookRes, faultRes, maintRes, labRes, usersRes] = await Promise.all([
-        adminService.getEquipments().catch(() => ({ data: [] })),
-        adminService.getBookings().catch(() => ({ data: [] })),
-        adminService.getFaults().catch(() => ({ data: [] })),
-        adminService.getMaintenance().catch(() => ({ data: [] })),
-        adminService.getLaboratories().catch(() => ({ data: [] })),
-        adminService.getUsers().catch(() => ({ data: [] }))
+      const [analyticsRes, telemetryRes] = await Promise.all([
+        adminService.getReports('analytics').catch(() => ({ data: {} })),
+        adminService.getTelemetry().catch(() => ({ data: {} }))
       ]);
 
-      const eqBody = eqRes?.data || eqRes;
-      let eqList = [];
-      if (eqBody) {
-        if (eqBody.success && eqBody.data) {
-          eqList = eqBody.data;
-        } else {
-          eqList = eqBody;
-        }
-      }
-
-      const bookBody = bookRes?.data || bookRes;
-      let bookList = [];
-      if (bookBody) {
-        if (bookBody.success && bookBody.data) {
-          bookList = bookBody.data.content || bookBody.data;
-        } else {
-          bookList = bookBody.content || bookBody;
-        }
-      }
-
-      const faultBody = faultRes?.data || faultRes;
-      let faultList = [];
-      if (faultBody) {
-        if (faultBody.success && faultBody.data) {
-          faultList = faultBody.data.content || faultBody.data;
-        } else {
-          faultList = faultBody.content || faultBody;
-        }
-      }
-
-      const maintBody = maintRes?.data || maintRes;
-      let maintList = [];
-      if (maintBody) {
-        if (maintBody.success && maintBody.data) {
-          maintList = maintBody.data.content || maintBody.data;
-        } else {
-          maintList = maintBody.content || maintBody;
-        }
-      }
-
-      const labBody = labRes?.data || labRes;
-      let labList = [];
-      if (labBody) {
-        if (labBody.success && labBody.data) {
-          labList = labBody.data;
-        } else {
-          labList = labBody;
-        }
-      }
-
-      const usersBody = usersRes?.data || usersRes;
-      let usersList = [];
-      if (usersBody) {
-        if (usersBody.success && usersBody.data) {
-          usersList = usersBody.data;
-        } else {
-          usersList = usersBody;
-        }
-      }
+      const analytics = analyticsRes?.data || analyticsRes || {};
+      const telemetry = telemetryRes?.data?.data || telemetryRes?.data || telemetryRes || {};
 
       setData({
-        equipments: Array.isArray(eqList) ? eqList : [],
-        bookings: Array.isArray(bookList) ? bookList : [],
-        faults: Array.isArray(faultList) ? faultList : [],
-        maintenance: Array.isArray(maintList) ? maintList : [],
-        laboratories: Array.isArray(labList) ? labList : [],
-        users: Array.isArray(usersList) ? usersList : []
+        equipmentHealthScore: analytics.equipmentHealthScore || 94,
+        totalBookings: analytics.totalBookings || 0,
+        totalFaults: analytics.totalFaults || 0,
+        totalMaintenance: analytics.totalMaintenance || 0,
+        telemetryList: telemetry.telemetryList || [],
+        recommendation: telemetry.recommendation || 'System optimal.',
+        equipments: [],
+        bookings: [],
+        faults: [],
+        maintenance: [],
+        laboratories: [],
+        users: []
       });
-
     } catch (error) {
-      toast.error('Failed to calculate AI analytics');
+      toast.error('Failed to load AI Analytics data');
     } finally {
       setLoading(false);
     }

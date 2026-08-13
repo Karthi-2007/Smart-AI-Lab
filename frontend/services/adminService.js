@@ -100,6 +100,7 @@ export const adminService = {
     removeLabFromFaculty: (facultyId, labId) => api.delete(`/api/business/faculty/${facultyId}/laboratories/${labId}`),
 
     getReports: (reportType = '') => api.get(`/api/business/reports/${reportType}`),
+    getTelemetry: () => api.get('/api/business/dashboard/public/telemetry'),
     
     // Bookings & QR Passes
     getBookings: (params = {}) => api.get('/api/business/bookings', { params }),

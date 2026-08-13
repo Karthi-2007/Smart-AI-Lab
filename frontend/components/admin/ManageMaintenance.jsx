@@ -45,7 +45,7 @@ const ManageMaintenance = () => {
       try {
         const [eqRes, techRes] = await Promise.all([
           adminService.getEquipments(),
-          adminService.getUsers()
+          adminService.getFacultyAll()
         ]);
         
         const eqBody = eqRes?.data || eqRes;
@@ -63,13 +63,19 @@ const ManageMaintenance = () => {
           setFormData(prev => ({ ...prev, equipmentId: sortedEq[0].equipmentId }));
         }
 
-        const userList = techRes?.data || techRes || [];
-        if (Array.isArray(userList)) {
-          const facList = userList.filter(u => u.role === 'FACULTY' || u.role === 'faculty');
-          setTechnicians(facList);
-          if (facList.length > 0) {
-            setFormData(prev => ({ ...prev, assignedToUserId: facList[0].id }));
+        const facBody = techRes?.data || techRes;
+        let facList = [];
+        if (facBody) {
+          if (facBody.success && facBody.data) {
+            facList = facBody.data;
+          } else {
+            facList = facBody;
           }
+        }
+        const sortedFac = Array.isArray(facList) ? facList : [];
+        setTechnicians(sortedFac);
+        if (sortedFac.length > 0) {
+          setFormData(prev => ({ ...prev, assignedToUserId: sortedFac[0].facultyId || sortedFac[0].id }));
         }
       } catch (err) {
         console.error("Failed to load options:", err);

@@ -25,96 +25,24 @@ const Reports = () => {
   const fetchLiveReportData = async () => {
     setLoading(true);
     try {
-      const [usersRes, deptRes, labRes, eqRes, bookRes, faultRes, maintRes] = await Promise.all([
-        adminService.getUsers().catch(() => ({ data: [] })),
-        adminService.getDepartments().catch(() => ({ data: [] })),
-        adminService.getLaboratories().catch(() => ({ data: [] })),
-        adminService.getEquipments().catch(() => ({ data: [] })),
-        adminService.getBookings().catch(() => ({ data: [] })),
-        adminService.getFaults().catch(() => ({ data: [] })),
-        adminService.getMaintenance().catch(() => ({ data: [] }))
-      ]);
-
-      const usersBody = usersRes?.data || usersRes;
-      let usersList = [];
-      if (usersBody) {
-        if (usersBody.success && usersBody.data) {
-          usersList = usersBody.data;
-        } else {
-          usersList = usersBody;
-        }
-      }
-
-      const deptBody = deptRes?.data || deptRes;
-      let deptList = [];
-      if (deptBody) {
-        if (deptBody.success && deptBody.data) {
-          deptList = deptBody.data;
-        } else {
-          deptList = deptBody;
-        }
-      }
-
-      const labBody = labRes?.data || labRes;
-      let labList = [];
-      if (labBody) {
-        if (labBody.success && labBody.data) {
-          labList = labBody.data;
-        } else {
-          labList = labBody;
-        }
-      }
-
-      const eqBody = eqRes?.data || eqRes;
-      let eqList = [];
-      if (eqBody) {
-        if (eqBody.success && eqBody.data) {
-          eqList = eqBody.data;
-        } else {
-          eqList = eqBody;
-        }
-      }
-
-      const bookBody = bookRes?.data || bookRes;
-      let bookList = [];
-      if (bookBody) {
-        if (bookBody.success && bookBody.data) {
-          bookList = bookBody.data.content || bookBody.data;
-        } else {
-          bookList = bookBody.content || bookBody;
-        }
-      }
-
-      const faultBody = faultRes?.data || faultRes;
-      let faultList = [];
-      if (faultBody) {
-        if (faultBody.success && faultBody.data) {
-          faultList = faultBody.data.content || faultBody.data;
-        } else {
-          faultList = faultBody.content || faultBody;
-        }
-      }
-
-      const maintBody = maintRes?.data || maintRes;
-      let maintList = [];
-      if (maintBody) {
-        if (maintBody.success && maintBody.data) {
-          maintList = maintBody.data.content || maintBody.data;
-        } else {
-          maintList = maintBody.content || maintBody;
-        }
-      }
+      const summaryRes = await adminService.getReports('summary');
+      const summary = summaryRes?.data || summaryRes || {};
 
       setDatasets({
-        users: usersList,
-        departments: deptList,
-        laboratories: labList,
-        equipments: eqList,
-        bookings: bookList,
-        faults: faultList,
-        maintenance: maintList
+        totalStudents: summary.totalStudents || 0,
+        totalFaculty: summary.totalFaculty || 0,
+        totalEquipment: summary.totalEquipment || 0,
+        totalBookings: summary.totalBookings || 0,
+        openFaults: summary.openFaults || 0,
+        scheduledMaintenance: summary.scheduledMaintenance || 0,
+        users: [],
+        departments: [],
+        laboratories: [],
+        equipments: [],
+        bookings: [],
+        faults: [],
+        maintenance: []
       });
-
     } catch (error) {
       toast.error('Failed to load system reports');
     } finally {
