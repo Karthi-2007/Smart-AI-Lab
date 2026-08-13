@@ -7,9 +7,12 @@ import toast from 'react-hot-toast';
 
 const ManageMaintenance = () => {
   const [search, setSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('All');
   const [maintenance, setMaintenance] = useState([]);
+  const [statsData, setStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tableKey, setTableKey] = useState(0);
   
   const [equipments, setEquipments] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -22,7 +25,22 @@ const ManageMaintenance = () => {
     type: 'Preventive'
   });
 
+  const fetchStats = async () => {
+    try {
+      const res = await adminService.getMaintenanceStatistics();
+      const body = res?.data || res;
+      if (body && body.data) {
+        setStatsData(body.data);
+      } else if (body) {
+        setStatsData(body);
+      }
+    } catch (err) {
+      console.warn("Could not fetch maintenance stats:", err);
+    }
+  };
+
   useEffect(() => {
+    fetchStats();
     const fetchOptions = async () => {
       try {
         const [eqRes, techRes] = await Promise.all([
@@ -91,9 +109,10 @@ const ManageMaintenance = () => {
         scheduledDate: '',
         type: 'Preventive'
       });
-      
-      // Reload page to re-fetch
-      window.location.reload(); 
+
+      // Refresh table & stats
+      setTableKey(prev => prev + 1);
+      fetchStats();
     } catch (error) {
       toast.error('Failed to schedule maintenance.');
     }
@@ -115,7 +134,7 @@ const ManageMaintenance = () => {
         </button>
       </div>
 
-      <MaintenanceStats maintenance={maintenance} loading={loading} />
+      <MaintenanceStats statsData={statsData} maintenance={maintenance} loading={loading} />
 
       <div className="mb-6 flex flex-col md:flex-row gap-4">
         <div className="flex-1">
@@ -129,10 +148,8 @@ const ManageMaintenance = () => {
         </div>
         <select 
           className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-orange-500 text-slate-300 md:w-48"
-          onChange={(e) => {
-            const val = e.target.value;
-            setSearch(val === 'All' ? '' : val);
-          }}
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
         >
           <option value="All">All Statuses</option>
           <option value="Scheduled">Scheduled</option>
@@ -142,7 +159,7 @@ const ManageMaintenance = () => {
         </select>
       </div>
 
-      <MaintenanceTable search={search} onMaintenanceLoaded={handleMaintenanceLoaded} />
+      <MaintenanceTable search={search} selectedStatus={selectedStatus} onMaintenanceLoaded={handleMaintenanceLoaded} tableKey={tableKey} />
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

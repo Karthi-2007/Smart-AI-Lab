@@ -141,7 +141,13 @@ export const adminService = {
     removeHOD: (deptId) => api.delete(`/api/business/departments/${deptId}/hod`),
     
     // Maintenance & Faults
-    getMaintenance: () => api.get('/api/business/maintenance'),
+    getMaintenance: (params = {}) => api.get('/api/business/maintenance', { params }),
+    getMaintenanceAll: () => api.get('/api/business/maintenance/all'),
+    getMaintenanceScheduled: () => api.get('/api/business/maintenance/scheduled'),
+    getMaintenanceInProgress: () => api.get('/api/business/maintenance/in-progress'),
+    getMaintenanceCompleted: () => api.get('/api/business/maintenance/completed'),
+    getMaintenanceCancelled: () => api.get('/api/business/maintenance/cancelled'),
+    getMaintenanceStatistics: () => api.get('/api/business/maintenance/statistics'),
     scheduleMaintenance: (data) => api.post('/api/business/maintenance', data),
     updateMaintenance: (id, data) => api.put(`/api/business/maintenance/${id}`, data),
     completeMaintenance: (id) => api.post(`/api/business/maintenance/${id}/complete`),

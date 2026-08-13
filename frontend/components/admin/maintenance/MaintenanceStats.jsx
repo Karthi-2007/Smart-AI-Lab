@@ -1,12 +1,12 @@
 import React from 'react';
 import { Wrench, Calendar, Activity, CheckCircle } from 'lucide-react';
 
-const MaintenanceStats = ({ maintenance = [], loading }) => {
+const MaintenanceStats = ({ statsData, maintenance = [], loading }) => {
   const list = Array.isArray(maintenance) ? maintenance : (maintenance?.data || []);
-  const total = list.length;
-  const scheduled = list.filter(m => m?.status === 'Scheduled').length;
-  const inProgress = list.filter(m => m?.status === 'In Progress').length;
-  const completed = list.filter(m => m?.status === 'Completed').length;
+  const total = statsData?.totalTasks ?? list.length;
+  const scheduled = statsData?.scheduled ?? list.filter(m => m?.status === 'Scheduled').length;
+  const inProgress = statsData?.inProgress ?? list.filter(m => m?.status === 'In Progress' || m?.status === 'InProgress').length;
+  const completed = statsData?.completed ?? list.filter(m => m?.status === 'Completed').length;
 
   const stats = [
     { label: 'Total Tasks', value: total, icon: Wrench, color: 'text-blue-500', bg: 'bg-blue-500/10' },

@@ -4,7 +4,7 @@ import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
 import Pagination from '../../common/Pagination';
 
-const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
+const MaintenanceTable = ({ search, selectedStatus = 'All', onMaintenanceLoaded, tableKey }) => {
   const [maintenance, setMaintenance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailMaintenance, setDetailMaintenance] = useState(null);
@@ -12,17 +12,37 @@ const MaintenanceTable = ({ search, onMaintenanceLoaded }) => {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    fetchMaintenance();
-  }, []);
-
-  useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+    fetchMaintenance();
+  }, [selectedStatus, tableKey]);
 
   const fetchMaintenance = async () => {
     setLoading(true);
     try {
-      const res = await adminService.getMaintenance();
+      let res;
+      if (search && search.trim()) {
+        res = await adminService.getMaintenance({ search: search.trim(), status: selectedStatus !== 'All' ? selectedStatus : undefined });
+      } else {
+        switch (selectedStatus) {
+          case 'Scheduled':
+            res = await adminService.getMaintenanceScheduled();
+            break;
+          case 'In Progress':
+            res = await adminService.getMaintenanceInProgress();
+            break;
+          case 'Completed':
+            res = await adminService.getMaintenanceCompleted();
+            break;
+          case 'Cancelled':
+            res = await adminService.getMaintenanceCancelled();
+            break;
+          case 'All':
+          default:
+            res = await adminService.getMaintenanceAll();
+            break;
+        }
+      }
+
       const body = res?.data || res;
       let list = [];
       if (body) {

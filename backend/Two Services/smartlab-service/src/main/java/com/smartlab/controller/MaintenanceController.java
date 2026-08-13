@@ -143,6 +143,30 @@ public class MaintenanceController {
         return getMaintenance(null, "Completed", null, null, 0, 1000);
     }
 
+    @GetMapping("/cancelled")
+    public ResponseEntity<?> getMaintenanceCancelled() {
+        return getMaintenance(null, "Cancelled", null, null, 0, 1000);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getMaintenanceStatistics() {
+        List<Maintenance> all = maintenanceRepository.findAll();
+        long totalTasks = all.size();
+        long scheduled = all.stream().filter(m -> "Scheduled".equalsIgnoreCase(m.getStatus())).count();
+        long inProgress = all.stream().filter(m -> "In Progress".equalsIgnoreCase(m.getStatus()) || "InProgress".equalsIgnoreCase(m.getStatus())).count();
+        long completed = all.stream().filter(m -> "Completed".equalsIgnoreCase(m.getStatus())).count();
+        long cancelled = all.stream().filter(m -> "Cancelled".equalsIgnoreCase(m.getStatus())).count();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalTasks", totalTasks);
+        stats.put("scheduled", scheduled);
+        stats.put("inProgress", inProgress);
+        stats.put("completed", completed);
+        stats.put("cancelled", cancelled);
+
+        return ResponseEntity.ok(ApiResponse.success("Maintenance statistics loaded from database", stats));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getMaintenanceById(@PathVariable Long id) {
         Maintenance maintenance = maintenanceService.getMaintenanceById(id);
