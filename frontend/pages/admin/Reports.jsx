@@ -25,23 +25,49 @@ const Reports = () => {
   const fetchLiveReportData = async () => {
     setLoading(true);
     try {
-      const summaryRes = await adminService.getReports('summary');
-      const summary = summaryRes?.data || summaryRes || {};
+      const [stRes, facRes, deptRes, labRes, eqRes, bookRes, faultRes, maintRes] = await Promise.all([
+        adminService.getStudentsAll().catch(() => ({ data: [] })),
+        adminService.getFacultyAll().catch(() => ({ data: [] })),
+        adminService.getDepartmentsAll().catch(() => ({ data: [] })),
+        adminService.getLaboratories().catch(() => ({ data: [] })),
+        adminService.getEquipments().catch(() => ({ data: [] })),
+        adminService.getBookings().catch(() => ({ data: [] })),
+        adminService.getFaults().catch(() => ({ data: [] })),
+        adminService.getMaintenance().catch(() => ({ data: [] }))
+      ]);
+
+      const parseArray = (res) => {
+        const body = res?.data || res;
+        if (!body) return [];
+        if (body.success && body.data) {
+          return Array.isArray(body.data) ? body.data : (body.data.content || []);
+        }
+        if (Array.isArray(body)) return body;
+        return body.content || [];
+      };
+
+      const students = parseArray(stRes);
+      const faculty = parseArray(facRes);
+      const departments = parseArray(deptRes);
+      const laboratories = parseArray(labRes);
+      const equipments = parseArray(eqRes);
+      const bookings = parseArray(bookRes);
+      const faults = parseArray(faultRes);
+      const maintenance = parseArray(maintRes);
 
       setDatasets({
-        totalStudents: summary.totalStudents || 0,
-        totalFaculty: summary.totalFaculty || 0,
-        totalEquipment: summary.totalEquipment || 0,
-        totalBookings: summary.totalBookings || 0,
-        openFaults: summary.openFaults || 0,
-        scheduledMaintenance: summary.scheduledMaintenance || 0,
-        users: [],
-        departments: [],
-        laboratories: [],
-        equipments: [],
-        bookings: [],
-        faults: [],
-        maintenance: []
+        students,
+        faculty,
+        users: [
+          ...students.map(s => ({ ...s, role: 'STUDENT' })),
+          ...faculty.map(f => ({ ...f, role: 'FACULTY' }))
+        ],
+        departments,
+        laboratories,
+        equipments,
+        bookings,
+        faults,
+        maintenance
       });
     } catch (error) {
       toast.error('Failed to load system reports');

@@ -20,27 +20,41 @@ const AIAnalytics = () => {
   const fetchLiveAIData = async () => {
     setLoading(true);
     try {
-      const [analyticsRes, telemetryRes] = await Promise.all([
-        adminService.getReports('analytics').catch(() => ({ data: {} })),
+      const [eqRes, bookRes, faultRes, maintRes, labRes, telemetryRes] = await Promise.all([
+        adminService.getEquipments().catch(() => ({ data: [] })),
+        adminService.getBookings().catch(() => ({ data: [] })),
+        adminService.getFaults().catch(() => ({ data: [] })),
+        adminService.getMaintenance().catch(() => ({ data: [] })),
+        adminService.getLaboratories().catch(() => ({ data: [] })),
         adminService.getTelemetry().catch(() => ({ data: {} }))
       ]);
 
-      const analytics = analyticsRes?.data || analyticsRes || {};
+      const parseArray = (res) => {
+        const body = res?.data || res;
+        if (!body) return [];
+        if (body.success && body.data) {
+          return Array.isArray(body.data) ? body.data : (body.data.content || []);
+        }
+        if (Array.isArray(body)) return body;
+        return body.content || [];
+      };
+
+      const equipments = parseArray(eqRes);
+      const bookings = parseArray(bookRes);
+      const faults = parseArray(faultRes);
+      const maintenance = parseArray(maintRes);
+      const laboratories = parseArray(labRes);
       const telemetry = telemetryRes?.data?.data || telemetryRes?.data || telemetryRes || {};
 
       setData({
-        equipmentHealthScore: analytics.equipmentHealthScore || 94,
-        totalBookings: analytics.totalBookings || 0,
-        totalFaults: analytics.totalFaults || 0,
-        totalMaintenance: analytics.totalMaintenance || 0,
+        equipments,
+        bookings,
+        faults,
+        maintenance,
+        laboratories,
+        users: [],
         telemetryList: telemetry.telemetryList || [],
-        recommendation: telemetry.recommendation || 'System optimal.',
-        equipments: [],
-        bookings: [],
-        faults: [],
-        maintenance: [],
-        laboratories: [],
-        users: []
+        recommendation: telemetry.recommendation || ''
       });
     } catch (error) {
       toast.error('Failed to load AI Analytics data');
