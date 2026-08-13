@@ -166,10 +166,10 @@ public class SecurityConfig {
                         .hasAnyRole("FACULTY", "ADMIN")
 
                     // Notifications
-                    .requestMatchers(HttpMethod.GET, "/notifications/user/**", "/api/business/notifications/user/**")
+                    .requestMatchers(HttpMethod.GET, "/notifications/**", "/api/business/notifications/**")
                         .hasAnyRole("STUDENT", "FACULTY", "ADMIN")
                     .requestMatchers(HttpMethod.POST, "/notifications/**", "/api/business/notifications/**")
-                        .hasAnyRole("FACULTY", "ADMIN")
+                        .hasAnyRole("STUDENT", "FACULTY", "ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/notifications/**", "/api/business/notifications/**")
                         .hasAnyRole("STUDENT", "FACULTY", "ADMIN")
                     .requestMatchers(HttpMethod.PATCH, "/notifications/**", "/api/business/notifications/**")

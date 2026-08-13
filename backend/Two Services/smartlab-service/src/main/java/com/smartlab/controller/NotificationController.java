@@ -40,11 +40,15 @@ public class NotificationController {
 
     @GetMapping
     public ResponseEntity<?> getAllNotifications() {
-        if (!SecurityUtils.isAdmin()) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Only admins can query all notifications globally."));
+        UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error("Unauthorized"));
         }
-        List<Notification> list = notificationService.getAllNotifications();
-        return ResponseEntity.ok(ApiResponse.success("All notifications retrieved", list));
+        if (SecurityUtils.isAdmin()) {
+            List<Notification> list = notificationService.getAllNotifications();
+            return ResponseEntity.ok(ApiResponse.success("All notifications retrieved", list));
+        }
+        return getMyNotificationsAll();
     }
 
     @GetMapping({"/user/{userId}", "/user/{userId}/notifications-list"})
