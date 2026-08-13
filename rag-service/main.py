@@ -63,6 +63,15 @@ def ask_question(req: QuestionRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
+    q_clean = question.lower()
+    if q_clean in ["hello", "hi", "hey", "good morning", "good afternoon"] or q_clean.startswith("hello ") or q_clean.startswith("hi "):
+        return AskResponse(
+            answer="Hello! I am your Karpagam College of Engineering (KCE) SmartLab AI Assistant. Ask me about equipment availability, lab locations, booking workflows, API endpoints, or database structures!",
+            sources=[],
+            model=req.model or DEFAULT_MODEL,
+            source="SmartLab Assistant"
+        )
+
     store = load_store()
     if not store or not store.get("documents"):
         return AskResponse(

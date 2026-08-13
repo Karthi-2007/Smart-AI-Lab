@@ -101,6 +101,16 @@ public class AiService {
 
         // 2. Database/API Aware Intent Routing (with error handling wrapper)
         try {
+            if (cleanMsg.equals("hello") || cleanMsg.equals("hi") || cleanMsg.equals("hey") ||
+                cleanMsg.startsWith("hello ") || cleanMsg.startsWith("hi ") || cleanMsg.startsWith("hey ") ||
+                cleanMsg.contains("good morning") || cleanMsg.contains("good afternoon")) {
+                return Map.of(
+                    "response", "Hello! I am your Karpagam College of Engineering (KCE) SmartLab AI Assistant. Ask me about equipment availability, lab locations, booking workflows, API endpoints, or database structures!",
+                    "model", "smartlab-assistant",
+                    "source", "SmartLab Assistant"
+                );
+            }
+
             if (cleanMsg.contains("who am i") || cleanMsg.contains("my profile") || cleanMsg.contains("who are you")) {
                 return Map.of("response", handleWhoAmIQuery(principal), "model", "database", "source", "SmartLab DB Engine");
             }
