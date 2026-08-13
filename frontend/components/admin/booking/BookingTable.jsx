@@ -4,7 +4,7 @@ import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
 import Pagination from '../../common/Pagination';
 
-const BookingTable = ({ search, onBookingsLoaded }) => {
+const BookingTable = ({ search, selectedStatus = 'All', onBookingsLoaded }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailBooking, setDetailBooking] = useState(null);
@@ -12,17 +12,33 @@ const BookingTable = ({ search, onBookingsLoaded }) => {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+    fetchBookings();
+  }, [selectedStatus]);
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await adminService.getBookings();
+      let res;
+      switch (selectedStatus) {
+        case 'Pending':
+          res = await adminService.getBookingsAdminPending();
+          break;
+        case 'Approved':
+          res = await adminService.getBookingsAdminApproved();
+          break;
+        case 'Rejected':
+          res = await adminService.getBookingsAdminRejected();
+          break;
+        case 'Completed':
+          res = await adminService.getBookingsAdminCompleted();
+          break;
+        case 'All':
+        default:
+          res = await adminService.getBookingsAdminAll();
+          break;
+      }
+
       const body = res?.data || res;
       let list = [];
       if (body) {

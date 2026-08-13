@@ -69,6 +69,11 @@ This document maps user actions in the React/Vite frontend to their dedicated RE
 | **Admin Notifications** | View Broadcast System Notifications Tab | `GET` | `/api/business/notifications/admin/system` | Loads system broadcast notifications. |
 | **Admin Notifications** | View Fault System Notifications Tab | `GET` | `/api/business/notifications/admin/fault` | Loads fault system notifications. |
 | **Admin Notifications** | View Maintenance System Notifications Tab | `GET` | `/api/business/notifications/admin/maintenance` | Loads maintenance system notifications. |
+| **ManageBookings.jsx** | View All Admin Bookings Tab | `GET` | `/api/business/bookings/admin/all` | Loads all booking records for admin management. |
+| **ManageBookings.jsx** | View Pending Admin Bookings Tab | `GET` | `/api/business/bookings/admin/pending` | Loads pending booking requests for admin management. |
+| **ManageBookings.jsx** | View Approved Admin Bookings Tab | `GET` | `/api/business/bookings/admin/approved` | Loads approved booking records for admin management. |
+| **ManageBookings.jsx** | View Rejected Admin Bookings Tab | `GET` | `/api/business/bookings/admin/rejected` | Loads rejected booking records for admin management. |
+| **ManageBookings.jsx** | View Completed Admin Bookings Tab | `GET` | `/api/business/bookings/admin/completed` | Loads completed booking records for admin management. |
 | **Dashboard** | Load Stats Summary | `GET` | `/api/business/dashboard/{role}/summary` | Fetches custom role statistics. |
 | **StudentDashboard.jsx** | Load Dashboard | `GET` | `/api/business/dashboard/student` | Resolves student user stats and recent bookings from JWT. |
 | **FacultyDashboard.jsx** | Load Dashboard | `GET` | `/api/business/dashboard/faculty` | Resolves faculty user stats and recent approvals from JWT. |

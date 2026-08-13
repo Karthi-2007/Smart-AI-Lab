@@ -190,6 +190,39 @@ public class BookingController {
         return fetchMyReviewQueueByStatus("Completed");
     }
 
+    // ── Admin Manage Bookings Dedicated Endpoints ────────────────
+    @GetMapping("/admin/all")
+    public ResponseEntity<?> getAdminBookingsAll() {
+        return fetchAdminBookingsByStatus("All");
+    }
+
+    @GetMapping("/admin/pending")
+    public ResponseEntity<?> getAdminBookingsPending() {
+        return fetchAdminBookingsByStatus("Pending");
+    }
+
+    @GetMapping("/admin/approved")
+    public ResponseEntity<?> getAdminBookingsApproved() {
+        return fetchAdminBookingsByStatus("Approved");
+    }
+
+    @GetMapping("/admin/rejected")
+    public ResponseEntity<?> getAdminBookingsRejected() {
+        return fetchAdminBookingsByStatus("Rejected");
+    }
+
+    @GetMapping("/admin/completed")
+    public ResponseEntity<?> getAdminBookingsCompleted() {
+        return fetchAdminBookingsByStatus("Completed");
+    }
+
+    private ResponseEntity<?> fetchAdminBookingsByStatus(String status) {
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isFaculty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("Access denied. Admin or Faculty role required."));
+        }
+        return getBookings(null, "All".equalsIgnoreCase(status) ? null : status, null, null, null, 0, 1000);
+    }
+
     private ResponseEntity<?> fetchMyReviewQueueByStatus(String status) {
         UserPrincipal principal = SecurityUtils.getCurrentPrincipal();
         if (principal == null) {

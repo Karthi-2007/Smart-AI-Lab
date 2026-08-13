@@ -16,6 +16,7 @@ const BookingSearch = ({ search, setSearch }) => (
 
 const ManageBookings = () => {
   const [search, setSearch] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('All');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,10 +40,8 @@ const ManageBookings = () => {
         <BookingSearch search={search} setSearch={setSearch} />
         <select 
           className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 outline-none focus:border-orange-500 text-slate-300 md:w-48"
-          onChange={(e) => {
-            const val = e.target.value;
-            setSearch(val === 'All' ? '' : val);
-          }}
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
         >
           <option value="All">All Statuses</option>
           <option value="Pending">Pending</option>
@@ -52,7 +51,7 @@ const ManageBookings = () => {
         </select>
       </div>
 
-      <BookingTable search={search} onBookingsLoaded={handleBookingsLoaded} />
+      <BookingTable search={search} selectedStatus={selectedStatus} onBookingsLoaded={handleBookingsLoaded} />
     </div>
   );
 };

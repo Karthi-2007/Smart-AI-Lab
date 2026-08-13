@@ -102,7 +102,12 @@ export const adminService = {
     getReports: (reportType = '') => api.get(`/api/business/reports/${reportType}`),
     
     // Bookings & QR Passes
-    getBookings: () => api.get('/api/business/bookings'),
+    getBookings: (params = {}) => api.get('/api/business/bookings', { params }),
+    getBookingsAdminAll: () => api.get('/api/business/bookings/admin/all'),
+    getBookingsAdminPending: () => api.get('/api/business/bookings/admin/pending'),
+    getBookingsAdminApproved: () => api.get('/api/business/bookings/admin/approved'),
+    getBookingsAdminRejected: () => api.get('/api/business/bookings/admin/rejected'),
+    getBookingsAdminCompleted: () => api.get('/api/business/bookings/admin/completed'),
     getQrPassesAll: () => api.get('/api/business/qr-passes/all'),
     getQrPassesApproved: () => api.get('/api/business/qr-passes/approved'),
     getQrPassesPending: () => api.get('/api/business/qr-passes/pending'),
