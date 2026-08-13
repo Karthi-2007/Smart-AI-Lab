@@ -70,7 +70,6 @@ const StudentDashboard = () => {
         return <span className="px-3 py-1 bg-red-500/10 text-red-500 text-xs font-medium rounded-full border border-red-500/20">{status}</span>;
       default:
         return <span className="px-3 py-1 bg-slate-500/10 text-slate-400 text-xs font-medium rounded-full border border-slate-500/20">{status || 'Unknown'}</span>;
-        return <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full border border-slate-200">{status || 'Unknown'}</span>;
     }
   };
 

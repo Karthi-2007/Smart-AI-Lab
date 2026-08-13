@@ -44,7 +44,7 @@ const EquipmentDetails = () => {
     const query = params.get('search');
     if (query) setSearchTerm(query);
     fetchEquipment();
-  }, [window.location.search]);
+  }, []);
 
   const fetchEquipment = async () => {
     try {

@@ -110,28 +110,28 @@ const FacultyDashboard = () => {
   const stats = [
     {
       title: 'Pending Approvals',
-      value: statsData.pendingBookings !== undefined ? statsData.pendingBookings : pendingBookings.length,
+      value: statsData.pendingBookings ?? pendingBookings.length,
       icon: ClipboardCheck,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10'
     },
     {
       title: 'Active Bookings',
-      value: statsData.approvedBookings !== undefined ? statsData.approvedBookings : activeBookings.length,
+      value: statsData.approvedBookings ?? activeBookings.length,
       icon: CalendarCheck,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10'
     },
     {
       title: 'Completed Bookings',
-      value: completedBookings.length,
+      value: statsData.completedBookings ?? completedBookings.length,
       icon: CheckCircle2,
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-500/10'
     },
     {
       title: 'Fault Reports',
-      value: statsData.faultCount !== undefined ? statsData.faultCount : (statsData.openFaults || 0),
+      value: statsData.faultCount ?? statsData.openFaults ?? 0,
       icon: AlertTriangle,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10'

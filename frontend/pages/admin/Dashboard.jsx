@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BookOpen, Layers, Monitor, CalendarCheck, AlertTriangle, Settings, PlusCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, BookOpen, Layers, Monitor, CalendarCheck, AlertTriangle, Settings } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { adminService } from '../../services/adminService';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import BookingTable from '../../components/admin/booking/BookingTable';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     students: 0,
@@ -86,14 +88,13 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Charts and AI cards will go here in the future */}
-      </div>
-
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-white">Recent Booking Requests</h2>
-          <button className="text-orange-500 hover:text-orange-400 text-sm font-medium transition">
+          <button 
+            onClick={() => navigate('/admin/bookings')}
+            className="text-orange-500 hover:text-orange-400 text-sm font-medium transition"
+          >
             View All
           </button>
         </div>

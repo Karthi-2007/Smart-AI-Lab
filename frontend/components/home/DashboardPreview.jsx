@@ -66,7 +66,7 @@ const DashboardPreview = () => {
     {
       icon: ShieldCheck,
       title: "Admin Command",
-      rolePath: "/admin/login",
+      rolePath: "/login",
       color: "bg-orange-500/10 text-orange-400 border-orange-500/20",
       items: [
         "Full Hardware Inventory CRUD",

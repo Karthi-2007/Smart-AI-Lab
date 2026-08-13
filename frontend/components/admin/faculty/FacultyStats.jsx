@@ -26,7 +26,10 @@ const FacultyStats = ({ faculty = [], loading = false }) => {
     },
     {
       title: 'Labs Assigned',
-      value: new Set(faculty.map(f => f.lab).filter(Boolean)).size,
+      value: new Set(faculty.flatMap(f => {
+        if (Array.isArray(f.laboratories)) return f.laboratories.map(l => l.labId || l.name);
+        return f.lab ? [f.lab] : [];
+      })).size,
       icon: Beaker,
       color: 'text-purple-500',
       bg: 'bg-purple-500/20'

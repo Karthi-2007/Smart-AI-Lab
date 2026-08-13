@@ -37,24 +37,32 @@ const Statistics = () => {
       value: stats.equipments,
       title: "Laboratory Equipment",
       description: "Smart IoT & high-precision instruments across engineering labs.",
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10 border-orange-500/20"
     },
     {
       icon: Building2,
       value: stats.labs,
       title: "Engineering Laboratories",
       description: "State-of-the-art research centres for practical learning.",
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10 border-blue-500/20"
     },
     {
       icon: Users,
       value: stats.students,
       title: "Active Students & Faculty",
       description: "Engineers using SmartLab AI for research and practicals.",
+      color: "text-green-500",
+      bgColor: "bg-green-500/10 border-green-500/20"
     },
     {
       icon: ShieldCheck,
       value: stats.availability,
       title: "System Availability Rate",
       description: "Real-time AI diagnostics maintaining optimal hardware uptime.",
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10 border-purple-500/20"
     },
   ];
 
