@@ -11,19 +11,19 @@ const AdminTopbar = ({ onMenuClick }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [unreadCount, setUnreadCount] = useState(0);
   const searchContainerRef = useRef(null);
 
   useEffect(() => {
     const fetchUnread = async () => {
       try {
-        const res = await adminService.getNotifications().catch(() => ({ data: [] }));
-        const list = Array.isArray(res?.data || res) ? (res?.data || res) : [];
-        if (list.length > 0) {
-          const count = list.filter(n => !n.isRead && !n.read).length;
-          setUnreadCount(count || 3);
-        }
-      } catch (err) {}
+        const res = await adminService.getAdminNotificationsUnread().catch(() => ({ data: [] }));
+        const list = Array.isArray(res?.data || res) ? (res?.data || res) : (res?.data?.data || []);
+        const count = Array.isArray(list) ? list.filter(n => !(n.isRead || n.read)).length : 0;
+        setUnreadCount(count);
+      } catch (err) {
+        setUnreadCount(0);
+      }
     };
     fetchUnread();
   }, []);

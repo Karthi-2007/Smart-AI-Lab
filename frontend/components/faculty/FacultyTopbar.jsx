@@ -14,6 +14,20 @@ const FacultyTopbar = ({ onMenuClick }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const searchContainerRef = useRef(null);
 
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await facultyService.getNotificationsAll().catch(() => ({ data: [] }));
+        const list = Array.isArray(res?.data || res) ? (res?.data || res) : (res?.data?.data || []);
+        const count = Array.isArray(list) ? list.filter(n => !(n.isRead || n.read)).length : 0;
+        setUnreadCount(count);
+      } catch (err) {
+        setUnreadCount(0);
+      }
+    };
+    fetchUnread();
+  }, []);
+
   // Dynamic search suggestion lookup for Faculty (equipment + labs)
   useEffect(() => {
     if (!searchQuery.trim()) {

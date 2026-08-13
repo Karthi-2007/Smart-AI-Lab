@@ -14,6 +14,20 @@ const StudentTopbar = ({ onMenuClick }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const searchContainerRef = useRef(null);
 
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await studentService.getNotificationsAll().catch(() => ({ data: [] }));
+        const list = Array.isArray(res?.data || res) ? (res?.data || res) : (res?.data?.data || []);
+        const count = Array.isArray(list) ? list.filter(n => !(n.isRead || n.read)).length : 0;
+        setUnreadCount(count);
+      } catch (err) {
+        setUnreadCount(0);
+      }
+    };
+    fetchUnread();
+  }, []);
+
   // Dynamic search suggestion lookup
   useEffect(() => {
     if (!searchQuery.trim()) {
