@@ -150,8 +150,28 @@ public class AiService {
             );
         }
 
-        // 3. Fallback to Ollama or local rule assistant for general workflow queries
-        String model = (requestedModel == null || requestedModel.trim().isEmpty()) ? "llama3" : requestedModel.trim();
+        // 3. Delegate to Local Python RAG Microservice (http://localhost:8000/ask)
+        try {
+            String ragUrl = "http://localhost:8000/ask";
+            Map<String, Object> ragPayload = Map.of(
+                "question", message,
+                "model", (requestedModel != null && !requestedModel.trim().isEmpty()) ? requestedModel.trim() : "llama3.1:8b"
+            );
+            ResponseEntity<Map> ragResponse = restTemplate.postForEntity(ragUrl, ragPayload, Map.class);
+            if (ragResponse.getStatusCode().is2xxSuccessful() && ragResponse.getBody() != null) {
+                Map<String, Object> body = ragResponse.getBody();
+                String answer = (String) body.get("answer");
+                String source = (String) body.get("source");
+                if (answer != null && !answer.trim().isEmpty()) {
+                    return Map.of("response", answer, "model", requestedModel != null ? requestedModel : "llama3.1:8b", "source", source != null ? source : "Ollama Local RAG");
+                }
+            }
+        } catch (Exception ragEx) {
+            log.info("Local Python RAG service on port 8000 offline, attempting direct Ollama call: {}", ragEx.getMessage());
+        }
+
+        // 4. Fallback to direct Ollama or local rule assistant
+        String model = (requestedModel == null || requestedModel.trim().isEmpty()) ? "llama3.1:8b" : requestedModel.trim();
         String systemContext = buildSystemContext();
 
         List<Map<String, String>> messages = new ArrayList<>();
