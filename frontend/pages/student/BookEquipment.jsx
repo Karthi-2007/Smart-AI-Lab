@@ -5,23 +5,27 @@ import toast from 'react-hot-toast';
 import { studentService } from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 
-const getDynamicTimeSlots = () => {
+const getDynamicTimeSlots = (customSettings = null) => {
   let opening = "09:00";
   let closing = "16:00";
-  let durationType = "3 Hours";
+  let durationType = "1 Hour";
 
-  try {
-    const stored = localStorage.getItem("smartlab_system_settings");
-    if (stored) {
-      const s = JSON.parse(stored);
-      if (s.openingTime) opening = s.openingTime;
-      if (s.closingTime) closing = s.closingTime;
-      if (s.bookingDuration) durationType = s.bookingDuration;
-    }
-  } catch (e) {}
+  let s = customSettings;
+  if (!s) {
+    try {
+      const stored = localStorage.getItem("smartlab_system_settings");
+      if (stored) s = JSON.parse(stored);
+    } catch (e) {}
+  }
+
+  if (s) {
+    if (s.openingTime) opening = s.openingTime;
+    if (s.closingTime) closing = s.closingTime;
+    if (s.bookingDuration) durationType = s.bookingDuration;
+  }
 
   const timeToMinutes = (tStr) => {
-    if (!tStr) return 510;
+    if (!tStr) return 540;
     const parts = tStr.split(":");
     const h = parseInt(parts[0], 10) || 0;
     const m = parseInt(parts[1], 10) || 0;
@@ -34,7 +38,7 @@ const getDynamicTimeSlots = () => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   };
 
-  let stepMinutes = 120;
+  let stepMinutes = 60;
   const dStr = String(durationType || '').toLowerCase();
   if (dStr.includes("1")) stepMinutes = 60;
   else if (dStr.includes("2")) stepMinutes = 120;
@@ -55,7 +59,7 @@ const getDynamicTimeSlots = () => {
     curr = next;
   }
 
-  return slots.length > 0 ? slots : ['09:00 - 11:00', '11:00 - 13:00', '13:00 - 15:00', '15:00 - 17:00'];
+  return slots.length > 0 ? slots : ['09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00', '12:00 - 13:00', '13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00'];
 };
 
 const BookEquipment = () => {
@@ -84,17 +88,17 @@ const BookEquipment = () => {
     const syncBackendSettings = async () => {
       try {
         const res = await studentService.getSettings();
-        const body = res?.data?.data || res?.data || res;
-        if (body) {
+        const dataObj = res?.data?.data || res?.data || res;
+        if (dataObj) {
           const localObj = {
-            institution: body.institutionName || "Karpagam College of Engineering",
-            timeZone: body.timeZone || "Asia/Kolkata",
-            openingTime: body.openingTime || "09:00",
-            closingTime: body.closingTime || "16:00",
-            bookingDuration: body.bookingDuration || "3 Hours"
+            institution: dataObj.institutionName || dataObj.institution || "Karpagam College of Engineering",
+            timeZone: dataObj.timeZone || "Asia/Kolkata",
+            openingTime: dataObj.openingTime || "09:00",
+            closingTime: dataObj.closingTime || "16:00",
+            bookingDuration: dataObj.bookingDuration || "1 Hour"
           };
           localStorage.setItem("smartlab_system_settings", JSON.stringify(localObj));
-          setTimeSlots(getDynamicTimeSlots());
+          setTimeSlots(getDynamicTimeSlots(localObj));
         }
       } catch (e) {
         console.warn("Could not fetch backend settings in BookEquipment", e);
