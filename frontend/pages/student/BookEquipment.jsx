@@ -45,14 +45,16 @@ const getDynamicTimeSlots = () => {
 
   const slots = [];
   let curr = startMin;
-  while (curr + stepMinutes <= endMin) {
+  while (curr < endMin) {
+    const next = Math.min(curr + stepMinutes, endMin);
+    if (next <= curr) break;
     const slotStart = minutesToTime(curr);
-    const slotEnd = minutesToTime(curr + stepMinutes);
+    const slotEnd = minutesToTime(next);
     slots.push(`${slotStart} - ${slotEnd}`);
-    curr += stepMinutes;
+    curr = next;
   }
 
-  return slots.length > 0 ? slots : ['08:30 - 10:30', '10:30 - 12:30', '12:30 - 14:30', '14:30 - 16:30'];
+  return slots.length > 0 ? slots : ['09:00 - 11:00', '11:00 - 13:00', '13:00 - 15:00', '15:00 - 17:00'];
 };
 
 const BookEquipment = () => {
