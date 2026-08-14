@@ -1,11 +1,14 @@
 import React from 'react';
-import { Package, CheckCircle2, Activity, AlertTriangle } from 'lucide-react';
+import { Package, CheckCircle2, Wrench, AlertTriangle } from 'lucide-react';
 
 const EquipmentStats = ({ equipment = [], loading = false }) => {
   const list = Array.isArray(equipment) ? equipment : (equipment?.data || []);
   const totalEquipment = list.length;
   const availableCount = list.filter(item => item?.status === 'Available').length;
-  const inUseCount = list.filter(item => item?.status === 'In Use' || item?.status === 'Booked').length;
+  const maintenanceCount = list.filter(item => {
+    const s = (item?.status || '').toLowerCase();
+    return s.includes('maintenance') || s === 'in use' || s === 'booked';
+  }).length;
   const faultyCount = list.filter(item => item?.status === 'Faulty').length;
 
   const stats = [
@@ -24,11 +27,11 @@ const EquipmentStats = ({ equipment = [], loading = false }) => {
       bg: 'bg-green-500/20'
     },
     {
-      title: 'In Use',
-      value: inUseCount,
-      icon: Activity,
-      color: 'text-blue-400',
-      bg: 'bg-blue-500/20'
+      title: 'Under Maintenance',
+      value: maintenanceCount,
+      icon: Wrench,
+      color: 'text-yellow-400',
+      bg: 'bg-yellow-500/20'
     },
     {
       title: 'Faulty',

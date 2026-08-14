@@ -134,7 +134,7 @@ const Reports = () => {
   const bookingStatusData = Object.keys(bookingStatusMap).map(k => ({ name: k, value: bookingStatusMap[k] }));
 
   // Equipment Status mapping dynamically linked to live Faults and Maintenance
-  const eqStatusMap = { Available: 0, 'In Use': 0, Faulty: 0, Maintenance: 0 };
+  const eqStatusMap = { Available: 0, 'Under Maintenance': 0, Faulty: 0 };
   datasets.equipments.forEach(e => {
     const st = e.status || 'Available';
     const eqId = e.equipmentId || e.id;
@@ -143,8 +143,8 @@ const Reports = () => {
     
     if (isFaulty) {
       eqStatusMap['Faulty']++;
-    } else if (isMaint) {
-      eqStatusMap['Maintenance']++;
+    } else if (isMaint || st === 'Under Maintenance' || st === 'Maintenance') {
+      eqStatusMap['Under Maintenance']++;
     } else if (eqStatusMap[st] !== undefined) {
       eqStatusMap[st]++;
     } else {
