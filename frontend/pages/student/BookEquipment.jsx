@@ -5,12 +5,55 @@ import toast from 'react-hot-toast';
 import { studentService } from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 
-const TIME_SLOTS = [
-  '09:00 - 11:00',
-  '11:00 - 13:00',
-  '13:00 - 15:00',
-  '15:00 - 17:00'
-];
+const getDynamicTimeSlots = () => {
+  let opening = "08:30";
+  let closing = "17:30";
+  let durationType = "2 Hours";
+
+  try {
+    const stored = localStorage.getItem("smartlab_system_settings");
+    if (stored) {
+      const s = JSON.parse(stored);
+      if (s.openingTime) opening = s.openingTime;
+      if (s.closingTime) closing = s.closingTime;
+      if (s.bookingDuration) durationType = s.bookingDuration;
+    }
+  } catch (e) {}
+
+  const timeToMinutes = (tStr) => {
+    if (!tStr) return 510;
+    const parts = tStr.split(":");
+    const h = parseInt(parts[0], 10) || 0;
+    const m = parseInt(parts[1], 10) || 0;
+    return h * 60 + m;
+  };
+
+  const minutesToTime = (totalMin) => {
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  let stepMinutes = 120;
+  if (durationType === "1 Hour" || durationType.includes("1")) stepMinutes = 60;
+  else if (durationType === "2 Hours" || durationType.includes("2")) stepMinutes = 120;
+  else if (durationType === "3 Hours" || durationType.includes("3")) stepMinutes = 180;
+  else if (durationType === "Half Day" || durationType.includes("4")) stepMinutes = 240;
+
+  const startMin = timeToMinutes(opening);
+  const endMin = timeToMinutes(closing);
+
+  const slots = [];
+  let curr = startMin;
+  while (curr + stepMinutes <= endMin) {
+    const slotStart = minutesToTime(curr);
+    const slotEnd = minutesToTime(curr + stepMinutes);
+    slots.push(`${slotStart} - ${slotEnd}`);
+    curr += stepMinutes;
+  }
+
+  return slots.length > 0 ? slots : ['08:30 - 10:30', '10:30 - 12:30', '12:30 - 14:30', '14:30 - 16:30'];
+};
 
 const BookEquipment = () => {
   const { user } = useAuth();
@@ -19,6 +62,7 @@ const BookEquipment = () => {
   const queryParams = new URLSearchParams(location.search);
   const initialEquipmentId = queryParams.get('equipmentId') || '';
 
+  const [timeSlots, setTimeSlots] = useState(getDynamicTimeSlots());
   const [equipmentList, setEquipmentList] = useState([]);
   const [loadingEq, setLoadingEq] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -32,6 +76,16 @@ const BookEquipment = () => {
     purpose: '',
     isUrgent: false
   });
+
+  useEffect(() => {
+    const updateSlots = () => setTimeSlots(getDynamicTimeSlots());
+    window.addEventListener('storage', updateSlots);
+    window.addEventListener('smartlab_settings_updated', updateSlots);
+    return () => {
+      window.removeEventListener('storage', updateSlots);
+      window.removeEventListener('smartlab_settings_updated', updateSlots);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -251,7 +305,7 @@ const BookEquipment = () => {
                       ? '-- Select Equipment and Date First --' 
                       : '-- Choose Time Slot --'}
                 </option>
-                {TIME_SLOTS.map(slot => {
+                {timeSlots.map(slot => {
                   const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
                   const maxQty = selectedEq?.quantity || 5;
                   const booked = bookedCounts[slot] || 0;
