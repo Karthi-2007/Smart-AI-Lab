@@ -588,21 +588,16 @@ public class BookingController {
         java.time.LocalDate localDate = java.time.LocalDate.parse(date);
         List<Booking> bookings = bookingRepository.findByEquipmentEquipmentIdAndBookingDate(equipmentId, localDate);
         
-        List<String> standardSlots = List.of("09:00 - 11:00", "11:00 - 13:00", "13:00 - 15:00", "15:00 - 17:00");
         Map<String, Integer> bookedCounts = new java.util.HashMap<>();
-        for (String slot : standardSlots) {
-            bookedCounts.put(slot, 0);
-        }
-        
         for (Booking b : bookings) {
             if (!"Cancelled".equalsIgnoreCase(b.getStatus()) && !"Rejected".equalsIgnoreCase(b.getStatus())) {
                 String slot = b.getTimeSlot();
-                if (bookedCounts.containsKey(slot)) {
-                    bookedCounts.put(slot, bookedCounts.get(slot) + 1);
+                if (slot != null && !slot.trim().isEmpty()) {
+                    bookedCounts.put(slot, bookedCounts.getOrDefault(slot, 0) + 1);
                 }
             }
         }
-        return ResponseEntity.ok(bookedCounts);
+        return ResponseEntity.ok(ApiResponse.success("Availability map loaded", bookedCounts));
     }
 
     @GetMapping("/my-review-queue")
