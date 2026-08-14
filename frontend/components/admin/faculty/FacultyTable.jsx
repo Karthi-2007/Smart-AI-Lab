@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, Users, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Users, Edit, Trash2, CheckCircle, Eye } from 'lucide-react';
 import { adminService } from '../../../services/adminService';
 import toast from 'react-hot-toast';
 import Pagination from '../../common/Pagination';
@@ -14,11 +14,22 @@ const FacultyTable = ({
   onDeleteSuccess
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFaculty, setSelectedFaculty] = useState(null);
   const itemsPerPage = 8;
 
   useEffect(() => {
     setCurrentPage(1);
   }, [search, selectedDept, selectedStatus]);
+
+  const handleActivate = async (id) => {
+    try {
+      await adminService.activateFaculty(id);
+      toast.success("Faculty account activated.");
+      if (onDeleteSuccess) onDeleteSuccess();
+    } catch (err) {
+      toast.error("Failed to activate faculty.");
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this faculty member?')) return;
@@ -125,11 +136,35 @@ const FacultyTable = ({
                   <td className="px-6 py-4">{f.email}</td>
                   <td className="px-6 py-4">{getStatusBadge(f.status || 'ACTIVE')}</td>
                   <td className="px-6 py-4">
-                    <div className="flex justify-end gap-3">
-                      <button onClick={() => onEdit && onEdit(f)} className="p-2 text-slate-400 hover:text-orange-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+                    <div className="flex justify-end gap-2">
+                      {(f.status?.toUpperCase() === 'INACTIVE' || f.status?.toUpperCase() === 'PENDING') && (
+                        <button 
+                          onClick={() => handleActivate(f.id || f.facultyId)} 
+                          className="p-2 text-green-400 hover:text-green-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                          title="Approve / Activate Faculty"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => setSelectedFaculty(f)} 
+                        className="p-2 text-blue-400 hover:text-blue-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => onEdit && onEdit(f)} 
+                        className="p-2 text-yellow-400 hover:text-yellow-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Edit Faculty"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(f.id)} className="p-2 text-slate-400 hover:text-red-500 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => handleDelete(f.id || f.facultyId)} 
+                        className="p-2 text-red-400 hover:text-red-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Delete Faculty"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

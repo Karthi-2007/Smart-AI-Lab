@@ -45,6 +45,18 @@ const StudentTable = ({
     }
   };
 
+  const handleActivate = async (student) => {
+    try {
+      const studentId = student.id || student.studentId || student.userId;
+      await adminService.activateStudent(studentId);
+      toast.success("Student account activated successfully.");
+      if (onUpdateSuccess) onUpdateSuccess();
+      if (onDeleteSuccess) onDeleteSuccess();
+    } catch (err) {
+      toast.error("Failed to activate student account.");
+    }
+  };
+
   const handleUpdate = async (updatedStudent) => {
     try {
       const studentId = selectedStudent.id || selectedStudent.studentId || selectedStudent.userId;
@@ -148,6 +160,7 @@ const StudentTable = ({
                   onView={handleView}
                   onDelete={handleDeleteClick}
                   onEdit={handleEdit}
+                  onActivate={handleActivate}
                 />
               ))}
             </tbody>
