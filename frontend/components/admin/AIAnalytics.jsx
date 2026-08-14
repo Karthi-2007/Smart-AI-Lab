@@ -32,11 +32,13 @@ const AIAnalytics = () => {
       const parseArray = (res) => {
         const body = res?.data || res;
         if (!body) return [];
-        if (body.success && body.data) {
-          return Array.isArray(body.data) ? body.data : (body.data.content || []);
-        }
         if (Array.isArray(body)) return body;
-        return body.content || [];
+        if (body.success && body.data) {
+          if (Array.isArray(body.data)) return body.data;
+          if (Array.isArray(body.data.content)) return body.data.content;
+        }
+        if (Array.isArray(body.content)) return body.content;
+        return [];
       };
 
       const equipments = parseArray(eqRes);
@@ -56,6 +58,7 @@ const AIAnalytics = () => {
         telemetryList: telemetry.telemetryList || [],
         recommendation: telemetry.recommendation || ''
       });
+      toast.success('AI Audit re-computed successfully!');
     } catch (error) {
       toast.error('Failed to load AI Analytics data');
     } finally {
@@ -68,14 +71,14 @@ const AIAnalytics = () => {
   }, []);
 
   // Dynamic AI Computed Metrics derived from current DB data
-  const totalEquipments = data.equipments.length;
-  const activeFaultsCount = data.faults.filter(f => f.status && f.status.toLowerCase() !== 'resolved').length;
-  const maintenanceCount = data.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').length;
+  const totalEquipments = (data.equipments || []).length;
+  const activeFaultsCount = (data.faults || []).filter(f => f && f.status && String(f.status).toLowerCase() !== 'resolved' && String(f.status).toLowerCase() !== 'cancelled').length;
+  const maintenanceCount = (data.maintenance || []).filter(m => m && m.status && String(m.status).toLowerCase() !== 'completed' && String(m.status).toLowerCase() !== 'cancelled').length;
 
   // Resolve unique equipment IDs that are actually faulty or in maintenance to prevent double counting
   const faultyEquipmentIds = new Set([
-    ...data.faults.filter(f => f.status && f.status.toLowerCase() !== 'resolved').map(f => f.equipment?.equipmentId || f.equipmentId || (f.equipment && f.equipment.id)),
-    ...data.maintenance.filter(m => m.status && m.status.toLowerCase() !== 'completed').map(m => m.equipment?.equipmentId || m.equipmentId || (m.equipment && m.equipment.id))
+    ...(data.faults || []).filter(f => f && f.status && String(f.status).toLowerCase() !== 'resolved' && String(f.status).toLowerCase() !== 'cancelled').map(f => f.equipment?.equipmentId || f.equipmentId || (f.equipment && f.equipment.id)),
+    ...(data.maintenance || []).filter(m => m && m.status && String(m.status).toLowerCase() !== 'completed' && String(m.status).toLowerCase() !== 'cancelled').map(m => m.equipment?.equipmentId || m.equipmentId || (m.equipment && m.equipment.id))
   ].filter(Boolean));
 
   const faultyDeviceCount = faultyEquipmentIds.size;
