@@ -18,10 +18,14 @@ const ManageBookings = () => {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [bookings, setBookings] = useState([]);
+  const [allBookings, setAllBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const handleBookingsLoaded = (data) => {
     setBookings(data);
+    if (selectedStatus === 'All' || allBookings.length === 0) {
+      setAllBookings(data);
+    }
     setLoading(false);
   };
 
@@ -34,7 +38,7 @@ const ManageBookings = () => {
         </div>
       </div>
 
-      <BookingStats bookings={bookings} loading={loading} />
+      <BookingStats bookings={allBookings.length > 0 ? allBookings : bookings} loading={loading} />
 
       <div className="mb-6 flex flex-col md:flex-row gap-4">
         <BookingSearch search={search} setSearch={setSearch} />
@@ -46,8 +50,9 @@ const ManageBookings = () => {
           <option value="All">All Statuses</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
           <option value="Completed">Completed</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Cancelled">Cancelled</option>
         </select>
       </div>
 
