@@ -309,24 +309,27 @@ const BookEquipment = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-                <Clock className="h-4 w-4 text-orange-500" />
-                Time Slot
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+                  <Clock className="h-4 w-4 text-orange-500" />
+                  Time Slot
+                </label>
+                <span className="text-[11px] font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20">
+                  Live System Format
+                </span>
+              </div>
               <select
                 name="timeSlot"
                 value={formData.timeSlot}
                 onChange={handleChange}
-                disabled={!formData.equipmentId || !formData.date || loadingAvailability}
+                disabled={loadingAvailability}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors disabled:opacity-50"
                 required
               >
                 <option value="">
                   {loadingAvailability 
                     ? '-- Checking Slot Availability... --' 
-                    : (!formData.equipmentId || !formData.date) 
-                      ? '-- Select Equipment and Date First --' 
-                      : '-- Choose Time Slot --'}
+                    : '-- Choose Time Slot --'}
                 </option>
                 {timeSlots.map(slot => {
                   const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
@@ -334,9 +337,10 @@ const BookEquipment = () => {
                   const booked = bookedCounts[slot] || 0;
                   const left = maxQty - booked;
                   const isFull = left <= 0;
+                  const showAvailability = formData.equipmentId && formData.date;
                   return (
-                    <option key={slot} value={slot} disabled={isFull}>
-                      {slot} {isFull ? '(Fully Booked)' : `(${left} of ${maxQty} available)`}
+                    <option key={slot} value={slot} disabled={showAvailability && isFull}>
+                      {slot} {showAvailability ? (isFull ? '(Fully Booked)' : `(${left} of ${maxQty} available)`) : ''}
                     </option>
                   );
                 })}
