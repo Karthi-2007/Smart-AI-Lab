@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping({"/settings", "/api/business/settings"})
+@RequestMapping("/api/business/settings")
 public class SystemSettingController {
 
     @Autowired
