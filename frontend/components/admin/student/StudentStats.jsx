@@ -1,4 +1,4 @@
-import { Users, UserCheck, UserX, GraduationCap } from "lucide-react";
+import { Users, UserCheck, UserX, UserMinus } from "lucide-react";
 
 /**
  * Shows derived stats from the student list passed from parent.
@@ -7,16 +7,17 @@ import { Users, UserCheck, UserX, GraduationCap } from "lucide-react";
 const StudentStats = ({ students = [], loading = false }) => {
   const total = students.length;
   const activated = students.filter(s => s.status?.toUpperCase() === "ACTIVE").length;
-  const pending = students.filter(s =>
-    s.status?.toUpperCase() === "PENDING" || s.status?.toUpperCase() === "UNACTIVATED"
-  ).length;
-  const depts = new Set(students.map(s => s.department || s.dept)).size;
+  const pending = students.filter(s => s.status?.toUpperCase() === "PENDING").length;
+  const unactivated = students.filter(s => {
+    const st = (s.status || "").toUpperCase();
+    return st === "INACTIVE" || st === "UNACTIVATED" || st === "DISABLED" || st === "REJECTED" || st === "INACTIVE_USER";
+  }).length;
 
   const stats = [
     { title: "Total Students", value: total, icon: Users, color: "bg-blue-500" },
     { title: "Activated", value: activated, icon: UserCheck, color: "bg-green-500" },
     { title: "Pending", value: pending, icon: UserX, color: "bg-orange-500" },
-    { title: "Departments", value: depts, icon: GraduationCap, color: "bg-purple-500" },
+    { title: "Unactivated", value: unactivated, icon: UserMinus, color: "bg-purple-500" },
   ];
 
   if (loading) {
