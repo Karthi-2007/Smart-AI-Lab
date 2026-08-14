@@ -68,19 +68,49 @@ const SystemSettings = () => {
     } catch (e) {}
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
+    try {
+      const payload = {
+        institutionName: institution,
+        timeZone,
+        openingTime,
+        closingTime,
+        bookingDuration
+      };
+
+      const res = await adminService.updateSettings(payload);
+      const resData = res?.data?.data || res?.data || res;
+
+      // Update localStorage & broadcast
+      const settingsObj = {
+        institution: resData.institutionName || institution,
+        timeZone: resData.timeZone || timeZone,
+        openingTime: resData.openingTime || openingTime,
+        closingTime: resData.closingTime || closingTime,
+        bookingDuration: resData.bookingDuration || bookingDuration
+      };
+      localStorage.setItem("smartlab_system_settings", JSON.stringify(settingsObj));
+      window.dispatchEvent(new Event('smartlab_settings_updated'));
+      
       try {
-        persistAndBroadcastSettings(institution, timeZone, openingTime, closingTime, bookingDuration);
-        toast.success("System Settings saved successfully!");
-      } catch (err) {
-        toast.error("Failed to save system settings.");
-      } finally {
-        setSaving(false);
-      }
-    }, 300);
+        const channel = new BroadcastChannel('smartlab_settings_channel');
+        channel.postMessage(settingsObj);
+        channel.close();
+      } catch (err) {}
+
+      toast.success(res?.data?.message || "System settings updated successfully!");
+    } catch (err) {
+      console.error("Save system settings failed", err);
+      // Fallback local save if backend offline
+      const settingsObj = { institution, timeZone, openingTime, closingTime, bookingDuration };
+      localStorage.setItem("smartlab_system_settings", JSON.stringify(settingsObj));
+      window.dispatchEvent(new Event('smartlab_settings_updated'));
+      toast.success("System Settings saved locally!");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -103,11 +133,7 @@ const SystemSettings = () => {
               type="text"
               required
               value={institution}
-              onChange={(e) => {
-                const val = e.target.value;
-                setInstitution(val);
-                persistAndBroadcastSettings(val, timeZone, openingTime, closingTime, bookingDuration);
-              }}
+              onChange={(e) => setInstitution(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-3.5 text-white text-sm focus:border-blue-500 outline-none transition"
             />
           </div>
@@ -116,11 +142,7 @@ const SystemSettings = () => {
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Time Zone</label>
             <select
               value={timeZone}
-              onChange={(e) => {
-                const val = e.target.value;
-                setTimeZone(val);
-                persistAndBroadcastSettings(institution, val, openingTime, closingTime, bookingDuration);
-              }}
+              onChange={(e) => setTimeZone(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-3.5 text-white text-sm focus:border-blue-500 outline-none transition"
             >
               <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
@@ -135,11 +157,7 @@ const SystemSettings = () => {
             <input
               type="time"
               value={openingTime}
-              onChange={(e) => {
-                const val = e.target.value;
-                setOpeningTime(val);
-                persistAndBroadcastSettings(institution, timeZone, val, closingTime, bookingDuration);
-              }}
+              onChange={(e) => setOpeningTime(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-3.5 text-white text-sm focus:border-blue-500 outline-none transition"
             />
           </div>
@@ -149,11 +167,7 @@ const SystemSettings = () => {
             <input
               type="time"
               value={closingTime}
-              onChange={(e) => {
-                const val = e.target.value;
-                setClosingTime(val);
-                persistAndBroadcastSettings(institution, timeZone, openingTime, val, bookingDuration);
-              }}
+              onChange={(e) => setClosingTime(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-3.5 text-white text-sm focus:border-blue-500 outline-none transition"
             />
           </div>
@@ -162,11 +176,7 @@ const SystemSettings = () => {
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Default Booking Slot Duration</label>
             <select
               value={bookingDuration}
-              onChange={(e) => {
-                const val = e.target.value;
-                setBookingDuration(val);
-                persistAndBroadcastSettings(institution, timeZone, openingTime, closingTime, val);
-              }}
+              onChange={(e) => setBookingDuration(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-3.5 text-white text-sm focus:border-blue-500 outline-none transition"
             >
               <option value="1 Hour">1 Hour Per Session</option>
