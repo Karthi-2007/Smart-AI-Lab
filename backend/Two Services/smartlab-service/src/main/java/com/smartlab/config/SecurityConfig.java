@@ -167,6 +167,14 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PATCH, "/maintenance/**", "/api/business/maintenance/**")
                         .hasAnyRole("FACULTY", "ADMIN")
 
+                    // System Settings
+                    .requestMatchers(HttpMethod.GET, "/settings", "/settings/**", "/api/business/settings", "/api/business/settings/**")
+                        .hasAnyRole("STUDENT", "FACULTY", "ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/settings", "/settings/**", "/api/business/settings", "/api/business/settings/**")
+                        .hasAnyRole("FACULTY", "ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/settings", "/settings/**", "/api/business/settings", "/api/business/settings/**")
+                        .hasAnyRole("FACULTY", "ADMIN")
+
                     // Notifications
                     .requestMatchers(HttpMethod.GET, "/notifications/**", "/api/business/notifications/**")
                         .hasAnyRole("STUDENT", "FACULTY", "ADMIN")

@@ -3,6 +3,8 @@ import api from './api';
 export const adminService = {
     getDashboard: () => api.get('/api/business/dashboard/admin'),
     getDashboardAdminSummary: () => api.get('/api/business/dashboard/admin/summary'),
+    getSettings: () => api.get('/api/business/settings'),
+    updateSettings: (data) => api.put('/api/business/settings', data),
     
     // Dedicated Student Endpoints
     getStudentsAll: () => api.get('/api/business/students/all'),

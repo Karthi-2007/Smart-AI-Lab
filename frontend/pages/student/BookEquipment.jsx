@@ -81,6 +81,27 @@ const BookEquipment = () => {
   });
 
   useEffect(() => {
+    const syncBackendSettings = async () => {
+      try {
+        const res = await studentService.getSettings();
+        const body = res?.data?.data || res?.data || res;
+        if (body) {
+          const localObj = {
+            institution: body.institutionName || "Karpagam College of Engineering",
+            timeZone: body.timeZone || "Asia/Kolkata",
+            openingTime: body.openingTime || "09:00",
+            closingTime: body.closingTime || "16:00",
+            bookingDuration: body.bookingDuration || "3 Hours"
+          };
+          localStorage.setItem("smartlab_system_settings", JSON.stringify(localObj));
+          setTimeSlots(getDynamicTimeSlots());
+        }
+      } catch (e) {
+        console.warn("Could not fetch backend settings in BookEquipment", e);
+      }
+    };
+    syncBackendSettings();
+
     const updateSlots = () => setTimeSlots(getDynamicTimeSlots());
     
     // 1. Same-window event listener

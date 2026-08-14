@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Settings, Save, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { adminService } from "../../../services/adminService";
 
 const SystemSettings = () => {
   const [institution, setInstitution] = useState("Karpagam College of Engineering");
@@ -11,38 +12,43 @@ const SystemSettings = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("smartlab_system_settings");
-      if (stored) {
-        const s = JSON.parse(stored);
-        if (s.institution) setInstitution(s.institution);
-        if (s.timeZone) setTimeZone(s.timeZone);
-        if (s.openingTime) setOpeningTime(s.openingTime);
-        if (s.closingTime) setClosingTime(s.closingTime);
-        if (s.bookingDuration) setBookingDuration(s.bookingDuration);
-      } else {
-        const initial = {
-          institution: "Karpagam College of Engineering",
-          timeZone: "Asia/Kolkata",
-          openingTime: "09:00",
-          closingTime: "16:00",
-          bookingDuration: "3 Hours"
-        };
-        localStorage.setItem("smartlab_system_settings", JSON.stringify(initial));
-        window.dispatchEvent(new Event('smartlab_settings_updated'));
+    const fetchBackendSettings = async () => {
+      try {
+        const res = await adminService.getSettings();
+        const body = res?.data?.data || res?.data || res;
+        if (body) {
+          if (body.institutionName) setInstitution(body.institutionName);
+          if (body.timeZone) setTimeZone(body.timeZone);
+          if (body.openingTime) setOpeningTime(body.openingTime);
+          if (body.closingTime) setClosingTime(body.closingTime);
+          if (body.bookingDuration) setBookingDuration(body.bookingDuration);
+          
+          const localObj = {
+            institution: body.institutionName || "Karpagam College of Engineering",
+            timeZone: body.timeZone || "Asia/Kolkata",
+            openingTime: body.openingTime || "09:00",
+            closingTime: body.closingTime || "16:00",
+            bookingDuration: body.bookingDuration || "3 Hours"
+          };
+          localStorage.setItem("smartlab_system_settings", JSON.stringify(localObj));
+          window.dispatchEvent(new Event('smartlab_settings_updated'));
+        }
+      } catch (err) {
+        console.warn("Could not fetch backend settings, falling back to localStorage", err);
       }
-    } catch (e) {}
+    };
+    fetchBackendSettings();
   }, []);
 
-  const persistAndBroadcastSettings = (newInst, newTz, newOpen, newClose, newDur) => {
+  const persistAndBroadcastSettings = async (newInst, newTz, newOpen, newClose, newDur) => {
     try {
-      const settings = { 
-        institution: newInst !== undefined ? newInst : institution, 
-        timeZone: newTz !== undefined ? newTz : timeZone, 
-        openingTime: newOpen !== undefined ? newOpen : openingTime, 
-        closingTime: newClose !== undefined ? newClose : closingTime, 
-        bookingDuration: newDur !== undefined ? newDur : bookingDuration 
-      };
+      const inst = newInst !== undefined ? newInst : institution;
+      const tz = newTz !== undefined ? newTz : timeZone;
+      const open = newOpen !== undefined ? newOpen : openingTime;
+      const close = newClose !== undefined ? newClose : closingTime;
+      const dur = newDur !== undefined ? newDur : bookingDuration;
+
+      const settings = { institution: inst, timeZone: tz, openingTime: open, closingTime: close, bookingDuration: dur };
       localStorage.setItem("smartlab_system_settings", JSON.stringify(settings));
       window.dispatchEvent(new Event('smartlab_settings_updated'));
       try {
@@ -50,6 +56,15 @@ const SystemSettings = () => {
         channel.postMessage(settings);
         channel.close();
       } catch (err) {}
+
+      // Persist to backend database
+      await adminService.updateSettings({
+        institutionName: inst,
+        timeZone: tz,
+        openingTime: open,
+        closingTime: close,
+        bookingDuration: dur
+      }).catch(e => console.warn("Backend settings update failed", e));
     } catch (e) {}
   };
 

@@ -42,7 +42,8 @@ export const studentService = {
     getDashboardStudentBookings: () => api.get('/api/business/dashboard/student/bookings'),
     getDashboardStudentFaults: () => api.get('/api/business/dashboard/student/faults'),
     
-    getSlotAvailability: (equipmentId, date) => api.get(`/api/business/bookings/availability`, { params: { equipmentId, date } })
+    getSlotAvailability: (equipmentId, date) => api.get(`/api/business/bookings/availability`, { params: { equipmentId, date } }),
+    getSettings: () => api.get('/api/business/settings')
 };
 
 export default studentService;
