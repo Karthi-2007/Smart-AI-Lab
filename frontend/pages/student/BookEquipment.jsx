@@ -180,7 +180,16 @@ const BookEquipment = () => {
       try {
         setLoadingAvailability(true);
         const res = await studentService.getSlotAvailability(formData.equipmentId, formData.date);
-        setBookedCounts(res?.data || {});
+        const mapData = res?.data?.data || res?.data || {};
+        const cleanMap = {};
+        if (mapData && typeof mapData === 'object') {
+          Object.keys(mapData).forEach(k => {
+            if (k && k !== 'success' && k !== 'message' && k !== 'status') {
+              cleanMap[k.trim()] = Number(mapData[k]) || 0;
+            }
+          });
+        }
+        setBookedCounts(cleanMap);
       } catch (err) {
         console.warn("Could not load slot availability:", err);
       } finally {
@@ -239,7 +248,8 @@ const BookEquipment = () => {
       toast.success('Equipment booked successfully');
       navigate('/student/bookings');
     } catch (error) {
-      toast.error('Failed to book equipment');
+      const errMsg = error?.response?.data?.message || 'Failed to book equipment';
+      toast.error(errMsg);
       console.error(error);
     } finally {
       setSubmitting(false);
@@ -368,15 +378,31 @@ const BookEquipment = () => {
                 </option>
                 {timeSlots.map(slot => {
                   const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
-                  const maxQty = selectedEq ? (selectedEq.quantity ?? selectedEq.totalQuantity ?? 1) : null;
-                  const booked = bookedCounts[slot] || 0;
-                  const left = maxQty !== null ? maxQty - booked : null;
+                  const rawQty = selectedEq ? (selectedEq.quantity ?? selectedEq.totalQuantity ?? selectedEq.availableQuantity ?? 1) : null;
+                  const maxQty = rawQty !== null ? parseInt(rawQty, 10) : null;
+
+                  const trimmedSlot = slot.trim();
+                  let booked = 0;
+                  if (bookedCounts) {
+                    if (typeof bookedCounts[trimmedSlot] === 'number') {
+                      booked = bookedCounts[trimmedSlot];
+                    } else {
+                      const matchedKey = Object.keys(bookedCounts).find(k => k.replace(/\s+/g, '') === trimmedSlot.replace(/\s+/g, ''));
+                      if (matchedKey && typeof bookedCounts[matchedKey] === 'number') {
+                        booked = bookedCounts[matchedKey];
+                      }
+                    }
+                  }
+
+                  const left = maxQty !== null ? Math.max(0, maxQty - booked) : null;
                   const isFull = left !== null && left <= 0;
                   const showAvailability = formData.equipmentId && formData.date;
                   
                   let labelText = '';
                   if (showAvailability && left !== null) {
-                    labelText = isFull ? ' — (Fully Booked)' : ` — (${left} of ${maxQty} available)`;
+                    labelText = isFull 
+                      ? ' — (Fully Booked)' 
+                      : ` — (${left} of ${maxQty} available)`;
                   } else if (maxQty !== null) {
                     labelText = ` — (Max Qty: ${maxQty})`;
                   }
