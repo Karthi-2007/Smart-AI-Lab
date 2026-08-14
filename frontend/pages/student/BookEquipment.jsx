@@ -35,10 +35,11 @@ const getDynamicTimeSlots = () => {
   };
 
   let stepMinutes = 120;
-  if (durationType === "1 Hour" || durationType.includes("1")) stepMinutes = 60;
-  else if (durationType === "2 Hours" || durationType.includes("2")) stepMinutes = 120;
-  else if (durationType === "3 Hours" || durationType.includes("3")) stepMinutes = 180;
-  else if (durationType === "Half Day" || durationType.includes("4")) stepMinutes = 240;
+  const dStr = String(durationType || '').toLowerCase();
+  if (dStr.includes("1")) stepMinutes = 60;
+  else if (dStr.includes("2")) stepMinutes = 120;
+  else if (dStr.includes("3")) stepMinutes = 180;
+  else if (dStr.includes("half") || dStr.includes("4")) stepMinutes = 240;
 
   const startMin = timeToMinutes(opening);
   const endMin = timeToMinutes(closing);
