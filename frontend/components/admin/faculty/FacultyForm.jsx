@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { adminService } from "../../../services/adminService";
 
+const DEFAULT_DEPARTMENTS = [
+  { id: '1', name: "Computer Science & Engineering", code: "CSE" },
+  { id: '2', name: "Electrical & Electronics Engineering", code: "EEE" },
+  { id: '3', name: "Electronics & Communication Engineering", code: "ECE" },
+  { id: '4', name: "Mechanical Engineering", code: "MECH" },
+  { id: '5', name: "Civil Engineering", code: "CIVIL" },
+  { id: '6', name: "Artificial Intelligence & Data Science", code: "AI&DS" },
+  { id: '7', name: "Information Technology", code: "IT" },
+];
+
 const FacultyForm = ({
   isOpen,
   onClose,
@@ -9,7 +19,7 @@ const FacultyForm = ({
   faculty,
   onSave,
 }) => {
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const [formData, setFormData] = useState({
     id: "",
     facultyId: "",
@@ -26,9 +36,16 @@ const FacultyForm = ({
   useEffect(() => {
     if (isOpen) {
       adminService.getDepartments().then(res => {
-        const list = res?.data || res || [];
-        setDepartments(Array.isArray(list) ? list : []);
-      }).catch(() => {});
+        const body = res?.data || res || [];
+        const list = Array.isArray(body) ? body : (body.content || body.data || []);
+        if (Array.isArray(list) && list.length > 0) {
+          setDepartments(list);
+        } else {
+          setDepartments(DEFAULT_DEPARTMENTS);
+        }
+      }).catch(() => {
+        setDepartments(DEFAULT_DEPARTMENTS);
+      });
     }
   }, [isOpen]);
 
@@ -113,17 +130,24 @@ const FacultyForm = ({
 
             <select
               name="department"
-              value={formData.department}
+              value={formData.department || ""}
               onChange={handleChange}
               required
-              className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none focus:border-orange-500 transition"
+              className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none focus:border-orange-500 transition text-white"
             >
               <option value="">Select Department</option>
-              {departments.map((dept) => (
-                <option key={dept.departmentId || dept.id} value={dept.name}>
-                  {dept.name} ({dept.code})
-                </option>
-              ))}
+              {departments.map((dept, idx) => {
+                const dName = typeof dept === 'string' ? dept : (dept.name || dept.departmentName);
+                const dCode = typeof dept === 'string' ? '' : (dept.code || '');
+                return (
+                  <option key={dept.departmentId || dept.id || idx} value={dName}>
+                    {dName} {dCode ? `(${dCode})` : ""}
+                  </option>
+                );
+              })}
+              {formData.department && !departments.some(d => (typeof d === 'string' ? d : d.name) === formData.department) && (
+                <option value={formData.department}>{formData.department}</option>
+              )}
             </select>
 
             <select
