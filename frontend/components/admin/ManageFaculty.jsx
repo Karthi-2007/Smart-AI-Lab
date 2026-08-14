@@ -243,7 +243,8 @@ const ManageFaculty = () => {
         await adminService.createFaculty(formData);
         toast.success('Faculty added successfully!');
       } else {
-        await adminService.updateFaculty(editingFaculty.id, formData);
+        const facId = editingFaculty?.id || editingFaculty?.facultyId || editingFaculty?.userId || editingFaculty?._id || formData?.id || formData?.facultyId;
+        await adminService.updateFaculty(facId, formData);
         toast.success('Faculty updated successfully!');
       }
       fetchFaculty(); 

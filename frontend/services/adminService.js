@@ -250,50 +250,90 @@ export const adminService = {
         return { auth: authRes.data, business: bizRes.data };
     },
     
-    updateStudent: async (authId, data) => {
-        const users = await adminService.getUsers();
-        const user = users.find(u => u.id === authId || u.userId === authId);
-        
-        const promises = [
-            api.put(`/api/auth/admin/users/${authId}`, {
-                name: data.name,
-                email: data.email,
-                regNo: data.regNo || data.registerNo
-            })
-        ];
-        if (user && user.studentId) {
-            promises.push(api.put(`/api/business/students/${user.studentId}`, {
-                name: data.name,
-                email: data.email,
-                department: data.department,
-                year: parseInt(data.year) || 3,
-                status: data.status || 'Active'
-            }));
+    updateStudent: async (idOrAuthId, data) => {
+        const targetId = idOrAuthId || data?.id || data?.studentId || data?.userId;
+        if (!targetId || targetId === 'undefined') {
+            throw new Error("Student ID is required for update");
         }
+
+        const users = await adminService.getUsers().catch(() => []);
+        const user = Array.isArray(users) ? users.find(u => 
+            String(u.id) === String(targetId) || 
+            String(u.userId) === String(targetId) || 
+            String(u.studentId) === String(targetId) ||
+            (u.email && data.email && u.email.toLowerCase() === data.email.toLowerCase())
+        ) : null;
+
+        const validAuthId = user?.id || user?.userId || targetId;
+        const validBizId = user?.studentId || data?.studentId || targetId;
+
+        const promises = [];
+        if (validAuthId && validAuthId !== 'undefined') {
+            promises.push(
+                api.put(`/api/auth/admin/users/${validAuthId}`, {
+                    name: data.name,
+                    email: data.email,
+                    regNo: data.regNo || data.registerNo
+                }).catch(err => console.warn("Auth user update warning:", err))
+            );
+        }
+
+        if (validBizId && validBizId !== 'undefined') {
+            promises.push(
+                api.put(`/api/business/students/${validBizId}`, {
+                    name: data.name,
+                    email: data.email,
+                    department: data.department,
+                    year: parseInt(data.year) || 3,
+                    status: data.status || 'Active'
+                }).catch(err => console.warn("Business student update warning:", err))
+            );
+        }
+
         await Promise.all(promises);
     },
 
-    updateFaculty: async (authId, data) => {
-        const users = await adminService.getUsers();
-        const user = users.find(u => u.id === authId || u.userId === authId);
-        
-        const promises = [
-            api.put(`/api/auth/admin/users/${authId}`, {
-                name: data.name,
-                email: data.email,
-                facultyId: data.facultyId
-            })
-        ];
-        if (user && user.facultyId) {
-            promises.push(api.put(`/api/business/faculty/${user.facultyId}`, {
-                name: data.name,
-                email: data.email,
-                department: data.department,
-                designation: data.designation,
-                status: data.status || 'ACTIVE',
-                lab: data.lab || '-'
-            }));
+    updateFaculty: async (idOrAuthId, data) => {
+        const targetId = idOrAuthId || data?.id || data?.facultyId || data?.userId;
+        if (!targetId || targetId === 'undefined') {
+            throw new Error("Faculty ID is required for update");
         }
+
+        const users = await adminService.getUsers().catch(() => []);
+        const user = Array.isArray(users) ? users.find(u => 
+            String(u.id) === String(targetId) || 
+            String(u.userId) === String(targetId) || 
+            String(u.facultyId) === String(targetId) ||
+            (u.email && data.email && u.email.toLowerCase() === data.email.toLowerCase())
+        ) : null;
+        
+        const validAuthId = user?.id || user?.userId || targetId;
+        const validBizId = user?.facultyId || data?.facultyId || targetId;
+
+        const promises = [];
+        if (validAuthId && validAuthId !== 'undefined') {
+            promises.push(
+                api.put(`/api/auth/admin/users/${validAuthId}`, {
+                    name: data.name,
+                    email: data.email,
+                    facultyId: data.facultyId || data.id
+                }).catch(err => console.warn("Auth user update warning:", err))
+            );
+        }
+
+        if (validBizId && validBizId !== 'undefined') {
+            promises.push(
+                api.put(`/api/business/faculty/${validBizId}`, {
+                    name: data.name,
+                    email: data.email,
+                    department: data.department,
+                    designation: data.designation,
+                    status: data.status || 'ACTIVE',
+                    lab: data.lab || '-'
+                }).catch(err => console.warn("Business faculty update warning:", err))
+            );
+        }
+
         await Promise.all(promises);
     },
     
