@@ -1,7 +1,12 @@
 import React from 'react';
-import { Users, UserCog, Building2, Beaker } from 'lucide-react';
+import { Users, UserCog, Building2, UserX } from 'lucide-react';
 
 const FacultyStats = ({ faculty = [], loading = false }) => {
+  const unactiveCount = faculty.filter(f => {
+    const st = (f.status || '').toUpperCase();
+    return st === 'INACTIVE' || st === 'UNACTIVATED' || st === 'DISABLED' || st === 'PENDING' || st === 'REJECTED';
+  }).length;
+
   const stats = [
     {
       title: 'Total Faculty',
@@ -25,12 +30,9 @@ const FacultyStats = ({ faculty = [], loading = false }) => {
       bg: 'bg-orange-500/20'
     },
     {
-      title: 'Labs Assigned',
-      value: new Set(faculty.flatMap(f => {
-        if (Array.isArray(f.laboratories)) return f.laboratories.map(l => l.labId || l.name);
-        return f.lab ? [f.lab] : [];
-      })).size,
-      icon: Beaker,
+      title: 'Unactive Faculty',
+      value: unactiveCount,
+      icon: UserX,
       color: 'text-purple-500',
       bg: 'bg-purple-500/20'
     }
