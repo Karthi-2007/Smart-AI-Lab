@@ -17,8 +17,8 @@ const AIAnalytics = () => {
     users: []
   });
 
-  const fetchLiveAIData = async () => {
-    setLoading(true);
+  const fetchLiveAIData = async (showToast = true) => {
+    if (showToast) setLoading(true);
     try {
       const [eqRes, bookRes, faultRes, maintRes, labRes, telemetryRes] = await Promise.all([
         adminService.getEquipments().catch(() => ({ data: [] })),
@@ -58,16 +58,29 @@ const AIAnalytics = () => {
         telemetryList: telemetry.telemetryList || [],
         recommendation: telemetry.recommendation || ''
       });
-      toast.success('AI Audit re-computed successfully!');
+      if (showToast) toast.success('AI Audit re-computed successfully!');
     } catch (error) {
-      toast.error('Failed to load AI Analytics data');
+      if (showToast) toast.error('Failed to load AI Analytics data');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLiveAIData();
+    fetchLiveAIData(false);
+    // Real-time auto-polling interval every 10 seconds
+    const intervalId = setInterval(() => {
+      fetchLiveAIData(false);
+    }, 10000);
+
+    // Auto-refresh when switching back to the window
+    const handleFocus = () => fetchLiveAIData(false);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // Dynamic AI Computed Metrics derived from current DB data
@@ -150,7 +163,7 @@ const AIAnalytics = () => {
         </div>
 
         <button
-          onClick={fetchLiveAIData}
+          onClick={() => fetchLiveAIData(true)}
           disabled={loading}
           className="self-start sm:self-center px-5 py-3 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white rounded-2xl transition flex items-center gap-2 text-sm font-semibold border border-slate-700 shadow-md disabled:opacity-60"
         >
