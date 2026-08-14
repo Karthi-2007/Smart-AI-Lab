@@ -115,6 +115,20 @@ public class AiService {
                 return Map.of("response", handleWhoAmIQuery(principal), "model", "database", "source", "SmartLab DB Engine");
             }
 
+            // Workflow Queries
+            if (cleanMsg.contains("student") && (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("step") || cleanMsg.contains("guide") || cleanMsg.contains("role") || cleanMsg.contains("action") || cleanMsg.contains("how"))) {
+                return Map.of("response", getStudentWorkflowGuide(), "model", "smartlab-assistant", "source", "SmartLab Workflow Engine");
+            }
+            if (cleanMsg.contains("faculty") && (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("step") || cleanMsg.contains("guide") || cleanMsg.contains("role") || cleanMsg.contains("action") || cleanMsg.contains("how"))) {
+                return Map.of("response", getFacultyWorkflowGuide(), "model", "smartlab-assistant", "source", "SmartLab Workflow Engine");
+            }
+            if (cleanMsg.contains("admin") && (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("step") || cleanMsg.contains("guide") || cleanMsg.contains("role") || cleanMsg.contains("action") || cleanMsg.contains("how"))) {
+                return Map.of("response", getAdminWorkflowGuide(), "model", "smartlab-assistant", "source", "SmartLab Workflow Engine");
+            }
+            if (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("how to use") || cleanMsg.contains("guide")) {
+                return Map.of("response", getStudentWorkflowGuide(), "model", "smartlab-assistant", "source", "SmartLab Workflow Engine");
+            }
+
             if (cleanMsg.contains("booking") || cleanMsg.contains("bookings")) {
                 return Map.of("response", handleBookingsQuery(principal), "model", "database", "source", "SmartLab DB Engine");
             }
@@ -717,19 +731,76 @@ public class AiService {
         return sb.toString();
     }
 
+    private String getStudentWorkflowGuide() {
+        return "### 🎓 SmartLab Student Workflow:\n\n" +
+               "1. **Explore Available Equipment**:\n" +
+               "   - Navigate to **Equipment** to browse all hardware assets available in your department (CSE, EEE, ECE, MECH, etc.).\n" +
+               "   - Check machine status, lab location, and specification details.\n\n" +
+               "2. **Submit Equipment Booking**:\n" +
+               "   - Click **Book Equipment** on any active machine.\n" +
+               "   - Select your desired date, time slot (e.g. 09:00 AM - 11:00 AM), and enter project purpose.\n" +
+               "   - The booking is created with status **Pending**.\n\n" +
+               "3. **Faculty Approval & Notification**:\n" +
+               "   - Department faculty members review your request.\n" +
+               "   - You will receive an instant notification in your dashboard when your booking is **Approved** or **Rejected**.\n\n" +
+               "4. **Lab Check-In & QR Pass Access**:\n" +
+               "   - Visit the designated laboratory during your booked time slot.\n" +
+               "   - Present your **QR Access Pass** (available under *My Bookings* / *QR Pass Monitor*) to the Lab Assistant.\n" +
+               "   - The Assistant scans your pass; the booking changes to **Issued** and equipment to **In Use**.\n\n" +
+               "5. **Fault Reporting (If Machinery Fails)**:\n" +
+               "   - If you encounter a physical or electrical issue with a machine, go to **Fault Reports** -> **Report Fault**.\n" +
+               "   - Describe the defect so technicians and faculty can schedule maintenance.\n\n" +
+               "6. **Return & Completion**:\n" +
+               "   - Upon finishing your session, return the equipment to the Lab Assistant.\n" +
+               "   - The Assistant marks the booking **Completed**, returning the machine to **Available** status.";
+    }
+
+    private String getFacultyWorkflowGuide() {
+        return "### 👨‍🏫 SmartLab Faculty Workflow:\n\n" +
+               "1. **Review & Approve Bookings**:\n" +
+               "   - Access **Booking Requests** to view pending student requests in your department.\n" +
+               "   - Click the Green Checkmark (`Approve`) or Red Trash (`Reject`) to process requests.\n\n" +
+               "2. **Manage Department Laboratories & Hardware**:\n" +
+               "   - View all equipment assigned to your department labs.\n" +
+               "   - Monitor live status (*Available*, *In Use*, *Under Maintenance*, *Faulty*).\n\n" +
+               "3. **Inspect Fault Reports & Schedule Maintenance**:\n" +
+               "   - Review incoming student fault reports in your department.\n" +
+               "   - Schedule maintenance tasks and assign certified technicians.\n\n" +
+               "4. **QR Access Pass Verification**:\n" +
+               "   - Monitor lab check-ins via **QR Pass Monitor** when students arrive at the lab.";
+    }
+
+    private String getAdminWorkflowGuide() {
+        return "### ⚙️ SmartLab Admin Workflow:\n\n" +
+               "1. **User Management**:\n" +
+               "   - Add, edit, activate, or deactivate **Student** and **Faculty** accounts.\n\n" +
+               "2. **Laboratory & Equipment Administration**:\n" +
+               "   - Add new departments, laboratories, and hardware assets.\n" +
+               "   - Import/Export CSV records.\n\n" +
+               "3. **System Overview & Reports**:\n" +
+               "   - View comprehensive utilization analytics, fault histories, and audit logs.";
+    }
+
     private String buildFallbackResponse(String userMsg) {
         String msg = userMsg.toLowerCase();
 
-        if (msg.contains("how to book") || msg.contains("booking workflow") || msg.contains("how do i book") || msg.contains("steps to book")) {
-            return "### SmartLab Booking Workflow:\n\n" +
-                   "1. **Select Equipment**: Go to the Equipment section and choose an **Available** device.\n" +
-                   "2. **Book**: Select your desired date and time slot, enter the purpose, and submit.\n" +
-                   "3. **Approval**: Faculty members belonging to your department will review and approve/reject your booking.\n" +
-                   "4. **Issue**: Visit the laboratory during your booked slot. Present your **QR Access Pass** (found in My Bookings) to the Lab Assistant to check in.\n" +
-                   "5. **Release**: Return the equipment when finished. The assistant will complete your booking.";
+        if (msg.contains("student") && (msg.contains("workflow") || msg.contains("process") || msg.contains("step") || msg.contains("guide") || msg.contains("role") || msg.contains("action") || msg.contains("how"))) {
+            return getStudentWorkflowGuide();
         }
 
-        if (msg.contains("report fault") || msg.contains("how to report") || msg.contains("report a fault") || msg.contains("fault reporting")) {
+        if (msg.contains("faculty") && (msg.contains("workflow") || msg.contains("process") || msg.contains("step") || msg.contains("guide") || msg.contains("role") || msg.contains("action") || msg.contains("how"))) {
+            return getFacultyWorkflowGuide();
+        }
+
+        if (msg.contains("admin") && (msg.contains("workflow") || msg.contains("process") || msg.contains("step") || msg.contains("guide") || msg.contains("role") || msg.contains("action") || msg.contains("how"))) {
+            return getAdminWorkflowGuide();
+        }
+
+        if (msg.contains("workflow") || msg.contains("process") || msg.contains("how to use") || msg.contains("guide") || msg.contains("how to book") || msg.contains("booking workflow") || msg.contains("how do i book") || msg.contains("steps to book")) {
+            return getStudentWorkflowGuide();
+        }
+
+        if (msg.contains("report fault") || msg.contains("how to report") || msg.contains("report a fault") || msg.contains("fault reporting") || msg.contains("fault")) {
             return "### How to Report a Fault in SmartLab:\n\n" +
                    "1. Navigate to the **Faults** section in your dashboard.\n" +
                    "2. Click on **Report Fault**.\n" +
