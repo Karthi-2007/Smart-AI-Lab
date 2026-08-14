@@ -257,9 +257,10 @@ const BookEquipment = () => {
               <option value="">-- Choose Equipment --</option>
               {equipmentList.map((eq, idx) => {
                 const eqId = eq.equipmentId || eq.id || eq._id || idx;
+                const qty = eq.quantity ?? eq.totalQuantity ?? 1;
                 return (
                   <option key={eqId} value={eqId}>
-                    {eq.name} {eq.equipmentId ? `(#${eq.equipmentId})` : ''}
+                    {eq.name} {eq.equipmentId ? `(#${eq.equipmentId})` : ''} — [Total Qty: {qty}]
                   </option>
                 );
               })}
@@ -270,6 +271,7 @@ const BookEquipment = () => {
           {(() => {
             const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
             if (!selectedEq) return null;
+            const qty = selectedEq.quantity ?? selectedEq.totalQuantity ?? 1;
             return (
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 mt-2">
                 <div className="w-full md:w-1/3 aspect-video md:aspect-auto md:h-28 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 flex-shrink-0">
@@ -287,7 +289,12 @@ const BookEquipment = () => {
                     <p><span className="font-semibold text-slate-500 text-[11px]">Category:</span> {selectedEq.category || 'General'}</p>
                     <p><span className="font-semibold text-slate-500 text-[11px]">Lab:</span> {selectedEq.laboratory?.name || 'Main Lab'}</p>
                     <p><span className="font-semibold text-slate-500 text-[11px]">Status:</span> <span className="text-emerald-400 font-semibold">{selectedEq.status}</span></p>
-                    <p><span className="font-semibold text-slate-500 text-[11px]">Total Quantity:</span> <span className="text-white font-semibold">{selectedEq.quantity || 5}</span></p>
+                    <p className="col-span-2 mt-1">
+                      <span className="font-semibold text-slate-400 text-[11px] mr-2">Available Hardware Quantity:</span> 
+                      <span className="text-orange-400 font-bold text-xs bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-500/20">
+                        {qty} {qty === 1 ? 'unit' : 'units'} total
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -336,14 +343,22 @@ const BookEquipment = () => {
                 </option>
                 {timeSlots.map(slot => {
                   const selectedEq = equipmentList.find(eq => String(eq.equipmentId || eq.id) === String(formData.equipmentId));
-                  const maxQty = selectedEq?.quantity || 5;
+                  const maxQty = selectedEq ? (selectedEq.quantity ?? selectedEq.totalQuantity ?? 1) : null;
                   const booked = bookedCounts[slot] || 0;
-                  const left = maxQty - booked;
-                  const isFull = left <= 0;
+                  const left = maxQty !== null ? maxQty - booked : null;
+                  const isFull = left !== null && left <= 0;
                   const showAvailability = formData.equipmentId && formData.date;
+                  
+                  let labelText = '';
+                  if (showAvailability && left !== null) {
+                    labelText = isFull ? ' — (Fully Booked)' : ` — (${left} of ${maxQty} available)`;
+                  } else if (maxQty !== null) {
+                    labelText = ` — (Max Qty: ${maxQty})`;
+                  }
+
                   return (
                     <option key={slot} value={slot} disabled={showAvailability && isFull}>
-                      {slot} {showAvailability ? (isFull ? '(Fully Booked)' : `(${left} of ${maxQty} available)`) : ''}
+                      {slot}{labelText}
                     </option>
                   );
                 })}
