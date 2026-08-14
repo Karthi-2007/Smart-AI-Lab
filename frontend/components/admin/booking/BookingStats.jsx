@@ -5,20 +5,7 @@ const BookingStats = ({ bookings = [], loading }) => {
   const list = Array.isArray(bookings) ? bookings : [];
   const total = list.length;
   const pending = list.filter(b => (b.status || '').toLowerCase() === 'pending').length;
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const todayStr = `${year}-${month}-${day}`;
-
-  const approvedToday = list.filter(b => {
-    const st = (b.status || '').toLowerCase();
-    const isApproved = st === 'approved';
-    const bDate = b.date || b.bookingDate || (b.createdAt ? b.createdAt.substring(0, 10) : '');
-    return isApproved && bDate === todayStr;
-  }).length;
-
+  const approved = list.filter(b => (b.status || '').toLowerCase() === 'approved').length;
   const completed = list.filter(b => (b.status || '').toLowerCase() === 'completed').length;
   const rejected = list.filter(b => (b.status || '').toLowerCase() === 'rejected').length;
   const cancelled = list.filter(b => (b.status || '').toLowerCase() === 'cancelled' || (b.status || '').toLowerCase() === 'canceled').length;
@@ -26,7 +13,7 @@ const BookingStats = ({ bookings = [], loading }) => {
   const stats = [
     { label: 'Total Bookings', value: total, icon: CalendarDays, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     { label: 'Pending Approval', value: pending, icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { label: 'Approved Today', value: approvedToday, icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { label: 'Approved', value: approved, icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     { label: 'Completed', value: completed, icon: CheckCheck, color: 'text-teal-400', bg: 'bg-teal-500/10' },
     { label: 'Rejected', value: rejected, icon: XCircle, color: 'text-rose-400', bg: 'bg-rose-500/10' },
     { label: 'Cancelled', value: cancelled, icon: Ban, color: 'text-slate-400', bg: 'bg-slate-500/10' }
