@@ -32,6 +32,11 @@ const SystemSettings = () => {
         const settings = { institution, timeZone, openingTime, closingTime, bookingDuration };
         localStorage.setItem("smartlab_system_settings", JSON.stringify(settings));
         window.dispatchEvent(new Event('smartlab_settings_updated'));
+        try {
+          const channel = new BroadcastChannel('smartlab_settings_channel');
+          channel.postMessage(settings);
+          channel.close();
+        } catch (err) {}
         toast.success("System Settings saved successfully!");
       } catch (err) {
         toast.error("Failed to save system settings.");

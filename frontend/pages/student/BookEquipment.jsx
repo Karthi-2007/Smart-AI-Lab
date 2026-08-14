@@ -79,11 +79,34 @@ const BookEquipment = () => {
 
   useEffect(() => {
     const updateSlots = () => setTimeSlots(getDynamicTimeSlots());
-    window.addEventListener('storage', updateSlots);
+    
+    // 1. Same-window event listener
     window.addEventListener('smartlab_settings_updated', updateSlots);
+    
+    // 2. Cross-tab localStorage event listener
+    window.addEventListener('storage', updateSlots);
+    
+    // 3. Tab focus listener
+    window.addEventListener('focus', updateSlots);
+
+    // 4. BroadcastChannel for instant zero-reload cross-tab messaging
+    let channel;
+    try {
+      channel = new BroadcastChannel('smartlab_settings_channel');
+      channel.onmessage = () => {
+        updateSlots();
+      };
+    } catch (e) {}
+
+    // 5. Short polling interval (every 2 seconds) to guarantee live sync with zero delay
+    const intervalId = setInterval(updateSlots, 2000);
+
     return () => {
-      window.removeEventListener('storage', updateSlots);
       window.removeEventListener('smartlab_settings_updated', updateSlots);
+      window.removeEventListener('storage', updateSlots);
+      window.removeEventListener('focus', updateSlots);
+      if (channel) channel.close();
+      clearInterval(intervalId);
     };
   }, []);
 
