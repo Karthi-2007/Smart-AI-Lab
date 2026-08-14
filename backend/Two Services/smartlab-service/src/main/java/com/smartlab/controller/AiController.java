@@ -18,7 +18,7 @@ public class AiController {
     }
 
     /**
-     * Get list of pulled models from local Ollama tags.
+     * Get list of supported Gemini AI models.
      */
     @GetMapping("/models")
     public ResponseEntity<List<String>> getAvailableModels() {
@@ -26,13 +26,17 @@ public class AiController {
     }
 
     /**
-     * POST endpoint to chat with Ollama, passing query message, model, and history context.
+     * POST endpoint for SmartLab AI Chatbot powered by Google Gemini API.
+     * Supports both /chat and /message endpoints.
      */
-    @PostMapping("/chat")
+    @PostMapping({"/chat", "/message"})
     public ResponseEntity<Map<String, Object>> chatWithAi(@RequestBody Map<String, Object> request) {
         String message = (String) request.get("message");
         if (message == null || message.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Message content is required"));
+            return ResponseEntity.badRequest().body(Map.of(
+                "response", "Message content is required.",
+                "source", "SmartLab Validation"
+            ));
         }
 
         List<Map<String, String>> history = (List<Map<String, String>>) request.get("history");

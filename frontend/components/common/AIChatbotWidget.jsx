@@ -153,26 +153,13 @@ const AIChatbotWidget = () => {
                     <Sparkles className="w-3.5 h-3.5 text-orange-400" />
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-blue-500"}`} />
                     <span className="text-[10px] text-slate-400">
-                      {isOnline ? "Ollama Local (Online)" : "Rule-Based (Ollama Offline)"}
+                      {isOnline ? "Google Gemini AI (Online)" : "SmartLab AI Assistant"}
                     </span>
                   </div>
                 </div>
               </div>
-
-              {/* Model Dropdown */}
-              {models.length > 0 && (
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 text-[10px] text-slate-200 rounded-lg px-2.5 py-1 focus:outline-none focus:border-orange-500 max-w-[130px] font-mono"
-                >
-                  {models.map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              )}
             </div>
 
             {/* Message Area */}
