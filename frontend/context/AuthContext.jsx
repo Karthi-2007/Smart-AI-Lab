@@ -42,53 +42,16 @@ export const AuthProvider = ({ children }) => {
       
       try {
         if (role === "STUDENT") {
-          const studentProfile = await api.get(`/api/business/students/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
-          if (studentProfile?.data?.studentId) {
-            profileId = studentProfile.data.studentId;
-            // Synchronize name in business service if missing or mismatched
-            if (name && studentProfile.data.name !== name) {
-              await api.put(`/api/business/students/${profileId}`, {
-                name: name,
-                email: email,
-                regNo: regNo || studentProfile.data.regNo
-              }).catch(() => null);
-            }
-          } else {
-            // Auto-sync new student into business DB
-            const newStudentRes = await api.post('/api/business/students', {
-              studentId: userId,
-              name: name || "Student",
-              email: email,
-              department: "Computer Science & Engineering",
-              year: 3,
-              status: "Active"
-            }).catch(() => null);
-            if (newStudentRes?.data?.studentId) {
-              profileId = newStudentRes.data.studentId;
-            }
+          const studentRes = await api.get(`/api/business/students/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
+          const profile = studentRes?.data?.data || studentRes?.data;
+          if (profile?.studentId || profile?.id) {
+            profileId = profile.studentId || profile.id;
           }
         } else if (role === "FACULTY") {
-          const facultyProfile = await api.get(`/api/business/faculty/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
-          if (facultyProfile?.data?.facultyId) {
-            profileId = facultyProfile.data.facultyId;
-            if (name && facultyProfile.data.name !== name) {
-              await api.put(`/api/business/faculty/${profileId}`, {
-                name: name,
-                email: email
-              }).catch(() => null);
-            }
-          } else {
-            // Auto-sync new faculty into business DB
-            const newFacultyRes = await api.post('/api/business/faculty', {
-              facultyId: userId,
-              name: name || "Faculty",
-              email: email,
-              department: "Computer Science & Engineering",
-              designation: "Assistant Professor"
-            }).catch(() => null);
-            if (newFacultyRes?.data?.facultyId) {
-              profileId = newFacultyRes.data.facultyId;
-            }
+          const facultyRes = await api.get(`/api/business/faculty/email/lookup-email?email=${encodeURIComponent(email.toLowerCase().trim())}`).catch(() => null);
+          const profile = facultyRes?.data?.data || facultyRes?.data;
+          if (profile?.facultyId || profile?.id) {
+            profileId = profile.facultyId || profile.id;
           }
         }
       } catch (err) {
