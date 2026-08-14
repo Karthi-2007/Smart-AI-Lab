@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 const SystemSettings = () => {
   const [institution, setInstitution] = useState("Karpagam College of Engineering");
   const [timeZone, setTimeZone] = useState("Asia/Kolkata");
-  const [openingTime, setOpeningTime] = useState("08:30");
-  const [closingTime, setClosingTime] = useState("17:30");
-  const [bookingDuration, setBookingDuration] = useState("2 Hours");
+  const [openingTime, setOpeningTime] = useState("09:00");
+  const [closingTime, setClosingTime] = useState("16:00");
+  const [bookingDuration, setBookingDuration] = useState("3 Hours");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -20,6 +20,16 @@ const SystemSettings = () => {
         if (s.openingTime) setOpeningTime(s.openingTime);
         if (s.closingTime) setClosingTime(s.closingTime);
         if (s.bookingDuration) setBookingDuration(s.bookingDuration);
+      } else {
+        const initial = {
+          institution: "Karpagam College of Engineering",
+          timeZone: "Asia/Kolkata",
+          openingTime: "09:00",
+          closingTime: "16:00",
+          bookingDuration: "3 Hours"
+        };
+        localStorage.setItem("smartlab_system_settings", JSON.stringify(initial));
+        window.dispatchEvent(new Event('smartlab_settings_updated'));
       }
     } catch (e) {}
   }, []);

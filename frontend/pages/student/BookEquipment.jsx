@@ -6,9 +6,9 @@ import { studentService } from '../../services/studentService';
 import { useAuth } from '../../hooks/useAuth';
 
 const getDynamicTimeSlots = () => {
-  let opening = "08:30";
-  let closing = "17:30";
-  let durationType = "2 Hours";
+  let opening = "09:00";
+  let closing = "16:00";
+  let durationType = "3 Hours";
 
   try {
     const stored = localStorage.getItem("smartlab_system_settings");
