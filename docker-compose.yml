@@ -1,0 +1,119 @@
+services:
+  # MySQL Database (Optional local container, or point DB_HOST to managed cloud MySQL)
+  mysql:
+    image: mysql:8.0
+    container_name: smartlab-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Karthi}
+      MYSQL_DATABASE: smartlab
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-Karthi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartlab-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./backend/Two Services/auth-service
+      dockerfile: Dockerfile
+    container_name: smartlab-auth-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      DB_URL: jdbc:mysql://${DB_HOST:-mysql}:3306/${AUTH_DB_NAME:-auth_db}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Karthi}
+      JWT_SECRET: ${JWT_SECRET:-ChangeThisToARandom256BitSecretKeySharedByBothServicesForSmartLabAI}
+      SMARTLAB_SERVICE_URL: http://smartlab-service:8082/api/business
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080,http://frontend:80}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-smartlab.college.auth@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-smzltbyohgnfwerj}
+      EUREKA_ENABLED: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartlab-network
+
+  # SmartLab Business Service
+  smartlab-service:
+    build:
+      context: ./backend/Two Services/smartlab-service
+      dockerfile: Dockerfile
+    container_name: smartlab-business-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      DB_URL: jdbc:mysql://${DB_HOST:-mysql}:3306/${DB_NAME:-smartlab}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Karthi}
+      JWT_SECRET: ${JWT_SECRET:-ChangeThisToARandom256BitSecretKeySharedByBothServicesForSmartLabAI}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080,http://frontend:80}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-smartlab.college.auth@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-smzltbyohgnfwerj}
+      EUREKA_ENABLED: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartlab-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: smartlab-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_URL: http://auth-service:8081
+      SMARTLAB_SERVICE_URL: http://smartlab-service:8082
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080,http://frontend:80}
+      EUREKA_ENABLED: "false"
+    depends_on:
+      - auth-service
+      - smartlab-service
+    networks:
+      - smartlab-network
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smartlab-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - smartlab-network
+
+volumes:
+  mysql_data:
+
+networks:
+  smartlab-network:
+    driver: bridge

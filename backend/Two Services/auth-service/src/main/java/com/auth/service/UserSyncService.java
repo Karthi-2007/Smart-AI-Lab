@@ -4,6 +4,7 @@ import com.auth.entity.AppUser;
 import com.auth.entity.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
@@ -13,7 +14,9 @@ import java.util.Map;
 public class UserSyncService {
     private static final Logger log = LoggerFactory.getLogger(UserSyncService.class);
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String SMARTLAB_SERVICE_URL = "http://localhost:8082/api/business";
+
+    @Value("${smartlab.service.url:http://localhost:8082/api/business}")
+    private String smartlabServiceUrl;
 
     private final com.auth.security.JwtUtil jwtUtil;
 
@@ -102,7 +105,7 @@ public class UserSyncService {
         headers.set("X-User-Sync", "true");
 
         org.springframework.http.HttpEntity<Map<String, Object>> entity = new org.springframework.http.HttpEntity<>(payload, headers);
-        String url = SMARTLAB_SERVICE_URL + "/students/" + user.getUserId();
+        String url = smartlabServiceUrl + "/students/" + user.getUserId();
         restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, entity, Void.class);
         log.info("Synchronized student profile for {} (ID: {}) to smartlab-service", user.getEmail(), user.getUserId());
     }
@@ -123,7 +126,7 @@ public class UserSyncService {
         headers.set("X-User-Sync", "true");
 
         org.springframework.http.HttpEntity<Map<String, Object>> entity = new org.springframework.http.HttpEntity<>(payload, headers);
-        String url = SMARTLAB_SERVICE_URL + "/faculty/" + user.getUserId();
+        String url = smartlabServiceUrl + "/faculty/" + user.getUserId();
         restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, entity, Void.class);
         log.info("Synchronized faculty profile for {} (ID: {}) to smartlab-service", user.getEmail(), user.getUserId());
     }

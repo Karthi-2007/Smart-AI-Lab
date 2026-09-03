@@ -10,7 +10,7 @@ import {
   Award
 } from "lucide-react";
 import toast from "react-hot-toast";
-import axios from "axios";
+import api from "../../services/api";
 
 import SectionTitle from "../ui/SectionTitle";
 import GlassCard from "../ui/GlassCard";
@@ -31,7 +31,7 @@ const ContactSection = () => {
 
     setSending(true);
     try {
-      await axios.post('/api/business/contact-messages', {
+      await api.post('/api/business/contact-messages', {
         name: name.trim(),
         email: email.trim(),
         subject: subject.trim() || "General Inquiry",

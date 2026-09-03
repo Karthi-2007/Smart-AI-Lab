@@ -132,7 +132,7 @@ public class AiService {
             if (cleanMsg.contains("admin") && (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("step") || cleanMsg.contains("guide") || cleanMsg.contains("how"))) {
                 return Map.of("response", getAdminWorkflowGuide(), "model", "smartlab-engine", "source", "SmartLab Workflow Engine");
             }
-            if (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("how to use") || cleanMsg.contains("guide") || cleanMsg.contains("how to book") || cleanMsg.contains("booking workflow") || cleanMsg.contains("steps to book")) {
+            if (cleanMsg.contains("workflow") || cleanMsg.contains("process") || cleanMsg.contains("how to use") || cleanMsg.contains("guide") || cleanMsg.contains("how to book") || cleanMsg.contains("how do i book") || cleanMsg.contains("how can i book") || cleanMsg.contains("booking workflow") || cleanMsg.contains("steps to book")) {
                 return Map.of("response", getStudentWorkflowGuide(), "model", "smartlab-engine", "source", "SmartLab Workflow Engine");
             }
 

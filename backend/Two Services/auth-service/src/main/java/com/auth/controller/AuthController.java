@@ -352,4 +352,27 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
+
+    // ===============================
+    // HEALTH CHECK
+    // ===============================
+
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        boolean dbHealthy = false;
+        try {
+            long count = appUserRepository.count();
+            dbHealthy = count >= 0;
+        } catch (Exception e) {
+            log.error("Auth Service DB Health Check Failed: {}", e.getMessage());
+        }
+
+        Map<String, Object> status = Map.of(
+            "status", dbHealthy ? "UP" : "DOWN",
+            "service", "auth-service",
+            "database", dbHealthy ? "CONNECTED" : "DISCONNECTED"
+        );
+
+        return dbHealthy ? ResponseEntity.ok(status) : ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(status);
+    }
 }

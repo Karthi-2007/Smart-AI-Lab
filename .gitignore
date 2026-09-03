@@ -19,6 +19,7 @@ target/
 .env.local
 .env.production
 .env.development
+!.env.example
 
 # IDE and OS metadata
 .idea/
@@ -35,3 +36,5 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .vite/
+scratch/
+
